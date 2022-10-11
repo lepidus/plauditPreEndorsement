@@ -23,8 +23,9 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
             return true;
         }
 
-        // if ($success && $this->getEnabled($mainContextId)) {
-        // }
+        if ($success && $this->getEnabled($mainContextId)) {
+            HookRegistry::register('Templates::Submission::SubmissionMetadataForm::AdditionalMetadata', array($this, 'addEndosserFieldToStep3'));
+        }
 
         return $success;
     }
@@ -39,4 +40,12 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
         return __('plugins.generic.plauditPreEndorsement.description');
     }
 
+    public function addEndosserFieldToStep3($hookName, $params)
+    {
+        $smarty = &$params[1];
+        $output = &$params[2];
+
+        $output .= $smarty->fetch($this->getTemplateResource('endosserField.tpl'));
+        return false;
+    }
 }
