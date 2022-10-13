@@ -16,3 +16,6 @@ msgstr "Plaudit Pre-Endorsement"
 
 msgid "plugins.generic.plauditPreEndorsement.description"
 msgstr "This plugin allows authors to do the pre-endorsement of their submissions"
+
+msgid "plugins.generic.plauditPreEndorsement.endorserMail"
+msgstr "Endorser's mail address"
