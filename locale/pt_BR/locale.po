@@ -17,5 +17,5 @@ msgstr "Pré-Endosso Plaudit"
 msgid "plugins.generic.plauditPreEndorsement.description"
 msgstr "Esse plugin permite aos autores realizar o pré-endosso das suas submissões"
 
-msgid "plugins.generic.plauditPreEndorsement.endorserMail"
+msgid "plugins.generic.plauditPreEndorsement.endorserEmail"
 msgstr "Endereço de e-mail do endossador"
