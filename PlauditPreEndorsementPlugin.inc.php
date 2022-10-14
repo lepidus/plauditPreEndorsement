@@ -49,6 +49,12 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
         $smarty = &$params[1];
         $output = &$params[2];
 
+        $submissionId = $smarty->smarty->get_template_vars('submissionId');
+        $submission = DAORegistry::getDAO('SubmissionDAO')->getById($submissionId);
+        $publication = $submission->getCurrentPublication();
+
+        $smarty->assign('endorserEmail', $publication->getData('endorserEmail'));
+
         $output .= $smarty->fetch($this->getTemplateResource('endorserField.tpl'));
         return false;
     }
