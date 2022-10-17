@@ -1,0 +1,21 @@
+.pkp_form {
+  padding: 0.875rem 1rem;
+  margin: 0 -2rem;
+}
+
+#endorserEmailWorkflowDiv {
+  padding: 0.875rem 0.3125rem;
+  width: 100%;
+}
+
+#endorserEmailWorkflowDiv .label {
+  display: block;
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
+.formButtons {
+  text-align: right;
+  margin-top: 2rem;
+}
+

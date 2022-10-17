@@ -19,3 +19,6 @@ msgstr "Este módulo permite a los autores dar aprobación previa a sus envíos"
 
 msgid "plugins.generic.plauditPreEndorsement.endorserEmail"
 msgstr "Dirección de correo electrónico del probador"
+
+msgid "plugins.generic.plauditPreEndorsement.preEndorsement"
+msgstr "Aprobación previa"

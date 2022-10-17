@@ -29,6 +29,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
             HookRegistry::register('submissionsubmitstep3form::readuservars', array($this, 'allowStep3FormToReadOurFields'));
             HookRegistry::register('submissionsubmitstep3form::execute', array($this, 'step3SaveOurFieldsInDatabase'));
             HookRegistry::register('Schema::get::publication', array($this, 'addOurFieldsToPublicationSchema'));
+            HookRegistry::register('Template::Workflow::Publication', array($this, 'addToPublicationForms'));
         }
 
         return $success;
@@ -55,7 +56,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
 
         $smarty->assign('endorserEmail', $publication->getData('endorserEmail'));
 
-        $output .= $smarty->fetch($this->getTemplateResource('endorserField.tpl'));
+        $output .= $smarty->fetch($this->getTemplateResource('endorserFieldStep3.tpl'));
         return false;
     }
 
@@ -89,5 +90,21 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
         ];
 
         return false;
+    }
+
+    function addToPublicationForms($hookName, $params)
+    {
+        $smarty = &$params[1];
+        $output = &$params[2];
+
+        $submission = $smarty->get_template_vars('submission');
+        $publication = $submission->getCurrentPublication();
+        $smarty->assign('endorserEmail', $publication->getData('endorserEmail'));
+
+        $output .= sprintf(
+            '<tab id="screeningInfo" label="%s">%s</tab>',
+            __('plugins.generic.plauditPreEndorsement.preEndorsement'),
+            $smarty->fetch($this->getTemplateResource('endorserFieldWorkflow.tpl'))
+        );
     }
 }
