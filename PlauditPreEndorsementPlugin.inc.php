@@ -30,9 +30,19 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
             HookRegistry::register('submissionsubmitstep3form::execute', array($this, 'step3SaveOurFieldsInDatabase'));
             HookRegistry::register('Schema::get::publication', array($this, 'addOurFieldsToPublicationSchema'));
             HookRegistry::register('Template::Workflow::Publication', array($this, 'addToPublicationForms'));
+            HookRegistry::register('LoadComponentHandler', array($this, 'setupPlauditPreEndorsementHandler'));
         }
 
         return $success;
+    }
+
+    public function setupPlauditPreEndorsementHandler($hookName, $params)
+    {
+        $component =& $params[0];
+		if ($component == 'plugins.generic.plauditPreEndorsement.controllers.PlauditPreEndorsementHandler') {
+			return true;
+		}
+		return false;
     }
 
     public function getDisplayName()
@@ -99,6 +109,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
 
         $submission = $smarty->get_template_vars('submission');
         $publication = $submission->getCurrentPublication();
+        $smarty->assign('submissionId', $submission->getId());
         $smarty->assign('endorserEmail', $publication->getData('endorserEmail'));
 
         $output .= sprintf(

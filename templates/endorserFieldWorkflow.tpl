@@ -29,7 +29,7 @@
             "{$updateEndorserEmail}",
             {ldelim}
                 submissionId: {$submissionId},
-                endorserEmail: $('input[name=endorserEmailWorkflow]').val(),
+                endorserEmail: $('input[name=endorserEmailWorkflow]').val()
             {rdelim},
             updateSuccess()
         );
