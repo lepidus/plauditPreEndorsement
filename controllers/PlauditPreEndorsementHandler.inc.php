@@ -4,14 +4,16 @@ import('classes.handler.Handler');
 
 class PlauditPreEndorsementHandler extends Handler
 {
-    public function updateEndorserEmail($args, $request)
+    public function updateEndorser($args, $request)
     {
         $submissionId = $args['submissionId'];
+        $endorserName = $args['endorserName'];
         $endorserEmail = $args['endorserEmail'];
         
         $submission = DAORegistry::getDAO('SubmissionDAO')->getById($submissionId);
         $publication = $submission->getCurrentPublication();
 
+        $publication->setData('endorserName', $endorserName);
         $publication->setData('endorserEmail', $endorserEmail);
         $publicationDao = DAORegistry::getDAO('PublicationDAO');
         $publicationDao->updateObject($publication);

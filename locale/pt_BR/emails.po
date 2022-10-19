@@ -16,7 +16,7 @@ msgstr "Confirmação de endosso"
 
 msgid "emails.orcidRequestEndorserAuthorization.body"
 msgstr ""
-"Prezado(a) endossador(a),<br>\n"
+"Prezado(a) {$endorserName},<br>\n"
 "<br>\n"
 "O seu nome foi indicado para endossar o manuscrito \"{$preprintTitle}\", submetido ao servidor {$contextName}.<br>\n"
 "<br>\n"

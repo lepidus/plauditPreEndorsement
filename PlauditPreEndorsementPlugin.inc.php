@@ -24,12 +24,12 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
         }
 
         if ($success && $this->getEnabled($mainContextId)) {
-            HookRegistry::register('Templates::Submission::SubmissionMetadataForm::AdditionalMetadata', array($this, 'addEndorserFieldToStep3'));
+            HookRegistry::register('Templates::Submission::SubmissionMetadataForm::AdditionalMetadata', array($this, 'addEndorserFieldsToStep3'));
 
             HookRegistry::register('submissionsubmitstep3form::readuservars', array($this, 'allowStep3FormToReadOurFields'));
             HookRegistry::register('submissionsubmitstep3form::execute', array($this, 'step3SaveEndorserEmail'));
             HookRegistry::register('Schema::get::publication', array($this, 'addOurFieldsToPublicationSchema'));
-            HookRegistry::register('Template::Workflow::Publication', array($this, 'addToPublicationForms'));
+            HookRegistry::register('Template::Workflow::Publication', array($this, 'addEndorserFieldsToWorkflow'));
             HookRegistry::register('LoadComponentHandler', array($this, 'setupPlauditPreEndorsementHandler'));
         }
 
@@ -55,7 +55,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
         return __('plugins.generic.plauditPreEndorsement.description');
     }
 
-    public function addEndorserFieldToStep3($hookName, $params)
+    public function addEndorserFieldsToStep3($hookName, $params)
     {
         $smarty = &$params[1];
         $output = &$params[2];
@@ -64,6 +64,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
         $submission = DAORegistry::getDAO('SubmissionDAO')->getById($submissionId);
         $publication = $submission->getCurrentPublication();
 
+        $smarty->assign('endorserName', $publication->getData('endorserName'));
         $smarty->assign('endorserEmail', $publication->getData('endorserEmail'));
 
         $output .= $smarty->fetch($this->getTemplateResource('endorserFieldStep3.tpl'));
@@ -73,7 +74,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
     public function allowStep3FormToReadOurFields($hookName, $params)
     {
         $formFields = &$params[1];
-        $ourFields = ['endorserEmail'];
+        $ourFields = ['endorserName', 'endorserEmail'];
 
         $formFields = array_merge($formFields, $ourFields);
     }
@@ -82,8 +83,10 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
     {
         $step3Form = $params[0];
         $publication = $step3Form->submission->getCurrentPublication();
+        $endorserName = $step3Form->getData('endorserName');
         $endorserEmail = $step3Form->getData('endorserEmail');
 
+        $publication->setData('endorserName', $endorserName);
         $publication->setData('endorserEmail', $endorserEmail);
         $publicationDao = DAORegistry::getDAO('PublicationDAO');
         $publicationDao->updateObject($publication);
@@ -95,6 +98,11 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
     {
         $schema = &$params[0];
 
+        $schema->properties->{'endorserName'} = (object) [
+            'type' => 'string',
+            'apiSummary' => true,
+            'validation' => ['nullable'],
+        ];
         $schema->properties->{'endorserEmail'} = (object) [
             'type' => 'string',
             'apiSummary' => true,
@@ -104,7 +112,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
         return false;
     }
 
-    function addToPublicationForms($hookName, $params)
+    function addEndorserFieldsToWorkflow($hookName, $params)
     {
         $smarty = &$params[1];
         $output = &$params[2];
@@ -112,6 +120,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
         $submission = $smarty->get_template_vars('submission');
         $publication = $submission->getCurrentPublication();
         $smarty->assign('submissionId', $submission->getId());
+        $smarty->assign('endorserName', $publication->getData('endorserName'));
         $smarty->assign('endorserEmail', $publication->getData('endorserEmail'));
 
         $output .= sprintf(
@@ -124,19 +133,18 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
     public function sendEmailToEndorser($publication) {
 		$request = PKPApplication::get()->getRequest();
 		$context = $request->getContext();
+        $endorserName = $publication->getData('endorserName');
         $endorserEmail = $publication->getData('endorserEmail');
 
 		if (!is_null($context) && !is_null($endorserEmail)) {
-
-
-            
 			$emailTemplate = 'ORCID_REQUEST_ENDORSER_AUTHORIZATION';
             $email = $this->getMailTemplate($emailTemplate, $context);
 
             $email->setFrom($context->getData('contactEmail'), $context->getData('contactName'));
-            $email->setRecipients([['name' => '', 'email' => $endorserEmail]]);
+            $email->setRecipients([['name' => $endorserName, 'email' => $endorserEmail]]);
 
             $email->sendWithParams([
+                'endorserName' => htmlspecialchars($endorserName),
                 'preprintTitle' => htmlspecialchars($publication->getLocalizedTitle()),
             ]);
 		}

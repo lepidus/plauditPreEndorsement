@@ -27,7 +27,7 @@ function submissionStep3() {
     cy.get('ul[id^="en_US-keywords-"]').then(node => {
         node.tagit('createTag', "Dummy keyword");
     });
-    //Digitar um e-mail de endossador
+    cy.get('input[name^="endorserName"]').type("Queen Elizabeth", { delay: 0 });
     cy.get('input[name^="endorserEmail"]').type("queen.elizabeth.2nd@gmail.com", { delay: 0 });
     cy.get('#submitStep3Form > .formButtons > .submitFormButton').click();
 }
@@ -51,7 +51,7 @@ describe("Plaudit Pre-Endorsement Plugin - Send e-mail to endorser during submis
     it("Check if e-mail has been sent to endorser", function() {
         cy.visit('http://0.0.0.0:8025/');
         
-        cy.get('.row > div > .subject').contains('Endorsement confirmation');
-        cy.get('.ng-binding.ng-scope').contains('queen.elizabeth.2nd@gmail.com');
+        cy.get('.row > div > .subject').contains('Endorsement confirmation').first().click();
+        cy.get('.ng-scope > tr > td').contains('Queen Elizabeth <queen.elizabeth.2nd@gmail.com>');
     });
 });

@@ -16,7 +16,7 @@ msgstr "Endorsement confirmation"
 
 msgid "emails.orcidRequestEndorserAuthorization.body"
 msgstr ""
-"Dear endorser,<br>\n"
+"Dear {$endorserName},<br>\n"
 "<br>\n"
 "Your name has been nominated to endorse the manuscript \"{$preprintTitle}\", submitted to server {$contextName}.<br>\n"
 "<br>\n"
