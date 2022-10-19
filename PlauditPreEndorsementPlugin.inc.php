@@ -27,7 +27,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
             HookRegistry::register('Templates::Submission::SubmissionMetadataForm::AdditionalMetadata', array($this, 'addEndorserFieldToStep3'));
 
             HookRegistry::register('submissionsubmitstep3form::readuservars', array($this, 'allowStep3FormToReadOurFields'));
-            HookRegistry::register('submissionsubmitstep3form::execute', array($this, 'step3SaveOurFieldsInDatabase'));
+            HookRegistry::register('submissionsubmitstep3form::execute', array($this, 'step3SaveEndorserEmail'));
             HookRegistry::register('Schema::get::publication', array($this, 'addOurFieldsToPublicationSchema'));
             HookRegistry::register('Template::Workflow::Publication', array($this, 'addToPublicationForms'));
             HookRegistry::register('LoadComponentHandler', array($this, 'setupPlauditPreEndorsementHandler'));
@@ -78,7 +78,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
         $formFields = array_merge($formFields, $ourFields);
     }
 
-    public function step3SaveOurFieldsInDatabase($hookName, $params)
+    public function step3SaveEndorserEmail($hookName, $params)
     {
         $step3Form = $params[0];
         $publication = $step3Form->submission->getCurrentPublication();
@@ -87,6 +87,8 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
         $publication->setData('endorserEmail', $endorserEmail);
         $publicationDao = DAORegistry::getDAO('PublicationDAO');
         $publicationDao->updateObject($publication);
+
+        $this->sendEmailToEndorser($publication);
     }
 
     public function addOurFieldsToPublicationSchema($hookName, $params)
@@ -118,4 +120,34 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
             $smarty->fetch($this->getTemplateResource('endorserFieldWorkflow.tpl'))
         );
     }
+
+    public function sendEmailToEndorser($publication) {
+		$request = PKPApplication::get()->getRequest();
+		$context = $request->getContext();
+        $endorserEmail = $publication->getData('endorserEmail');
+
+		if (!is_null($context) && !is_null($endorserEmail)) {
+
+
+            
+			$emailTemplate = 'ORCID_REQUEST_ENDORSER_AUTHORIZATION';
+            $email = $this->getMailTemplate($emailTemplate, $context);
+
+            $email->setFrom($context->getData('contactEmail'), $context->getData('contactName'));
+            $email->setRecipients([['name' => '', 'email' => $endorserEmail]]);
+
+            $email->sendWithParams([
+                'preprintTitle' => htmlspecialchars($publication->getLocalizedTitle()),
+            ]);
+		}
+	}
+
+    function getInstallEmailTemplatesFile() {
+		return $this->getPluginPath() . '/emailTemplates.xml';
+	}
+
+    private function getMailTemplate($emailKey, $context = null) {
+		import('lib.pkp.classes.mail.MailTemplate');
+		return new MailTemplate($emailKey, null, $context, false);
+	}
 }
