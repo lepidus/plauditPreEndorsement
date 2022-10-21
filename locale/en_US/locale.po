@@ -28,3 +28,43 @@ msgstr "Endorser's email address"
 
 msgid "plugins.generic.plauditPreEndorsement.preEndorsement"
 msgstr "Pre-Endorsement"
+
+msgid "plugins.generic.plauditPreEndorsement.settings.orcidClientIdError"
+msgstr "Invalid client ID"
+
+msgid "plugins.generic.plauditPreEndorsement.settings.orcidClientSecretError"
+msgstr "Invalid client secret"
+
+msgid "plugins.generic.plauditPreEndorsement.settings.title"
+msgstr "ORCID API Settings"
+
+msgid "plugins.generic.plauditPreEndorsement.settings.description"
+msgstr "Please configure the ORCID API access for use in pulling ORCID profile information"
+
+msgid "plugins.generic.plauditPreEndorsement.settings.globallyconfigured"
+msgstr "The ORCID API was configured globally by the host. The following credentials have been saved."
+
+msgid "plugins.generic.plauditPreEndorsement.settings.orcidAPIPath"
+msgstr "ORCID API"
+
+msgid "plugins.generic.plauditPreEndorsement.settings.orcidClientId"
+msgstr "Client ID"
+
+msgid "plugins.generic.plauditPreEndorsement.settings.orcidClientSecret"
+msgstr "Client Secret"
+
+msgid "plugins.generic.plauditPreEndorsement.settings.hidden"
+msgstr "hidden"
+
+msgid "plugins.generic.plauditPreEndorsement.settings.orcidAPIPath.public"
+msgstr "Public"
+
+msgid "plugins.generic.plauditPreEndorsement.settings.orcidAPIPath.publicSandbox"
+msgstr "Public Sandbox"
+
+msgid "plugins.generic.plauditPreEndorsement.settings.orcidAPIPath.member"
+msgstr "Member"
+
+msgid "plugins.generic.plauditPreEndorsement.settings.orcidAPIPath.memberSandbox"
+msgstr "Member Sandbox"
+

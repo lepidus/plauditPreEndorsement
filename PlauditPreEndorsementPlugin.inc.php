@@ -38,11 +38,11 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
 
     public function setupPlauditPreEndorsementHandler($hookName, $params)
     {
-        $component =& $params[0];
-		if ($component == 'plugins.generic.plauditPreEndorsement.controllers.PlauditPreEndorsementHandler') {
-			return true;
-		}
-		return false;
+        $component = &$params[0];
+        if ($component == 'plugins.generic.plauditPreEndorsement.controllers.PlauditPreEndorsementHandler') {
+            return true;
+        }
+        return false;
     }
 
     public function getDisplayName()
@@ -130,14 +130,15 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
         );
     }
 
-    public function sendEmailToEndorser($publication) {
-		$request = PKPApplication::get()->getRequest();
-		$context = $request->getContext();
+    public function sendEmailToEndorser($publication)
+    {
+        $request = PKPApplication::get()->getRequest();
+        $context = $request->getContext();
         $endorserName = $publication->getData('endorserName');
         $endorserEmail = $publication->getData('endorserEmail');
 
-		if (!is_null($context) && !is_null($endorserEmail)) {
-			$emailTemplate = 'ORCID_REQUEST_ENDORSER_AUTHORIZATION';
+        if (!is_null($context) && !is_null($endorserEmail)) {
+            $emailTemplate = 'ORCID_REQUEST_ENDORSER_AUTHORIZATION';
             $email = $this->getMailTemplate($emailTemplate, $context);
 
             $email->setFrom($context->getData('contactEmail'), $context->getData('contactName'));
@@ -147,15 +148,74 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
                 'endorserName' => htmlspecialchars($endorserName),
                 'preprintTitle' => htmlspecialchars($publication->getLocalizedTitle()),
             ]);
+        }
+    }
+
+    function getInstallEmailTemplatesFile()
+    {
+        return $this->getPluginPath() . '/emailTemplates.xml';
+    }
+
+    private function getMailTemplate($emailKey, $context = null)
+    {
+        import('lib.pkp.classes.mail.MailTemplate');
+        return new MailTemplate($emailKey, null, $context, false);
+    }
+
+    function orcidIsGloballyConfigured()
+    {
+        $apiUrl = Config::getVar('orcid', 'api_url');
+        $clientId = Config::getVar('orcid', 'client_id');
+        $clientSecret = Config::getVar('orcid', 'client_secret');
+        return isset($apiUrl) && trim($apiUrl) && isset($clientId) && trim($clientId) &&
+            isset($clientSecret) && trim($clientSecret);
+    }
+
+    function getActions($request, $actionArgs) {
+		$router = $request->getRouter();
+		import('lib.pkp.classes.linkAction.request.AjaxModal');
+		return array_merge(
+			array(
+				new LinkAction(
+					'settings',
+					new AjaxModal($router->url($request, null, null, 'manage', null, array('verb' => 'settings', 'plugin' => $this->getName(), 'category' => 'generic')), $this->getDisplayName()),
+					__('manager.plugins.settings'),
+					null
+				),
+			),
+			parent::getActions($request, $actionArgs)
+		);
+	}
+
+    function manage($args, $request) {
+		$context = $request->getContext();
+		$contextId = ($context == null) ? 0 : $context->getId();
+
+		switch ($request->getUserVar('verb')) {
+			case 'settings':
+				$templateMgr = TemplateManager::getManager();
+				$templateMgr->registerPlugin('function', 'plugin_url', array($this, 'smartyPluginUrl'));
+				$apiOptions = [
+					ORCID_API_URL_PUBLIC => 'plugins.generic.plauditPreEndorsement.settings.orcidAPIPath.public',
+					ORCID_API_URL_PUBLIC_SANDBOX => 'plugins.generic.plauditPreEndorsement.settings.orcidAPIPath.publicSandbox',
+					ORCID_API_URL_MEMBER => 'plugins.generic.plauditPreEndorsement.settings.orcidAPIPath.member',
+					ORCID_API_URL_MEMBER_SANDBOX => 'plugins.generic.plauditPreEndorsement.settings.orcidAPIPath.memberSandbox'
+				];
+				$templateMgr->assign('orcidApiUrls', $apiOptions);
+
+				$this->import('PlauditPreEndorsementSettingsForm');
+				$form = new PlauditPreEndorsementSettingsForm($this, $contextId);
+				if ($request->getUserVar('save')) {
+					$form->readInputData();
+					if ($form->validate()) {
+						$form->execute();
+						return new JSONMessage(true);
+					}
+				} else {
+					$form->initData();
+				}
+				return new JSONMessage(true, $form->fetch($request));
 		}
-	}
-
-    function getInstallEmailTemplatesFile() {
-		return $this->getPluginPath() . '/emailTemplates.xml';
-	}
-
-    private function getMailTemplate($emailKey, $context = null) {
-		import('lib.pkp.classes.mail.MailTemplate');
-		return new MailTemplate($emailKey, null, $context, false);
+		return parent::manage($args, $request);
 	}
 }
