@@ -1,6 +1,7 @@
 <?php
 
 import('classes.handler.Handler');
+import('plugins.generic.plauditPreEndorsement.PlauditPreEndorsementPlugin');
 
 class PlauditPreEndorsementHandler extends Handler
 {
@@ -17,6 +18,9 @@ class PlauditPreEndorsementHandler extends Handler
         $publication->setData('endorserEmail', $endorserEmail);
         $publicationDao = DAORegistry::getDAO('PublicationDAO');
         $publicationDao->updateObject($publication);
+
+        $plugin = new PlauditPreEndorsementPlugin();
+        $plugin->sendEmailToEndorser($publication);
 
         return http_response_code(200);
     }

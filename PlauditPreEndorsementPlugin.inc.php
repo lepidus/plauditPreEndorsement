@@ -39,6 +39,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
 
             HookRegistry::register('submissionsubmitstep3form::readuservars', array($this, 'allowStep3FormToReadOurFields'));
             HookRegistry::register('submissionsubmitstep3form::execute', array($this, 'step3SaveEndorserEmail'));
+            HookRegistry::register('submissionsubmitstep4form::execute', array($this, 'step4SendEmailToEndorser'));
             HookRegistry::register('Schema::get::publication', array($this, 'addOurFieldsToPublicationSchema'));
             HookRegistry::register('Template::Workflow::Publication', array($this, 'addEndorserFieldsToWorkflow'));
             HookRegistry::register('LoadComponentHandler', array($this, 'setupPlauditPreEndorsementHandler'));
@@ -101,8 +102,16 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
         $publication->setData('endorserEmail', $endorserEmail);
         $publicationDao = DAORegistry::getDAO('PublicationDAO');
         $publicationDao->updateObject($publication);
+    }
+    
+    public function step4SendEmailToEndorser($hookName, $params)
+    {
+        $step4Form = $params[0];
+        $publication = $step4Form->submission->getCurrentPublication();
 
-        $this->sendEmailToEndorser($publication);
+        if(!is_null($publication->getData('endorserEmail'))) {
+            $this->sendEmailToEndorser($publication);
+        }
     }
 
     public function addOurFieldsToPublicationSchema($hookName, $params)
