@@ -14,7 +14,7 @@ $(function() {ldelim}
     $('#plauditPreEndorsementSettingsForm').pkpHandler('$.pkp.controllers.form.AjaxFormHandler');
 {rdelim});
 </script>
-
+<link rel="stylesheet" type="text/css" href="/plugins/generic/plauditPreEndorsement/styles/endorserSettingsForm.css">
 <form class="pkp_form" id="plauditPreEndorsementSettingsForm" method="post" action="{url router=$smarty.const.ROUTE_COMPONENT op="manage" category="generic" plugin=$pluginName verb="settings" save=true}">
     <div id="plauditPreEndorsementSettings">
         <p id="description">
@@ -30,14 +30,14 @@ $(function() {ldelim}
                     {translate key="plugins.generic.plauditPreEndorsement.settings.globallyconfigured"}
                 </p>
                 {/if}
-                {fbvElement id="orcidAPIPath" type="select" translate="true" from=$orcidApiUrls selected=$orcidAPIPath required="true" label="plugins.generic.plauditPreEndorsement.settings.orcidAPIPath" disabled=$globallyConfigured}
-                {fbvElement type="text" id="orcidClientId" value=$orcidClientId required="false" label="plugins.generic.plauditPreEndorsement.settings.orcidClientId" maxlength="40" size=$fbvStyles.size.MEDIUM disabled=$globallyConfigured}
+                {fbvElement id="orcidAPIPath" class="orcidAPIPath" type="select" translate="true" from=$orcidApiUrls selected=$orcidAPIPath required="true" label="plugins.generic.plauditPreEndorsement.settings.orcidAPIPath" disabled=$globallyConfigured}
+                {fbvElement type="text" id="orcidClientId" class="orcidClientId" value=$orcidClientId required="false" label="plugins.generic.plauditPreEndorsement.settings.orcidClientId" maxlength="40" size=$fbvStyles.size.MEDIUM disabled=$globallyConfigured}
                 {if $globallyConfigured}
                     <p>
                         {translate key="plugins.generic.plauditPreEndorsement.settings.orcidClientSecret"}: <i>{translate key="plugins.generic.plauditPreEndorsement.settings.hidden"}</i>
                     </p>
                 {else}
-                    {fbvElement type="text" id="orcidClientSecret" value=$orcidClientSecret required="false" label="plugins.generic.plauditPreEndorsement.settings.orcidClientSecret" maxlength="40" size=$fbvStyles.size.MEDIUM disabled=$globallyConfigured}
+                    {fbvElement type="text" id="orcidClientSecret" class="orcidClientSecret" value=$orcidClientSecret required="false" label="plugins.generic.plauditPreEndorsement.settings.orcidClientSecret" maxlength="40" size=$fbvStyles.size.MEDIUM disabled=$globallyConfigured}
                 {/if}
             {/fbvFormSection}
         {/fbvFormArea}

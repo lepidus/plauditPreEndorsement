@@ -13,8 +13,19 @@
 
 import('lib.pkp.classes.plugins.GenericPlugin');
 
+define('ORCID_URL', 'https://orcid.org/');
+define('ORCID_URL_SANDBOX', 'https://sandbox.orcid.org/');
+define('ORCID_API_URL_PUBLIC', 'https://pub.orcid.org/');
+define('ORCID_API_URL_PUBLIC_SANDBOX', 'https://pub.sandbox.orcid.org/');
+define('ORCID_API_URL_MEMBER', 'https://api.orcid.org/');
+define('ORCID_API_URL_MEMBER_SANDBOX', 'https://api.sandbox.orcid.org/');
+define('ORCID_API_SCOPE_PUBLIC', '/authenticate');
+define('ORCID_API_SCOPE_MEMBER', '/activities/update');
+
 class PlauditPreEndorsementPlugin extends GenericPlugin
 {
+    const HANDLER_COMPONENT = 'plugins.generic.plauditPreEndorsement.controllers.PlauditPreEndorsementHandler';
+    
     public function register($category, $path, $mainContextId = null)
     {
         $success = parent::register($category, $path, $mainContextId);
@@ -39,7 +50,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
     public function setupPlauditPreEndorsementHandler($hookName, $params)
     {
         $component = &$params[0];
-        if ($component == 'plugins.generic.plauditPreEndorsement.controllers.PlauditPreEndorsementHandler') {
+        if ($component == self::HANDLER_COMPONENT) {
             return true;
         }
         return false;
@@ -108,6 +119,11 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
             'apiSummary' => true,
             'validation' => ['nullable'],
         ];
+        $schema->properties->{'endorserEmailToken'} = (object) [
+            'type' => 'string',
+            'apiSummary' => true,
+            'validation' => ['nullable'],
+        ];
 
         return false;
     }
@@ -144,10 +160,19 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
             $email->setFrom($context->getData('contactEmail'), $context->getData('contactName'));
             $email->setRecipients([['name' => $endorserName, 'email' => $endorserEmail]]);
 
+            $endorserEmailToken = md5(microtime() . $endorserEmail);
+            $oauthUrl = $this->buildOAuthUrl(['token' => $endorserEmailToken, 'state' => $publication->getId()]);
+
             $email->sendWithParams([
+                'orcidOauthUrl' => $oauthUrl,
                 'endorserName' => htmlspecialchars($endorserName),
                 'preprintTitle' => htmlspecialchars($publication->getLocalizedTitle()),
             ]);
+
+            $publication->setData('endorserEmailToken', $endorserEmailToken);
+			$publicationDao = DAORegistry::getDAO('PublicationDAO');
+			$publicationDao->updateObject($publication);
+			
         }
     }
 
@@ -217,5 +242,55 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
 				return new JSONMessage(true, $form->fetch($request));
 		}
 		return parent::manage($args, $request);
+	}
+
+    function buildOAuthUrl($redirectParams) {
+		$request = PKPApplication::get()->getRequest();
+		$context = $request->getContext();
+		assert($context != null);
+		$contextId = $context->getId();
+
+		if ($this->isMemberApiEnabled($contextId)) {
+			$scope = ORCID_API_SCOPE_MEMBER;
+		} else {
+			$scope = ORCID_API_SCOPE_PUBLIC;
+		}
+		
+        $redirectUrl = $request->getDispatcher()->url($request, ROUTE_PAGE, null, self::HANDLER_COMPONENT,
+			'orcidVerify', null, $redirectParams);
+
+		return $this->getOauthPath() . 'authorize?' . http_build_query(
+				array(
+					'client_id' => $this->getSetting($contextId, 'orcidClientId'),
+					'response_type' => 'code',
+					'scope' => $scope,
+					'redirect_uri' => $redirectUrl)
+			);
+	}
+
+    public function isMemberApiEnabled($contextId) {
+		$apiUrl = $this->getSetting($contextId, 'orcidProfileAPIPath');
+		if ($apiUrl === ORCID_API_URL_MEMBER || $apiUrl === ORCID_API_URL_MEMBER_SANDBOX) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+    function getOauthPath() {
+		return $this->getOrcidUrl() . 'oauth/';
+	}
+
+    function getOrcidUrl() {
+		$request = Application::get()->getRequest();
+		$context = $request->getContext();
+		$contextId = ($context == null) ? 0 : $context->getId();
+
+		$apiPath = $this->getSetting($contextId, 'orcidProfileAPIPath');
+		if ($apiPath == ORCID_API_URL_PUBLIC || $apiPath == ORCID_API_URL_MEMBER) {
+			return ORCID_URL;
+		} else {
+			return ORCID_URL_SANDBOX;
+		}
 	}
 }
