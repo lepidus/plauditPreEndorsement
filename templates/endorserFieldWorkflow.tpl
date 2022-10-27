@@ -6,16 +6,21 @@
   *}
 
 <link rel="stylesheet" type="text/css" href="/plugins/generic/plauditPreEndorsement/styles/endorserWorkflowStyleSheet.css">
-{capture assign=updateEndorserEmail}{url router=$smarty.const.ROUTE_COMPONENT component="plugins.generic.plauditPreEndorsement.controllers.PlauditPreEndorsementHandler" op="updateEndorserEmail" escape=false}{/capture}
+{capture assign=updateEndorserEmail}{url router=$smarty.const.ROUTE_COMPONENT component="plugins.generic.plauditPreEndorsement.controllers.PlauditPreEndorsementHandler" op="updateEndorser" escape=false}{/capture}
 
-<div class="pkp_form" id="updateEndorserEmailForm">
-    <div id="endorserEmailWorkflowDiv">
+<div class="pkp_form" id="updateEndorserForm">
+    <div class="endorserFieldDiv">
+        <label class="label">{translate key="plugins.generic.plauditPreEndorsement.endorserName"}</label>
+        {fbvElement type="text" name="endorserNameWorkflow" id="endorserNameWorkflow" value=$endorserName maxlength="90" size=$fbvStyles.size.MEDIUM}
+    </div>
+
+    <div class="endorserFieldDiv">
         <label class="label">{translate key="plugins.generic.plauditPreEndorsement.endorserEmail"}</label>
         {fbvElement type="email" name="endorserEmailWorkflow" id="endorserEmailWorkflow" value=$endorserEmail maxlength="90" size=$fbvStyles.size.MEDIUM}
     </div>
 
     <div class="formButtons">
-        <button id="updateEndorserEmailSubmit" type="button" class="pkp_button submitFormButton">{translate key="common.save"}</button>
+        <button id="updateEndorserSubmit" type="button" class="pkp_button submitFormButton">{translate key="common.save"}</button>
     </div>
 </div>
 
@@ -29,6 +34,7 @@
             "{$updateEndorserEmail}",
             {ldelim}
                 submissionId: {$submissionId},
+                endorserName: $('input[name=endorserNameWorkflow]').val(),
                 endorserEmail: $('input[name=endorserEmailWorkflow]').val()
             {rdelim},
             updateSuccess()
@@ -36,6 +42,6 @@
     {rdelim}
 
     $(function(){ldelim}
-        $('#updateEndorserEmailSubmit').click(makeSubmit);
+        $('#updateEndorserSubmit').click(makeSubmit);
     {rdelim});
 </script>

@@ -17,8 +17,53 @@ msgstr "Pre-Aprobación Plaudit"
 msgid "plugins.generic.plauditPreEndorsement.description"
 msgstr "Este módulo permite a los autores dar aprobación previa a sus envíos"
 
+msgid "plugins.generic.plauditPreEndorsement.endorsement"
+msgstr "Endoso"
+
+msgid "plugins.generic.plauditPreEndorsement.endorserName"
+msgstr "Nombre del endosador"
+
 msgid "plugins.generic.plauditPreEndorsement.endorserEmail"
-msgstr "Dirección de correo electrónico del probador"
+msgstr "Dirección de correo electrónico del endosador"
 
 msgid "plugins.generic.plauditPreEndorsement.preEndorsement"
 msgstr "Aprobación previa"
+
+msgid "plugins.generic.plauditPreEndorsement.settings.orcidClientIdError"
+msgstr "ID de cliente no válido"
+
+msgid "plugins.generic.plauditPreEndorsement.settings.orcidClientSecretError"
+msgstr "Secreto de Cliente no válido"
+
+msgid "plugins.generic.plauditPreEndorsement.settings.title"
+msgstr "Configuración de la API de ORCID"
+
+msgid "plugins.generic.plauditPreEndorsement.settings.description"
+msgstr "Por favor configure el acceso a la API de ORCID para extraer información del perfil de ORCID."
+
+msgid "plugins.generic.plauditPreEndorsement.settings.globallyconfigured"
+msgstr "El host configuró globalmente la API de ORCID. Se han guardado las siguientes credenciales."
+
+msgid "plugins.generic.plauditPreEndorsement.settings.orcidAPIPath"
+msgstr "ORCID API"
+
+msgid "plugins.generic.plauditPreEndorsement.settings.orcidClientId"
+msgstr "ID del Cliente"
+
+msgid "plugins.generic.plauditPreEndorsement.settings.orcidClientSecret"
+msgstr "Secreto del Cliente"
+
+msgid "plugins.generic.plauditPreEndorsement.settings.hidden"
+msgstr "oculto"
+
+msgid "plugins.generic.plauditPreEndorsement.settings.orcidAPIPath.public"
+msgstr "Público"
+
+msgid "plugins.generic.plauditPreEndorsement.settings.orcidAPIPath.publicSandbox"
+msgstr "Sandbox Pública"
+
+msgid "plugins.generic.plauditPreEndorsement.settings.orcidAPIPath.member"
+msgstr "Miembro"
+
+msgid "plugins.generic.plauditPreEndorsement.settings.orcidAPIPath.memberSandbox"
+msgstr "Miembro Sandbox"
