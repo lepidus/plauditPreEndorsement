@@ -30,6 +30,17 @@ class PlauditPreEndorsementHandler extends Handler
         return http_response_code(200);
     }
 
+    public function orcidVerify($args, $request)
+    {
+        $publicationDao = DAORegistry::getDAO('PublicationDAO');
+        $publication = $publicationDao->getById($request->getUserVar('state'));
+
+        if($this->getStatusAuthentication($publication, $request) == AUTH_SUCCESS){
+            $publication->setData('confirmedEndorsement', true);
+            $publicationDao->updateObject($publication);
+        }
+    }
+
     public function getStatusAuthentication($publication, $request)
     {
         if ($request->getUserVar('token') != $publication->getData('endorserEmailToken')) {
