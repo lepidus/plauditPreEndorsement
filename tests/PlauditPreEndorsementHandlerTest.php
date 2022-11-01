@@ -38,11 +38,11 @@ final class PlauditPreEndorsementHandlerTest extends DatabaseTestCase
         return DAOregistry::getDAO('PublicationDAO')->insertObject($this->publication);
     }
 
-    private function mockVerifyEndorserAuth($token, $error = null)
+    private function verifyEndorserAuth($token, $error = null)
     {
         $request = new Request();
         $request->_requestVars = [
-            'state' => $publicationId,
+            'state' => $this->publicationId,
             'token' => $token
         ];
 
@@ -51,12 +51,20 @@ final class PlauditPreEndorsementHandlerTest extends DatabaseTestCase
         }
 
         $handler = new PlauditPreEndorsementHandler();
-        $handler->orcidVerify([], $request);
+        $resultAuth = $handler->getStatusAuthentication($request);
+
+        if($resultAuth == "success") {
+            $handler->saveEndorsementeConfirmation($request);
+        }
+
+        return $resultAuth;
     }
 
     public function testEndorserAuthenticatesCorrectly(): void
     {
-        $this->mockVerifyEndorserAuth($this->endorserToken);
+        $result = $this->verifyEndorserAuth($this->endorserToken);
+        $this->assertEquals("success", $result);
+        
         $publicationFromDatabase = DAOregistry::getDAO('PublicationDAO')->getById($publicationId);
         $this->assertTrue($publicationFromDatabase->getData('confirmedEndorsement'));
     }
@@ -64,7 +72,8 @@ final class PlauditPreEndorsementHandlerTest extends DatabaseTestCase
     public function testEndorserTokenIsDifferent(): void
     {
         $diffToken = md5(microtime() . 'email@email.com');
-        $this->mockVerifyEndorserAuth($diffToken);
+        $result = $this->verifyEndorserAuth($diffToken);
+        $this->assertEquals("invalid_token", $result);
         
         $publicationFromDatabase = DAOregistry::getDAO('PublicationDAO')->getById($publicationId);
         $this->assertFalse($publicationFromDatabase->getData('confirmedEndorsement'));
@@ -72,7 +81,8 @@ final class PlauditPreEndorsementHandlerTest extends DatabaseTestCase
 
     public function testEndorserAutheticationHasAccessDenied(): void
     {
-        $this->mockVerifyEndorserAuth($this->endorserToken, 'access_denied');
+        $result = $this->verifyEndorserAuth($this->endorserToken, 'access_denied');
+        $this->assertEquals("access_denied", $result);
 
         $publicationFromDatabase = DAOregistry::getDAO('PublicationDAO')->getById($publicationId);
         $this->assertFalse($publicationFromDatabase->getData('confirmedEndorsement'));
