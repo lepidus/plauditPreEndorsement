@@ -3,6 +3,11 @@
 import('classes.handler.Handler');
 import('plugins.generic.plauditPreEndorsement.PlauditPreEndorsementPlugin');
 
+define('AUTH_SUCCESS', 'success');
+define('AUTH_INVALID_TOKEN', 'invalid_token');
+define('AUTH_ACCESS_DENIED', 'access_denied');
+
+
 class PlauditPreEndorsementHandler extends Handler
 {
     public function updateEndorser($args, $request)
@@ -23,5 +28,18 @@ class PlauditPreEndorsementHandler extends Handler
         $plugin->sendEmailToEndorser($publication);
 
         return http_response_code(200);
+    }
+
+    public function getStatusAuthentication($publication, $request)
+    {
+        if ($request->getUserVar('token') != $publication->getData('endorserEmailToken')) {
+			return AUTH_INVALID_TOKEN;
+		}
+        else if($request->getUserVar('error') == 'access_denied'){
+            return AUTH_ACCESS_DENIED;
+        }
+        else{
+            return AUTH_SUCCESS;
+        }
     }
 }

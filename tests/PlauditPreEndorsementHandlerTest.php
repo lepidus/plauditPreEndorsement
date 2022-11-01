@@ -1,48 +1,43 @@
 <?php
 
-import('lib.pkp.tests.DatabaseTestCase');
 import('classes.journal.Journal');
 import('classes.publication.Publication');
 import('classes.core.Request');
 import('plugins.generic.plauditPreEndorsement.controllers.PlauditPreEndorsementHandler');
 
-final class PlauditPreEndorsementHandlerTest extends DatabaseTestCase
+use PHPUnit\Framework\TestCase;
+
+final class PlauditPreEndorsementHandlerTest extends TestCase
 {
-    private $submissionId = 1;
-    private $publicationId;
+    private $publication;
     private $endorserEmail = 'endorser@email.com';
     private $endorserName = 'Endorser';
-    private $endorserToken;
+    private $endorserEmailToken;
 
     public function setUp(): void
     {
         parent::setUp();
-        $this->endorserToken = md5(microtime() . $this->endorserEmail);
-        $this->publicationId = $this->createPublication();
+        $this->endorserEmailToken = md5(microtime() . $this->endorserEmail);
+        $this->publication = $this->createPublication();
     }
 
-    protected function getAffectedTables()
-    {
-        return array("publications", "publication_settings");
-    }
-
-    private function createPublication(): int
+    private function createPublication(): Publication
     {
         $this->publication = new Publication();
-        $this->publication->setData('submissionId', $this->submissionId);
+        $this->publication->setData('id', 1);
         $this->publication->setData('endorserEmail', $this->endorserEmail);
         $this->publication->setData('endorserName', $this->endorserName);
-        $this->publication->setData('endorserToken', $this->endorserToken);
+        $this->publication->setData('endorserEmailToken', $this->endorserEmailToken);
         $this->publication->setData('confirmedEndorsement', false);
 
-        return DAOregistry::getDAO('PublicationDAO')->insertObject($this->publication);
+        return $this->publication;
     }
 
-    private function verifyEndorserAuth($token, $error = null)
+    private function verifyEndorserAuth($token, $error = null): string
     {
         $request = new Request();
         $request->_requestVars = [
-            'state' => $this->publicationId,
+            'state' => $this->publication->getId(),
             'token' => $token
         ];
 
@@ -51,40 +46,25 @@ final class PlauditPreEndorsementHandlerTest extends DatabaseTestCase
         }
 
         $handler = new PlauditPreEndorsementHandler();
-        $resultAuth = $handler->getStatusAuthentication($request);
-
-        if($resultAuth == "success") {
-            $handler->saveEndorsementeConfirmation($request);
-        }
-
-        return $resultAuth;
+        return $handler->getStatusAuthentication($this->publication, $request);
     }
 
     public function testEndorserAuthenticatesCorrectly(): void
     {
-        $result = $this->verifyEndorserAuth($this->endorserToken);
-        $this->assertEquals("success", $result);
-        
-        $publicationFromDatabase = DAOregistry::getDAO('PublicationDAO')->getById($publicationId);
-        $this->assertTrue($publicationFromDatabase->getData('confirmedEndorsement'));
+        $result = $this->verifyEndorserAuth($this->endorserEmailToken);
+        $this->assertEquals(AUTH_SUCCESS, $result);  
     }
 
     public function testEndorserTokenIsDifferent(): void
     {
         $diffToken = md5(microtime() . 'email@email.com');
         $result = $this->verifyEndorserAuth($diffToken);
-        $this->assertEquals("invalid_token", $result);
-        
-        $publicationFromDatabase = DAOregistry::getDAO('PublicationDAO')->getById($publicationId);
-        $this->assertFalse($publicationFromDatabase->getData('confirmedEndorsement'));
+        $this->assertEquals(AUTH_INVALID_TOKEN, $result);
     }
 
     public function testEndorserAutheticationHasAccessDenied(): void
     {
-        $result = $this->verifyEndorserAuth($this->endorserToken, 'access_denied');
-        $this->assertEquals("access_denied", $result);
-
-        $publicationFromDatabase = DAOregistry::getDAO('PublicationDAO')->getById($publicationId);
-        $this->assertFalse($publicationFromDatabase->getData('confirmedEndorsement'));
+        $result = $this->verifyEndorserAuth($this->endorserEmailToken, 'access_denied');
+        $this->assertEquals(AUTH_ACCESS_DENIED, $result);
     }
 }
