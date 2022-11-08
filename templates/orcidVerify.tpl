@@ -23,10 +23,16 @@
             </div>
         {else}
             <div class="orcid-failure">
+                {if $orcidAPIError}
+                    {$orcidAPIError}
+                {/if}    
+                
                 {if $denied}
                     {translate key="plugins.generic.plauditPreEndorsement.verify.denied"}
                 {elseif $invalidToken}
                     {translate key="plugins.generic.plauditPreEndorsement.verify.invalidToken"}
+                {elseif $authFailure}
+                    {translate key="plugins.generic.plauditPreEndorsement.verify.authFailure"}
                 {else}
                     {translate key="plugins.generic.plauditPreEndorsement.verify.failure"}
                 {/if}

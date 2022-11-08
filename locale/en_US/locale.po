@@ -83,5 +83,8 @@ msgstr "Your email does not correspond to the one informed as endorser of the su
 msgid "plugins.generic.plauditPreEndorsement.verify.denied"
 msgstr "You denied access to your ORCID record"
 
+msgid "plugins.generic.plauditPreEndorsement.verify.authFailure"
+msgstr "The ORCID authorization link has already been used or is invalid"
+
 msgid "plugins.generic.plauditPreEndorsement.failure.contact"
 msgstr "Please contact the server manager with your name, ORCID iD, and details of your submission"

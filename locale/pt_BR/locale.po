@@ -83,5 +83,8 @@ msgstr "Seu e-mail não corresponde ao informado como endossador da submissão a
 msgid "plugins.generic.plauditPreEndorsement.derify.denied"
 msgstr "Você negou acesso ao seu registro ORCID"
 
+msgid "plugins.generic.plauditPreEndorsement.verify.authFailure"
+msgstr "O link de autorização ORCID já foi utilizado ou é inválido"
+
 msgid "plugins.generic.plauditPreEndorsement.failure.contact"
 msgstr "Por favor, entre em contato com o administrador do servidor, informando seu nome, ORCID ID e detalhes da submissão"
