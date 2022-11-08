@@ -35,10 +35,24 @@ class PlauditPreEndorsementHandler extends Handler
         $publicationDao = DAORegistry::getDAO('PublicationDAO');
         $publication = $publicationDao->getById($request->getUserVar('state'));
 
-        if($this->getStatusAuthentication($publication, $request) == AUTH_SUCCESS){
+        $templateMgr = TemplateManager::getManager($request);
+        $plugin = PluginRegistry::getPlugin('generic', 'plauditpreendorsementplugin');
+		$templatePath = $plugin->getTemplateResource('orcidVerify.tpl');
+
+        $statusAuth = $this->getStatusAuthentication($publication, $request);
+        if($statusAuth == AUTH_SUCCESS){
             $publication->setData('confirmedEndorsement', true);
             $publicationDao->updateObject($publication);
+            $templateMgr->assign('verifySuccess', true);
         }
+        else if($statusAuth == AUTH_INVALID_TOKEN) {
+            $templateMgr->assign('invalidToken', true);
+        }
+        else {
+            $templateMgr->assign('denied', true);
+        }
+
+        $templateMgr->display($templatePath);
     }
 
     public function getStatusAuthentication($publication, $request)

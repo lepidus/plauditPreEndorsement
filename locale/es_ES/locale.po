@@ -67,3 +67,21 @@ msgstr "Miembro"
 
 msgid "plugins.generic.plauditPreEndorsement.settings.orcidAPIPath.memberSandbox"
 msgstr "Miembro Sandbox"
+
+msgid "plugins.generic.plauditPreEndorsement.verify.title"
+msgstr "Autorización ORCID"
+
+msgid "plugins.generic.plauditPreEndorsement.verify.success"
+msgstr "Su ORCID ID ha sido verificado y asociado con el envío como su endosante"
+
+msgid "plugins.generic.plauditPreEndorsement.verify.failure"
+msgstr "Falla"
+
+msgid "plugins.generic.plauditPreEndorsement.verify.invalidToken"
+msgstr "Su correo electrónico no corresponde al informado como endosante de la presentación actualmente"
+
+msgid "plugins.generic.plauditPreEndorsement.verify.denied"
+msgstr "Ha denegado el acceso a su registro ORCID"
+
+msgid "plugins.generic.plauditPreEndorsement.failure.contact"
+msgstr "Comuníquese con el administrador del servidor con su nombre, ORCID ID y detalles de envío"

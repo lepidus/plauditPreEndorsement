@@ -68,3 +68,20 @@ msgstr "Member"
 msgid "plugins.generic.plauditPreEndorsement.settings.orcidAPIPath.memberSandbox"
 msgstr "Member Sandbox"
 
+msgid "plugins.generic.plauditPreEndorsement.verify.title"
+msgstr "ORCID Authorization"
+
+msgid "plugins.generic.plauditPreEndorsement.verify.success"
+msgstr "Your ORCID ID has been verified and successfully associated with the submission as its endorser"
+
+msgid "plugins.generic.plauditPreEndorsement.verify.failure"
+msgstr "Failure"
+
+msgid "plugins.generic.plauditPreEndorsement.verify.invalidToken"
+msgstr "Your email does not correspond to the one informed as endorser of the submission currently"
+
+msgid "plugins.generic.plauditPreEndorsement.verify.denied"
+msgstr "You denied access to your ORCID record"
+
+msgid "plugins.generic.plauditPreEndorsement.failure.contact"
+msgstr "Please contact the server manager with your name, ORCID iD, and details of your submission"
