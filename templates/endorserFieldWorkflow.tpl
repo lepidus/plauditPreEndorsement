@@ -11,19 +11,45 @@
 <div class="pkp_form" id="updateEndorserForm">
     <div class="endorserFieldDiv">
         <label class="label">{translate key="plugins.generic.plauditPreEndorsement.endorserName"}</label>
-        {fbvElement type="text" name="endorserNameWorkflow" id="endorserNameWorkflow" value=$endorserName maxlength="90" size=$fbvStyles.size.MEDIUM}
+        {if not $confirmedEndorsement}
+            {fbvElement type="text" name="endorserNameWorkflow" id="endorserNameWorkflow" value=$endorserName maxlength="90" size=$fbvStyles.size.MEDIUM}
+        {else}
+            <span>{$endorserName}</span>
+        {/if}
     </div>
 
     <div class="endorserFieldDiv">
         <label class="label">{translate key="plugins.generic.plauditPreEndorsement.endorserEmail"}</label>
-        {fbvElement type="email" name="endorserEmailWorkflow" id="endorserEmailWorkflow" value=$endorserEmail maxlength="90" size=$fbvStyles.size.MEDIUM}
+        {if not $endorserEmail}
+            {fbvElement type="email" name="endorserEmailWorkflow" id="endorserEmailWorkflow" value=$endorserEmail maxlength="90" size=$fbvStyles.size.MEDIUM}
+        {else}
+            <span>{$endorserEmail}</span>
+        {/if}
     </div>
 
-    <div class="formButtons">
-        <button id="updateEndorserSubmit" type="button" class="pkp_button submitFormButton">{translate key="common.save"}</button>
-    </div>
+    {if $endorserOrcid}
+        <div class="endorserFieldDiv">
+            <label class="label">{translate key="plugins.generic.plauditPreEndorsement.endorserOrcid"}</label>
+            <span class="orcid"><a href="{$endorserOrcid|escape}" target="_blank">{$endorserOrcid|escape}</a></span>
+        </div>
+    {/if}
+
+    <span>
+        {if $confirmedEndorsement}
+            <div id="endorsementConfirmed">{translate key="plugins.generic.plauditPreEndorsement.endorsementConfirmed"}</div>
+        {else}
+            <div id="endorsementNotConfirmed">{translate key="plugins.generic.plauditPreEndorsement.endorsementNotConfirmed"}</div>
+        {/if}
+    </span>
+
+    {if not $confirmedEndorsement}
+        <div class="formButtons">
+            <button id="updateEndorserSubmit" type="button" class="pkp_button submitFormButton">{translate key="common.save"}</button>
+        </div>
+    {/if}
 </div>
 
+{if not $confirmedEndorsement}
 <script>
     function updateSuccess(){ldelim}
         alert("{translate key="form.saved"}");
@@ -45,3 +71,4 @@
         $('#updateEndorserSubmit').click(makeSubmit);
     {rdelim});
 </script>
+{/if}

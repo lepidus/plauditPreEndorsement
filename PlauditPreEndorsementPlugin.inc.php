@@ -128,6 +128,16 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
             'apiSummary' => true,
             'validation' => ['nullable'],
         ];
+        $schema->properties->{'confirmedEndorsement'} = (object) [
+            'type' => 'boolean',
+            'apiSummary' => true,
+            'validation' => ['nullable'],
+        ];
+        $schema->properties->{'endorserOrcid'} = (object) [
+            'type' => 'string',
+            'apiSummary' => true,
+            'validation' => ['nullable'],
+        ];
         $schema->properties->{'endorserEmailToken'} = (object) [
             'type' => 'string',
             'apiSummary' => true,
@@ -144,9 +154,13 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
 
         $submission = $smarty->get_template_vars('submission');
         $publication = $submission->getCurrentPublication();
-        $smarty->assign('submissionId', $submission->getId());
-        $smarty->assign('endorserName', $publication->getData('endorserName'));
-        $smarty->assign('endorserEmail', $publication->getData('endorserEmail'));
+        $smarty->assign([
+            'submissionId' => $submission->getId(),
+            'endorserName' => $publication->getData('endorserName'),
+            'endorserEmail' => $publication->getData('endorserEmail'),
+            'endorserOrcid' => $publication->getData('endorserOrcid'),
+            'confirmedEndorsement' => $publication->getData('confirmedEndorsement')
+        ]);
 
         $output .= sprintf(
             '<tab id="screeningInfo" label="%s">%s</tab>',
@@ -179,6 +193,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
             ]);
 
             $publication->setData('endorserEmailToken', $endorserEmailToken);
+            $publication->setData('confirmedEndorsement', false);
 			$publicationDao = DAORegistry::getDAO('PublicationDAO');
 			$publicationDao->updateObject($publication);
 			

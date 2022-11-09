@@ -26,6 +26,15 @@ msgstr "Nome do endossador"
 msgid "plugins.generic.plauditPreEndorsement.endorserEmail"
 msgstr "Endereço de e-mail do endossador"
 
+msgid "plugins.generic.plauditPreEndorsement.endorserOrcid"
+msgstr "ORCID do endossador"
+
+msgid "plugins.generic.plauditPreEndorsement.endorsementConfirmed"
+msgstr "O endosso foi confirmado pelo endossador"
+
+msgid "plugins.generic.plauditPreEndorsement.endorsementNotConfirmed"
+msgstr "O endosso não foi confirmado pelo endossador"
+
 msgid "plugins.generic.plauditPreEndorsement.preEndorsement"
 msgstr "Pré-endosso"
 

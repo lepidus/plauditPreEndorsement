@@ -26,6 +26,15 @@ msgstr "Nombre del endosador"
 msgid "plugins.generic.plauditPreEndorsement.endorserEmail"
 msgstr "Dirección de correo electrónico del endosador"
 
+msgid "plugins.generic.plauditPreEndorsement.endorserOrcid"
+msgstr "ORCID del endosador"
+
+msgid "plugins.generic.plauditPreEndorsement.endorsementConfirmed"
+msgstr "El endoso fue confirmado por el endosador"
+
+msgid "plugins.generic.plauditPreEndorsement.endorsementNotConfirmed"
+msgstr "El endoso no fue confirmado por el endosador"
+
 msgid "plugins.generic.plauditPreEndorsement.preEndorsement"
 msgstr "Aprobación previa"
 
