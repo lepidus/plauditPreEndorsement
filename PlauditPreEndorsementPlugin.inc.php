@@ -24,7 +24,7 @@ define('ORCID_API_SCOPE_MEMBER', '/activities/update');
 
 class PlauditPreEndorsementPlugin extends GenericPlugin
 {
-    const HANDLER_COMPONENT = 'plugins.generic.plauditPreEndorsement.controllers.PlauditPreEndorsementHandler';
+    const HANDLER_PAGE = 'pre-endorsement-handler';
     
     public function register($category, $path, $mainContextId = null)
     {
@@ -42,7 +42,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
             HookRegistry::register('submissionsubmitstep4form::execute', array($this, 'step4SendEmailToEndorser'));
             HookRegistry::register('Schema::get::publication', array($this, 'addOurFieldsToPublicationSchema'));
             HookRegistry::register('Template::Workflow::Publication', array($this, 'addEndorserFieldsToWorkflow'));
-            HookRegistry::register('LoadComponentHandler', array($this, 'setupPlauditPreEndorsementHandler'));
+            HookRegistry::register('LoadHandler', array($this, 'setupPlauditPreEndorsementHandler'));
         }
 
         return $success;
@@ -50,11 +50,13 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
 
     public function setupPlauditPreEndorsementHandler($hookName, $params)
     {
-        $component = &$params[0];
-        if ($component == self::HANDLER_COMPONENT) {
-            return true;
-        }
-        return false;
+        $page = $params[0];
+		if ($this->getEnabled() && $page == self::HANDLER_PAGE) {
+			$this->import('classes/PlauditPreEndorsementHandler');
+			define('HANDLER_CLASS', 'PlauditPreEndorsementHandler');
+			return true;
+		}
+		return false;
     }
 
     public function getDisplayName()
@@ -280,7 +282,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
 			$scope = ORCID_API_SCOPE_PUBLIC;
 		}
 		
-        $redirectUrl = $request->getDispatcher()->url($request, ROUTE_PAGE, null, self::HANDLER_COMPONENT,
+        $redirectUrl = $request->getDispatcher()->url($request, ROUTE_PAGE, null, self::HANDLER_PAGE,
 			'orcidVerify', null, $redirectParams);
 
 		return $this->getOauthPath() . 'authorize?' . http_build_query(

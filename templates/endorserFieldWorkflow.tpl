@@ -6,7 +6,7 @@
   *}
 
 <link rel="stylesheet" type="text/css" href="/plugins/generic/plauditPreEndorsement/styles/endorserWorkflowStyleSheet.css">
-{capture assign=updateEndorserEmail}{url router=$smarty.const.ROUTE_COMPONENT component="plugins.generic.plauditPreEndorsement.controllers.PlauditPreEndorsementHandler" op="updateEndorser" escape=false}{/capture}
+{capture assign=updateEndorserEmail}{url router=$smarty.const.ROUTE_COMPONENT component="plugins.generic.plauditPreEndorsement.classes.PlauditPreEndorsementHandler" op="updateEndorser" escape=false}{/capture}
 
 <div class="pkp_form" id="updateEndorserForm">
     <div class="endorserFieldDiv">

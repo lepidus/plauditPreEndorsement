@@ -3,7 +3,7 @@
 import('classes.journal.Journal');
 import('classes.publication.Publication');
 import('classes.core.Request');
-import('plugins.generic.plauditPreEndorsement.controllers.PlauditPreEndorsementHandler');
+import('plugins.generic.plauditPreEndorsement.classes.PlauditPreEndorsementHandler');
 
 use PHPUnit\Framework\TestCase;
 
