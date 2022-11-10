@@ -68,6 +68,19 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
     {
         return __('plugins.generic.plauditPreEndorsement.description');
     }
+    
+    private function writeLog($message, $level) {
+		$fineStamp = date('Y-m-d H:i:s') . substr(microtime(), 1, 4);
+		error_log("$fineStamp $level $message");
+	}
+
+    public function logInfo($message) {
+		$this->writeLog($message, 'INFO');
+	}
+
+    public function logError($message) {
+		$this->writeLog($message, 'ERROR');
+	}
 
     public function addEndorserFieldsToStep3($hookName, $params)
     {
