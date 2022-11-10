@@ -20,7 +20,7 @@
 
     <div class="endorserFieldDiv">
         <label class="label">{translate key="plugins.generic.plauditPreEndorsement.endorserEmail"}</label>
-        {if not $endorserEmail}
+        {if not $confirmedEndorsement}
             {fbvElement type="email" name="endorserEmailWorkflow" id="endorserEmailWorkflow" value=$endorserEmail maxlength="90" size=$fbvStyles.size.MEDIUM}
         {else}
             <span>{$endorserEmail}</span>
