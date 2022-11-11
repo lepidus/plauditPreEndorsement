@@ -77,7 +77,7 @@ class PlauditPreEndorsementHandler extends Handler
     private function requestOrcid($request, $plugin)
     {
         $contextId = $request->getContext()->getId();
-        $orcidRequestUrl = $plugin->getSetting($contextId, 'orcidProfileAPIPath') . OAUTH_TOKEN_URL;
+        $orcidRequestUrl = $plugin->getSetting($contextId, 'orcidAPIPath') . OAUTH_TOKEN_URL;
 
 		$httpClient = Application::get()->getHttpClient();
 		$header = ['Accept' => 'application/json'];
@@ -109,6 +109,8 @@ class PlauditPreEndorsementHandler extends Handler
         $templatePath = $plugin->getTemplateResource('orcidVerify.tpl');
         
         if($logErrorMsg != "") $plugin->logError($logErrorMsg);
+
+        $templateMgr = TemplateManager::getManager($request);
         $templateMgr->assign($dataAssign);
         $templateMgr->display($templatePath);
     }
