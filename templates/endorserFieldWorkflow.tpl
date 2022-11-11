@@ -6,7 +6,6 @@
   *}
 
 <link rel="stylesheet" type="text/css" href="/plugins/generic/plauditPreEndorsement/styles/endorserWorkflowStyleSheet.css">
-{capture assign=updateEndorserEmail}{url router=$smarty.const.ROUTE_COMPONENT component="plugins.generic.plauditPreEndorsement.classes.PlauditPreEndorsementHandler" op="updateEndorser" escape=false}{/capture}
 
 <div class="pkp_form" id="updateEndorserForm">
     <div class="endorserFieldDiv">
@@ -57,7 +56,7 @@
 
     async function makeSubmit(e){ldelim}
         $.post(
-            "{$updateEndorserEmail}",
+            "{$updateEndorserUrl}",
             {ldelim}
                 submissionId: {$submissionId},
                 endorserName: $('input[name=endorserNameWorkflow]').val(),

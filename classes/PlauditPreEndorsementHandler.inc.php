@@ -12,9 +12,9 @@ class PlauditPreEndorsementHandler extends Handler
 {
     public function updateEndorser($args, $request)
     {
-        $submissionId = $args['submissionId'];
-        $endorserName = $args['endorserName'];
-        $endorserEmail = $args['endorserEmail'];
+        $submissionId = $request->getUserVar('submissionId');
+        $endorserName = $request->getUserVar('endorserName');
+        $endorserEmail = $request->getUserVar('endorserEmail');
         
         $submission = DAORegistry::getDAO('SubmissionDAO')->getById($submissionId);
         $publication = $submission->getCurrentPublication();

@@ -169,12 +169,17 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
 
         $submission = $smarty->get_template_vars('submission');
         $publication = $submission->getCurrentPublication();
+
+        $request = PKPApplication::get()->getRequest();
+        $updateEndorserUrl = $request->getDispatcher()->url($request, ROUTE_PAGE, null, self::HANDLER_PAGE,'updateEndorser');
+
         $smarty->assign([
             'submissionId' => $submission->getId(),
             'endorserName' => $publication->getData('endorserName'),
             'endorserEmail' => $publication->getData('endorserEmail'),
             'endorserOrcid' => $publication->getData('endorserOrcid'),
-            'confirmedEndorsement' => $publication->getData('confirmedEndorsement')
+            'confirmedEndorsement' => $publication->getData('confirmedEndorsement'),
+            'updateEndorserUrl' => $updateEndorserUrl
         ]);
 
         $output .= sprintf(
