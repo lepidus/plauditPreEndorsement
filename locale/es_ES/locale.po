@@ -35,6 +35,9 @@ msgstr "El endoso fue confirmado por el endosador"
 msgid "plugins.generic.plauditPreEndorsement.endorsementNotConfirmed"
 msgstr "El endoso no fue confirmado por el endosador"
 
+msgid "plugins.generic.plauditPreEndorsement.endorsementDenied"
+msgstr "El endosador ha denegado el acceso a su registro ORCID"
+
 msgid "plugins.generic.plauditPreEndorsement.preEndorsement"
 msgstr "Aprobación previa"
 

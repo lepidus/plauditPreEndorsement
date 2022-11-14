@@ -127,7 +127,7 @@ class PlauditPreEndorsementHandler extends Handler
     private function setAccessDeniedEndorsement($publication)
     {
         $publication->setData('endorserToken', null);
-        $publication->setData('endorserAccessDenied', Core::getCurrentDate());
+        $publication->setData('endorsementStatus', ENDORSEMENT_STATUS_DENIED);
         $publicationDao = DAORegistry::getDAO('PublicationDAO');
         $publicationDao->updateObject($publication);
     }

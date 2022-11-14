@@ -35,6 +35,9 @@ msgstr "The endorsement has been confirmed by the endorser"
 msgid "plugins.generic.plauditPreEndorsement.endorsementNotConfirmed"
 msgstr "The endorsement has not been confirmed by the endorser"
 
+msgid "plugins.generic.plauditPreEndorsement.endorsementDenied"
+msgstr "The endorser denied access to his/her ORCID registry"
+
 msgid "plugins.generic.plauditPreEndorsement.preEndorsement"
 msgstr "Pre-Endorsement"
 

@@ -22,6 +22,12 @@
 
 #endorsementNotConfirmed {
     padding-left: 0.875rem;
+    border-left: .5rem solid #daa520;
+    color: #daa520;
+}
+
+#endorsementDenied {
+    padding-left: 0.875rem;
     border-left: .5rem solid #d00a6c;
     color: #d00a6c;
 }

@@ -36,6 +36,8 @@
     <span>
         {if $endorsementStatus == ENDORSEMENT_STATUS_CONFIRMED}
             <div id="endorsementConfirmed">{translate key="plugins.generic.plauditPreEndorsement.endorsementConfirmed"}</div>
+        {else if $endorsementStatus == ENDORSEMENT_STATUS_DENIED}
+            <div id="endorsementDenied">{translate key="plugins.generic.plauditPreEndorsement.endorsementDenied"}</div>
         {else}
             <div id="endorsementNotConfirmed">{translate key="plugins.generic.plauditPreEndorsement.endorsementNotConfirmed"}</div>
         {/if}
