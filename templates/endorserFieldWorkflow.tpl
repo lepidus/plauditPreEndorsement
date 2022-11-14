@@ -13,7 +13,7 @@
         {if not $confirmedEndorsement}
             {fbvElement type="text" name="endorserNameWorkflow" id="endorserNameWorkflow" value=$endorserName maxlength="90" size=$fbvStyles.size.MEDIUM}
         {else}
-            <span>{$endorserName}</span>
+            <span>{$endorserName|escape}</span>
         {/if}
     </div>
 
@@ -22,7 +22,7 @@
         {if not $confirmedEndorsement}
             {fbvElement type="email" name="endorserEmailWorkflow" id="endorserEmailWorkflow" value=$endorserEmail maxlength="90" size=$fbvStyles.size.MEDIUM}
         {else}
-            <span>{$endorserEmail}</span>
+            <span>{$endorserEmail|escape}</span>
         {/if}
     </div>
 
