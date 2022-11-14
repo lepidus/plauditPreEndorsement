@@ -13,14 +13,14 @@
 
 import('lib.pkp.classes.plugins.GenericPlugin');
 
-define('ORCID_URL', 'https://orcid.org/');
-define('ORCID_URL_SANDBOX', 'https://sandbox.orcid.org/');
-define('ORCID_API_URL_PUBLIC', 'https://pub.orcid.org/');
-define('ORCID_API_URL_PUBLIC_SANDBOX', 'https://pub.sandbox.orcid.org/');
-define('ORCID_API_URL_MEMBER', 'https://api.orcid.org/');
-define('ORCID_API_URL_MEMBER_SANDBOX', 'https://api.sandbox.orcid.org/');
-define('ORCID_API_SCOPE_PUBLIC', '/authenticate');
-define('ORCID_API_SCOPE_MEMBER', '/activities/update');
+define('ENDORSEMENT_ORCID_URL', 'https://orcid.org/');
+define('ENDORSEMENT_ORCID_URL_SANDBOX', 'https://sandbox.orcid.org/');
+define('ENDORSEMENT_ORCID_API_URL_PUBLIC', 'https://pub.orcid.org/');
+define('ENDORSEMENT_ORCID_API_URL_PUBLIC_SANDBOX', 'https://pub.sandbox.orcid.org/');
+define('ENDORSEMENT_ORCID_API_URL_MEMBER', 'https://api.orcid.org/');
+define('ENDORSEMENT_ORCID_API_URL_MEMBER_SANDBOX', 'https://api.sandbox.orcid.org/');
+define('ENDORSEMENT_ORCID_API_SCOPE_PUBLIC', '/authenticate');
+define('ENDORSEMENT_ORCID_API_SCOPE_MEMBER', '/activities/update');
 
 class PlauditPreEndorsementPlugin extends GenericPlugin
 {
@@ -265,10 +265,10 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
 				$templateMgr = TemplateManager::getManager();
 				$templateMgr->registerPlugin('function', 'plugin_url', array($this, 'smartyPluginUrl'));
 				$apiOptions = [
-					ORCID_API_URL_PUBLIC => 'plugins.generic.plauditPreEndorsement.settings.orcidAPIPath.public',
-					ORCID_API_URL_PUBLIC_SANDBOX => 'plugins.generic.plauditPreEndorsement.settings.orcidAPIPath.publicSandbox',
-					ORCID_API_URL_MEMBER => 'plugins.generic.plauditPreEndorsement.settings.orcidAPIPath.member',
-					ORCID_API_URL_MEMBER_SANDBOX => 'plugins.generic.plauditPreEndorsement.settings.orcidAPIPath.memberSandbox'
+					ENDORSEMENT_ORCID_API_URL_PUBLIC => 'plugins.generic.plauditPreEndorsement.settings.orcidAPIPath.public',
+					ENDORSEMENT_ORCID_API_URL_PUBLIC_SANDBOX => 'plugins.generic.plauditPreEndorsement.settings.orcidAPIPath.publicSandbox',
+					ENDORSEMENT_ORCID_API_URL_MEMBER => 'plugins.generic.plauditPreEndorsement.settings.orcidAPIPath.member',
+					ENDORSEMENT_ORCID_API_URL_MEMBER_SANDBOX => 'plugins.generic.plauditPreEndorsement.settings.orcidAPIPath.memberSandbox'
 				];
 				$templateMgr->assign('orcidApiUrls', $apiOptions);
 
@@ -295,9 +295,9 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
 		$contextId = $context->getId();
 
 		if ($this->isMemberApiEnabled($contextId)) {
-			$scope = ORCID_API_SCOPE_MEMBER;
+			$scope = ENDORSEMENT_ORCID_API_SCOPE_MEMBER;
 		} else {
-			$scope = ORCID_API_SCOPE_PUBLIC;
+			$scope = ENDORSEMENT_ORCID_API_SCOPE_PUBLIC;
 		}
 		
         $redirectUrl = $request->getDispatcher()->url($request, ROUTE_PAGE, null, self::HANDLER_PAGE,
@@ -314,7 +314,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
 
     public function isMemberApiEnabled($contextId) {
 		$apiUrl = $this->getSetting($contextId, 'orcidProfileAPIPath');
-		if ($apiUrl === ORCID_API_URL_MEMBER || $apiUrl === ORCID_API_URL_MEMBER_SANDBOX) {
+		if ($apiUrl === ENDORSEMENT_ORCID_API_URL_MEMBER || $apiUrl === ENDORSEMENT_ORCID_API_URL_MEMBER_SANDBOX) {
 			return true;
 		} else {
 			return false;
@@ -331,10 +331,10 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
 		$contextId = ($context == null) ? 0 : $context->getId();
 
 		$apiPath = $this->getSetting($contextId, 'orcidProfileAPIPath');
-		if ($apiPath == ORCID_API_URL_PUBLIC || $apiPath == ORCID_API_URL_MEMBER) {
-			return ORCID_URL;
+		if ($apiPath == ENDORSEMENT_ORCID_API_URL_PUBLIC || $apiPath == ENDORSEMENT_ORCID_API_URL_MEMBER) {
+			return ENDORSEMENT_ORCID_URL;
 		} else {
-			return ORCID_URL_SANDBOX;
+			return ENDORSEMENT_ORCID_URL_SANDBOX;
 		}
 	}
 }
