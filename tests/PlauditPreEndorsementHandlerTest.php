@@ -3,6 +3,7 @@
 import('classes.journal.Journal');
 import('classes.publication.Publication');
 import('classes.core.Request');
+import('plugins.generic.plauditPreEndorsement.PlauditPreEndorsementPlugin');
 import('plugins.generic.plauditPreEndorsement.classes.PlauditPreEndorsementHandler');
 
 use PHPUnit\Framework\TestCase;
@@ -28,7 +29,7 @@ final class PlauditPreEndorsementHandlerTest extends TestCase
         $this->publication->setData('endorserEmail', $this->endorserEmail);
         $this->publication->setData('endorserName', $this->endorserName);
         $this->publication->setData('endorserEmailToken', $this->endorserEmailToken);
-        $this->publication->setData('confirmedEndorsement', false);
+        $this->publication->setData('endorsementStatus', ENDORSEMENT_STATUS_NOT_CONFIRMED);
 
         return $this->publication;
     }

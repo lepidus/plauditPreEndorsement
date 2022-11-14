@@ -10,19 +10,19 @@
 <div class="pkp_form" id="updateEndorserForm">
     <div class="endorserFieldDiv">
         <label class="label">{translate key="plugins.generic.plauditPreEndorsement.endorserName"}</label>
-        {if not $confirmedEndorsement}
-            {fbvElement type="text" name="endorserNameWorkflow" id="endorserNameWorkflow" value=$endorserName maxlength="90" size=$fbvStyles.size.MEDIUM}
-        {else}
+        {if $endorsementStatus == ENDORSEMENT_STATUS_CONFIRMED}
             <span>{$endorserName|escape}</span>
+        {else}
+            {fbvElement type="text" name="endorserNameWorkflow" id="endorserNameWorkflow" value=$endorserName maxlength="90" size=$fbvStyles.size.MEDIUM}
         {/if}
     </div>
 
     <div class="endorserFieldDiv">
         <label class="label">{translate key="plugins.generic.plauditPreEndorsement.endorserEmail"}</label>
-        {if not $confirmedEndorsement}
-            {fbvElement type="email" name="endorserEmailWorkflow" id="endorserEmailWorkflow" value=$endorserEmail maxlength="90" size=$fbvStyles.size.MEDIUM}
-        {else}
+        {if $endorsementStatus == ENDORSEMENT_STATUS_CONFIRMED}
             <span>{$endorserEmail|escape}</span>
+        {else}
+            {fbvElement type="email" name="endorserEmailWorkflow" id="endorserEmailWorkflow" value=$endorserEmail maxlength="90" size=$fbvStyles.size.MEDIUM}
         {/if}
     </div>
 
@@ -34,21 +34,21 @@
     {/if}
 
     <span>
-        {if $confirmedEndorsement}
+        {if $endorsementStatus == ENDORSEMENT_STATUS_CONFIRMED}
             <div id="endorsementConfirmed">{translate key="plugins.generic.plauditPreEndorsement.endorsementConfirmed"}</div>
         {else}
             <div id="endorsementNotConfirmed">{translate key="plugins.generic.plauditPreEndorsement.endorsementNotConfirmed"}</div>
         {/if}
     </span>
 
-    {if not $confirmedEndorsement}
+    {if $endorsementStatus != ENDORSEMENT_STATUS_CONFIRMED}
         <div class="formButtons">
             <button id="updateEndorserSubmit" type="button" class="pkp_button submitFormButton">{translate key="common.save"}</button>
         </div>
     {/if}
 </div>
 
-{if not $confirmedEndorsement}
+{if $endorsementStatus != ENDORSEMENT_STATUS_CONFIRMED}
 <script>
     function updateSuccess(){ldelim}
         alert("{translate key="form.saved"}");

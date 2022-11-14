@@ -22,6 +22,10 @@ define('ENDORSEMENT_ORCID_API_URL_MEMBER_SANDBOX', 'https://api.sandbox.orcid.or
 define('ENDORSEMENT_ORCID_API_SCOPE_PUBLIC', '/authenticate');
 define('ENDORSEMENT_ORCID_API_SCOPE_MEMBER', '/activities/update');
 
+define('ENDORSEMENT_STATUS_NOT_CONFIRMED', 0);
+define('ENDORSEMENT_STATUS_CONFIRMED', 1);
+
+
 class PlauditPreEndorsementPlugin extends GenericPlugin
 {
     const HANDLER_PAGE = 'pre-endorsement-handler';
@@ -143,8 +147,8 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
             'apiSummary' => true,
             'validation' => ['nullable'],
         ];
-        $schema->properties->{'confirmedEndorsement'} = (object) [
-            'type' => 'boolean',
+        $schema->properties->{'endorsementStatus'} = (object) [
+            'type' => 'integer',
             'apiSummary' => true,
             'validation' => ['nullable'],
         ];
@@ -178,7 +182,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
             'endorserName' => $publication->getData('endorserName'),
             'endorserEmail' => $publication->getData('endorserEmail'),
             'endorserOrcid' => $publication->getData('endorserOrcid'),
-            'confirmedEndorsement' => $publication->getData('confirmedEndorsement'),
+            'endorsementStatus' => $publication->getData('endorsementStatus'),
             'updateEndorserUrl' => $updateEndorserUrl
         ]);
 
@@ -213,7 +217,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
             ]);
 
             $publication->setData('endorserEmailToken', $endorserEmailToken);
-            $publication->setData('confirmedEndorsement', false);
+            $publication->setData('endorsementStatus', ENDORSEMENT_STATUS_NOT_CONFIRMED);
 			$publicationDao = DAORegistry::getDAO('PublicationDAO');
 			$publicationDao->updateObject($publication);
 			

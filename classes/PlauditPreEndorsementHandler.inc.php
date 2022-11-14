@@ -119,7 +119,7 @@ class PlauditPreEndorsementHandler extends Handler
     {
         $publication->setData('endorserEmailToken', null);
         $publication->setData('endorserOrcid', $orcidUri);
-        $publication->setData('confirmedEndorsement', true);
+        $publication->setData('endorsementStatus', ENDORSEMENT_STATUS_CONFIRMED);
         $publicationDao = DAORegistry::getDAO('PublicationDAO');
         $publicationDao->updateObject($publication);
     }
