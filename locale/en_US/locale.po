@@ -26,6 +26,18 @@ msgstr "Endorser's name"
 msgid "plugins.generic.plauditPreEndorsement.endorserEmail"
 msgstr "Endorser's email address"
 
+msgid "plugins.generic.plauditPreEndorsement.endorserOrcid"
+msgstr "Endorser's ORCID"
+
+msgid "plugins.generic.plauditPreEndorsement.endorsementConfirmed"
+msgstr "The endorsement has been confirmed by the endorser"
+
+msgid "plugins.generic.plauditPreEndorsement.endorsementNotConfirmed"
+msgstr "The endorsement has not been confirmed by the endorser"
+
+msgid "plugins.generic.plauditPreEndorsement.endorsementDenied"
+msgstr "The endorser denied access to his/her ORCID registry"
+
 msgid "plugins.generic.plauditPreEndorsement.preEndorsement"
 msgstr "Pre-Endorsement"
 
@@ -68,3 +80,23 @@ msgstr "Member"
 msgid "plugins.generic.plauditPreEndorsement.settings.orcidAPIPath.memberSandbox"
 msgstr "Member Sandbox"
 
+msgid "plugins.generic.plauditPreEndorsement.verify.title"
+msgstr "ORCID Authorization"
+
+msgid "plugins.generic.plauditPreEndorsement.verify.success"
+msgstr "Your ORCID ID has been verified and successfully associated with the submission as its endorser"
+
+msgid "plugins.generic.plauditPreEndorsement.verify.failure"
+msgstr "Failure"
+
+msgid "plugins.generic.plauditPreEndorsement.verify.invalidToken"
+msgstr "Your email does not correspond to the one informed as endorser of the submission currently"
+
+msgid "plugins.generic.plauditPreEndorsement.verify.denied"
+msgstr "You denied access to your ORCID record"
+
+msgid "plugins.generic.plauditPreEndorsement.verify.authFailure"
+msgstr "The ORCID authorization link has already been used or is invalid"
+
+msgid "plugins.generic.plauditPreEndorsement.failure.contact"
+msgstr "Please contact the server manager with your name, ORCID iD, and details of your submission"

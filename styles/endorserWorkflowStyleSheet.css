@@ -1,20 +1,38 @@
 .pkp_form {
-  padding: 0.875rem 1rem;
-  margin: 0 -2rem;
+    padding: 0.875rem 1rem;
+    margin: 0 -2rem;
 }
 
 .endorserFieldDiv {
-  padding: 0.875rem 0.3125rem;
-  width: 100%;
+    padding: 0.875rem 0.3125rem;
+    width: 100%;
 }
 
 .endorserFieldDiv .label {
-  display: block;
-  font-size: 1.125rem;
-  font-weight: 700;
+    display: block;
+    font-size: 1.125rem;
+    font-weight: 700;
+}
+
+#endorsementConfirmed {
+    padding-left: 0.875rem;
+    border-left: .5rem solid #00b28d;
+    color: #00b28d;
+}
+
+#endorsementNotConfirmed {
+    padding-left: 0.875rem;
+    border-left: .5rem solid #daa520;
+    color: #daa520;
+}
+
+#endorsementDenied {
+    padding-left: 0.875rem;
+    border-left: .5rem solid #d00a6c;
+    color: #d00a6c;
 }
 
 .formButtons {
-  text-align: right;
-  margin-top: 2rem;
+    text-align: right;
+    margin-top: 2rem;
 }

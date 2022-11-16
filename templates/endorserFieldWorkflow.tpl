@@ -6,24 +6,51 @@
   *}
 
 <link rel="stylesheet" type="text/css" href="/plugins/generic/plauditPreEndorsement/styles/endorserWorkflowStyleSheet.css">
-{capture assign=updateEndorserEmail}{url router=$smarty.const.ROUTE_COMPONENT component="plugins.generic.plauditPreEndorsement.controllers.PlauditPreEndorsementHandler" op="updateEndorser" escape=false}{/capture}
 
 <div class="pkp_form" id="updateEndorserForm">
     <div class="endorserFieldDiv">
         <label class="label">{translate key="plugins.generic.plauditPreEndorsement.endorserName"}</label>
-        {fbvElement type="text" name="endorserNameWorkflow" id="endorserNameWorkflow" value=$endorserName maxlength="90" size=$fbvStyles.size.MEDIUM}
+        {if $endorsementStatus == ENDORSEMENT_STATUS_CONFIRMED}
+            <span>{$endorserName|escape}</span>
+        {else}
+            {fbvElement type="text" name="endorserNameWorkflow" id="endorserNameWorkflow" value=$endorserName maxlength="90" size=$fbvStyles.size.MEDIUM}
+        {/if}
     </div>
 
     <div class="endorserFieldDiv">
         <label class="label">{translate key="plugins.generic.plauditPreEndorsement.endorserEmail"}</label>
-        {fbvElement type="email" name="endorserEmailWorkflow" id="endorserEmailWorkflow" value=$endorserEmail maxlength="90" size=$fbvStyles.size.MEDIUM}
+        {if $endorsementStatus == ENDORSEMENT_STATUS_CONFIRMED}
+            <span>{$endorserEmail|escape}</span>
+        {else}
+            {fbvElement type="email" name="endorserEmailWorkflow" id="endorserEmailWorkflow" value=$endorserEmail maxlength="90" size=$fbvStyles.size.MEDIUM}
+        {/if}
     </div>
 
-    <div class="formButtons">
-        <button id="updateEndorserSubmit" type="button" class="pkp_button submitFormButton">{translate key="common.save"}</button>
-    </div>
+    {if $endorserOrcid}
+        <div class="endorserFieldDiv">
+            <label class="label">{translate key="plugins.generic.plauditPreEndorsement.endorserOrcid"}</label>
+            <span class="orcid"><a href="{$endorserOrcid|escape}" target="_blank">{$endorserOrcid|escape}</a></span>
+        </div>
+    {/if}
+
+    <span>
+        {if $endorsementStatus == ENDORSEMENT_STATUS_CONFIRMED}
+            <div id="endorsementConfirmed">{translate key="plugins.generic.plauditPreEndorsement.endorsementConfirmed"}</div>
+        {else if $endorsementStatus == ENDORSEMENT_STATUS_DENIED}
+            <div id="endorsementDenied">{translate key="plugins.generic.plauditPreEndorsement.endorsementDenied"}</div>
+        {else}
+            <div id="endorsementNotConfirmed">{translate key="plugins.generic.plauditPreEndorsement.endorsementNotConfirmed"}</div>
+        {/if}
+    </span>
+
+    {if $endorsementStatus != ENDORSEMENT_STATUS_CONFIRMED}
+        <div class="formButtons">
+            <button id="updateEndorserSubmit" type="button" class="pkp_button submitFormButton">{translate key="common.save"}</button>
+        </div>
+    {/if}
 </div>
 
+{if $endorsementStatus != ENDORSEMENT_STATUS_CONFIRMED}
 <script>
     function updateSuccess(){ldelim}
         alert("{translate key="form.saved"}");
@@ -31,7 +58,7 @@
 
     async function makeSubmit(e){ldelim}
         $.post(
-            "{$updateEndorserEmail}",
+            "{$updateEndorserUrl}",
             {ldelim}
                 submissionId: {$submissionId},
                 endorserName: $('input[name=endorserNameWorkflow]').val(),
@@ -45,3 +72,4 @@
         $('#updateEndorserSubmit').click(makeSubmit);
     {rdelim});
 </script>
+{/if}

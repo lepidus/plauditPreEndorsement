@@ -26,6 +26,18 @@ msgstr "Nombre del endosador"
 msgid "plugins.generic.plauditPreEndorsement.endorserEmail"
 msgstr "Dirección de correo electrónico del endosador"
 
+msgid "plugins.generic.plauditPreEndorsement.endorserOrcid"
+msgstr "ORCID del endosador"
+
+msgid "plugins.generic.plauditPreEndorsement.endorsementConfirmed"
+msgstr "El endoso fue confirmado por el endosador"
+
+msgid "plugins.generic.plauditPreEndorsement.endorsementNotConfirmed"
+msgstr "El endoso no fue confirmado por el endosador"
+
+msgid "plugins.generic.plauditPreEndorsement.endorsementDenied"
+msgstr "El endosador ha denegado el acceso a su registro ORCID"
+
 msgid "plugins.generic.plauditPreEndorsement.preEndorsement"
 msgstr "Aprobación previa"
 
@@ -67,3 +79,24 @@ msgstr "Miembro"
 
 msgid "plugins.generic.plauditPreEndorsement.settings.orcidAPIPath.memberSandbox"
 msgstr "Miembro Sandbox"
+
+msgid "plugins.generic.plauditPreEndorsement.verify.title"
+msgstr "Autorización ORCID"
+
+msgid "plugins.generic.plauditPreEndorsement.verify.success"
+msgstr "Su ORCID ID ha sido verificado y asociado con el envío como su endosante"
+
+msgid "plugins.generic.plauditPreEndorsement.verify.failure"
+msgstr "Falla"
+
+msgid "plugins.generic.plauditPreEndorsement.verify.invalidToken"
+msgstr "Su correo electrónico no corresponde al informado como endosante de la presentación actualmente"
+
+msgid "plugins.generic.plauditPreEndorsement.verify.denied"
+msgstr "Ha denegado el acceso a su registro ORCID"
+
+msgid "plugins.generic.plauditPreEndorsement.verify.authFailure"
+msgstr "El enlace de autorización ORCID ya se ha utilizado o no es válido"
+
+msgid "plugins.generic.plauditPreEndorsement.failure.contact"
+msgstr "Comuníquese con el administrador del servidor con su nombre, ORCID ID y detalles de envío"
