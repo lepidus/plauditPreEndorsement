@@ -19,6 +19,13 @@ class PlauditPreEndorsementHandler extends Handler
         $submission = DAORegistry::getDAO('SubmissionDAO')->getById($submissionId);
         $publication = $submission->getCurrentPublication();
 
+        $endorsementIsConfirmed = $publication->getData('endorsementStatus') == ENDORSEMENT_STATUS_CONFIRMED;
+        $isOverridingEndorser = ($endorserName == $publication->getData('endorserName') && $endorserEmail == $publication->getData('endorserEmail'));
+
+        if ($endorsementIsConfirmed || $isOverridingEndorser) {
+            return http_response_code(400);
+        }
+
         $publication->setData('endorserName', $endorserName);
         $publication->setData('endorserEmail', $endorserEmail);
         $publicationDao = DAORegistry::getDAO('PublicationDAO');
