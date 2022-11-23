@@ -25,6 +25,8 @@ define('ENDORSEMENT_ORCID_API_SCOPE_MEMBER', '/activities/update');
 define('ENDORSEMENT_STATUS_NOT_CONFIRMED', 0);
 define('ENDORSEMENT_STATUS_CONFIRMED', 1);
 define('ENDORSEMENT_STATUS_DENIED', 2);
+define('ENDORSEMENT_STATUS_COMPLETED', 3);
+define('ENDORSEMENT_STATUS_COULDNT_COMPLETE', 4);
 
 class PlauditPreEndorsementPlugin extends GenericPlugin
 {
