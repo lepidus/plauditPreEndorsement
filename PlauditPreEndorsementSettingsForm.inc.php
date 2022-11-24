@@ -23,6 +23,7 @@ class PlauditPreEndorsementSettingsForm extends Form
         'orcidAPIPath' => 'string',
         'orcidClientId' => 'string',
         'orcidClientSecret' => 'string',
+        'plauditAPISecret' => 'string'
     );
 
     var $contextId;
@@ -40,13 +41,14 @@ class PlauditPreEndorsementSettingsForm extends Form
         $this->addCheck(new FormValidatorCSRF($this));
 
         if (!$this->plugin->orcidIsGloballyConfigured()) {
-            $this->addCheck(new FormValidator($this, 'orcidAPIPath', 'required', 'plugins.generic.orcidProfile.manager.settings.orcidAPIPathRequired'));
-            $this->addCheck(new FormValidatorCustom($this, 'orcidClientId', 'required', 'plugins.generic.orcidProfile.manager.settings.orcidClientId.error', function ($clientId) {
+            $this->addCheck(new FormValidator($this, 'orcidAPIPath', 'required', 'plugins.generic.plauditPreEndorsement.settings.orcidAPIPathRequired'));
+            $this->addCheck(new FormValidatorCustom($this, 'orcidClientId', 'required', 'plugins.generic.plauditPreEndorsement.settings.orcidClientIdError', function ($clientId) {
                 return $this->validator->validateClientId($clientId);
             }));
-            $this->addCheck(new FormValidatorCustom($this, 'orcidClientSecret', 'required', 'plugins.generic.orcidProfile.manager.settings.orcidClientSecret.error', function ($clientSecret) {
+            $this->addCheck(new FormValidatorCustom($this, 'orcidClientSecret', 'required', 'plugins.generic.plauditPreEndorsement.settings.orcidClientSecretError', function ($clientSecret) {
                 return $this->validator->validateClientSecret($clientSecret);
             }));
+            $this->addCheck(new FormValidator($this, 'plauditAPISecret', 'required', 'plugins.generic.plauditPreEndorsement.settings.plauditAPISecretRequired'));
         }
     }
 

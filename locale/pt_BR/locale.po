@@ -41,11 +41,17 @@ msgstr "O endossador negou acesso ao seu registro ORCID"
 msgid "plugins.generic.plauditPreEndorsement.preEndorsement"
 msgstr "Pré-endosso"
 
+msgid "plugins.generic.plauditPreEndorsement.settings.orcidAPIPathRequired"
+msgstr "Por favor, informe qual API ORCID deve ser utilizada"
+
 msgid "plugins.generic.plauditPreEndorsement.settings.orcidClientIdError"
 msgstr "ID do cliente inválido"
 
 msgid "plugins.generic.plauditPreEndorsement.settings.orcidClientSecretError"
 msgstr "Segredo do cliente inválido"
+
+msgid "plugins.generic.plauditPreEndorsement.settings.plauditAPISecretRequired"
+msgstr "Por favor, informe a chave secreta da API da Plaudit"
 
 msgid "plugins.generic.plauditPreEndorsement.settings.title"
 msgstr "Configurações da API ORCID"
@@ -64,6 +70,9 @@ msgstr "ID do Cliente"
 
 msgid "plugins.generic.plauditPreEndorsement.settings.orcidClientSecret"
 msgstr "Segredo do Cliente"
+
+msgid "plugins.generic.plauditPreEndorsement.settings.plauditAPISecret"
+msgstr "Segredo da API Plaudit"
 
 msgid "plugins.generic.plauditPreEndorsement.settings.hidden"
 msgstr "oculto"
