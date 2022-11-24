@@ -2,8 +2,40 @@
 
 import('plugins.generic.plauditPreEndorsement.PlauditPreEndorsementPlugin');
 
+define('PLAUDIT_API_URL', 'https://scielo-preprints-review.plaudit.pub/api/v1/endorsements');
+
 class PlauditClient
 {
+    private function filterOrcidNumbers(string $orcid): string
+    {
+        preg_match("~\d{4}-\d{4}-\d{4}-\d{3}(\d|X|x)~", $orcid, $matches);
+        return $matches[0];
+    }
+
+    public function requestEndorsementCreation($publication, $secretKey)
+    {
+        $httpClient = Application::get()->getHttpClient();
+        $headers = ['Content-Type' => 'application/json'];
+
+        $orcid = $this->filterOrcidNumbers($publication->getData('endorserOrcid'));
+        $postData = [
+            'secret_key' => $secretKey,
+            'orcid' => $orcid,
+            'doi' => $publication->getData('pub-id::doi')
+        ];
+
+        $response = $httpClient->request(
+            'POST',
+            PLAUDIT_API_URL,
+            [
+                'headers' => $headers,
+                'form_params' => json_encode($postData),
+            ]
+        );
+
+        return $response;
+    }
+
     public function getEndorsementStatusByResponse($response, $publication)
     {
         if ($response->getStatusCode() == 200) {
@@ -12,7 +44,7 @@ class PlauditClient
             $endorsementData = $body['endorsements'][0];
             $responseDoi = $endorsementData['doi'];
             $responseOrcid = $endorsementData['orcid'];
-            
+
             if ($responseDoi == $publication->getData('pub-id::doi') && $responseOrcid == $publication->getData('endorserOrcid')) {
                 return ENDORSEMENT_STATUS_COMPLETED;
             }
