@@ -130,7 +130,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
         $step4Form = $params[0];
         $publication = $step4Form->submission->getCurrentPublication();
 
-        if(!is_null($publication->getData('endorserEmail'))) {
+        if(!empty($publication->getData('endorserEmail'))) {
             $this->sendEmailToEndorser($publication);
         }
     }
@@ -202,7 +202,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
         $endorserName = $publication->getData('endorserName');
         $endorserEmail = $publication->getData('endorserEmail');
 
-        if (!is_null($context) && !is_null($endorserEmail)) {
+        if (!is_null($context) && !empty($endorserEmail)) {
             $emailTemplate = 'ORCID_REQUEST_ENDORSER_AUTHORIZATION';
             $email = $this->getMailTemplate($emailTemplate, $context);
 
