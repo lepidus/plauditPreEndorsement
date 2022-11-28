@@ -12,6 +12,7 @@
  */
 
 import('lib.pkp.classes.plugins.GenericPlugin');
+import('plugins.generic.plauditPreEndorsement.classes.PlauditClient');
 
 define('ENDORSEMENT_ORCID_URL', 'https://orcid.org/');
 define('ENDORSEMENT_ORCID_URL_SANDBOX', 'https://sandbox.orcid.org/');
@@ -48,6 +49,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
             HookRegistry::register('submissionsubmitstep4form::execute', array($this, 'step4SendEmailToEndorser'));
             HookRegistry::register('Schema::get::publication', array($this, 'addOurFieldsToPublicationSchema'));
             HookRegistry::register('Template::Workflow::Publication', array($this, 'addEndorserFieldsToWorkflow'));
+            HookRegistry::register('Publication::publish', array($this, 'sendEndorsementToPlaudit'));
             HookRegistry::register('LoadHandler', array($this, 'setupPlauditPreEndorsementHandler'));
         }
 
@@ -193,6 +195,37 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
             __('plugins.generic.plauditPreEndorsement.preEndorsement'),
             $smarty->fetch($this->getTemplateResource('endorserFieldWorkflow.tpl'))
         );
+    }
+
+    public function sendEndorsementToPlaudit($hookName, $params)
+    {
+        $publication = $params[0];
+        $request = PKPApplication::get()->getRequest();
+        $contextId = $request->getContext()->getId();
+
+        $endorsementStatusOkay = ($publication->getData('endorsementStatus') == ENDORSEMENT_STATUS_CONFIRMED
+            || $publication->getData('endorsementStatus') == ENDORSEMENT_STATUS_COULDNT_COMPLETE);
+        $publicationHasDoi = !empty($publication->getData('pub-id::doi'));
+        $secretKey = $this->getSetting($contextId, 'plauditAPISecret');
+
+        if($endorsementStatusOkay and $publicationHasDoi and !empty($secretKey)) {
+            $plauditClient = new PlauditClient();
+
+            try {
+                $response = $plauditClient->requestEndorsementCreation($publication, $secretKey);
+            }
+            catch (ClientException $exception) {
+                $reason = $exception->getResponse()->getBody(false);
+                $this->logInfo("Error while sending endorsement to Plaudit: $reason");
+                return;
+            }
+
+            $newEndorsementStatus = $plauditClient->getEndorsementStatusByResponse($response);
+
+            $publication->setData('endorsementStatus', $newEndorsementStatus);
+            $publicationDao = DAORegistry::getDAO('PublicationDAO');
+			$publicationDao->updateObject($publication);
+        }
     }
 
     public function sendEmailToEndorser($publication)
