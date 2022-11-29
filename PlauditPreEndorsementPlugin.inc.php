@@ -11,7 +11,10 @@
  * @brief Plaudit Pre-Endorsement Plugin
  */
 
+use GuzzleHttp\Exception\ClientException;
+
 import('lib.pkp.classes.plugins.GenericPlugin');
+import('plugins.generic.plauditPreEndorsement.classes.PlauditClient');
 
 define('ENDORSEMENT_ORCID_URL', 'https://orcid.org/');
 define('ENDORSEMENT_ORCID_URL_SANDBOX', 'https://sandbox.orcid.org/');
@@ -25,6 +28,8 @@ define('ENDORSEMENT_ORCID_API_SCOPE_MEMBER', '/activities/update');
 define('ENDORSEMENT_STATUS_NOT_CONFIRMED', 0);
 define('ENDORSEMENT_STATUS_CONFIRMED', 1);
 define('ENDORSEMENT_STATUS_DENIED', 2);
+define('ENDORSEMENT_STATUS_COMPLETED', 3);
+define('ENDORSEMENT_STATUS_COULDNT_COMPLETE', 4);
 
 class PlauditPreEndorsementPlugin extends GenericPlugin
 {
@@ -46,6 +51,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
             HookRegistry::register('submissionsubmitstep4form::execute', array($this, 'step4SendEmailToEndorser'));
             HookRegistry::register('Schema::get::publication', array($this, 'addOurFieldsToPublicationSchema'));
             HookRegistry::register('Template::Workflow::Publication', array($this, 'addEndorserFieldsToWorkflow'));
+            HookRegistry::register('Publication::publish', array($this, 'sendEndorsementToPlaudit'));
             HookRegistry::register('LoadHandler', array($this, 'setupPlauditPreEndorsementHandler'));
         }
 
@@ -128,7 +134,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
         $step4Form = $params[0];
         $publication = $step4Form->submission->getCurrentPublication();
 
-        if(!is_null($publication->getData('endorserEmail'))) {
+        if(!empty($publication->getData('endorserEmail'))) {
             $this->sendEmailToEndorser($publication);
         }
     }
@@ -166,6 +172,19 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
         return false;
     }
 
+    private function getEndorsementStatusSuffix($endorsementStatus): string
+    {
+        $mapStatusToSuffix = [
+            ENDORSEMENT_STATUS_NOT_CONFIRMED => 'NotConfirmed',
+            ENDORSEMENT_STATUS_CONFIRMED => 'Confirmed',
+            ENDORSEMENT_STATUS_DENIED => 'Denied',
+            ENDORSEMENT_STATUS_COMPLETED => 'Completed',
+            ENDORSEMENT_STATUS_COULDNT_COMPLETE => 'CouldntComplete'
+        ];
+
+        return $mapStatusToSuffix[$endorsementStatus] ?? "";
+    }
+
     function addEndorserFieldsToWorkflow($hookName, $params)
     {
         $smarty = &$params[1];
@@ -177,20 +196,56 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
         $request = PKPApplication::get()->getRequest();
         $updateEndorserUrl = $request->getDispatcher()->url($request, ROUTE_PAGE, null, self::HANDLER_PAGE,'updateEndorser');
 
+        $endorsementStatus = $publication->getData('endorsementStatus');
+        $endorsementStatusSuffix = $this->getEndorsementStatusSuffix($endorsementStatus);
+        $canEditEndorsement = (is_null($endorsementStatus) || $endorsementStatus == ENDORSEMENT_STATUS_NOT_CONFIRMED || $endorsementStatus == ENDORSEMENT_STATUS_DENIED);
+
         $smarty->assign([
             'submissionId' => $submission->getId(),
             'endorserName' => $publication->getData('endorserName'),
             'endorserEmail' => $publication->getData('endorserEmail'),
             'endorserOrcid' => $publication->getData('endorserOrcid'),
-            'endorsementStatus' => $publication->getData('endorsementStatus'),
+            'endorsementStatus' => $endorsementStatus,
+            'endorsementStatusSuffix' => $endorsementStatusSuffix,
+            'canEditEndorsement' => $canEditEndorsement,
             'updateEndorserUrl' => $updateEndorserUrl
         ]);
 
         $output .= sprintf(
-            '<tab id="screeningInfo" label="%s">%s</tab>',
+            '<tab id="plauditPreEndorsement" label="%s">%s</tab>',
             __('plugins.generic.plauditPreEndorsement.preEndorsement'),
             $smarty->fetch($this->getTemplateResource('endorserFieldWorkflow.tpl'))
         );
+    }
+
+    public function sendEndorsementToPlaudit($hookName, $params)
+    {
+        $publication = $params[0];
+        $request = PKPApplication::get()->getRequest();
+        $contextId = $request->getContext()->getId();
+
+        $endorsementStatusOkay = ($publication->getData('endorsementStatus') == ENDORSEMENT_STATUS_CONFIRMED
+            || $publication->getData('endorsementStatus') == ENDORSEMENT_STATUS_COULDNT_COMPLETE);
+        $publicationHasDoi = !empty($publication->getData('pub-id::doi'));
+        $secretKey = $this->getSetting($contextId, 'plauditAPISecret');
+
+        if($endorsementStatusOkay and $publicationHasDoi and !empty($secretKey)) {
+            $plauditClient = new PlauditClient();
+
+            try {
+                $response = $plauditClient->requestEndorsementCreation($publication, $secretKey);
+                $newEndorsementStatus = $plauditClient->getEndorsementStatusByResponse($response);
+            }
+            catch (ClientException $exception) {
+                $reason = $exception->getResponse()->getBody(false);
+                $this->logInfo("Error while sending endorsement to Plaudit: $reason");
+                $newEndorsementStatus = ENDORSEMENT_STATUS_COULDNT_COMPLETE;
+            }
+
+            $publication->setData('endorsementStatus', $newEndorsementStatus);
+            $publicationDao = DAORegistry::getDAO('PublicationDAO');
+			$publicationDao->updateObject($publication);
+        }
     }
 
     public function sendEmailToEndorser($publication)
@@ -200,7 +255,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
         $endorserName = $publication->getData('endorserName');
         $endorserEmail = $publication->getData('endorserEmail');
 
-        if (!is_null($context) && !is_null($endorserEmail)) {
+        if (!is_null($context) && !empty($endorserEmail)) {
             $emailTemplate = 'ORCID_REQUEST_ENDORSER_AUTHORIZATION';
             $email = $this->getMailTemplate($emailTemplate, $context);
 

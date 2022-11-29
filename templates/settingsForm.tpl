@@ -31,14 +31,15 @@ $(function() {ldelim}
                 </p>
                 {/if}
                 {fbvElement id="orcidAPIPath" class="orcidAPIPath" type="select" translate="true" from=$orcidApiUrls selected=$orcidAPIPath required="true" label="plugins.generic.plauditPreEndorsement.settings.orcidAPIPath" disabled=$globallyConfigured}
-                {fbvElement type="text" id="orcidClientId" class="orcidClientId" value=$orcidClientId required="false" label="plugins.generic.plauditPreEndorsement.settings.orcidClientId" maxlength="40" size=$fbvStyles.size.MEDIUM disabled=$globallyConfigured}
+                {fbvElement type="text" id="orcidClientId" class="orcidClientId" value=$orcidClientId required="true" label="plugins.generic.plauditPreEndorsement.settings.orcidClientId" maxlength="40" size=$fbvStyles.size.MEDIUM disabled=$globallyConfigured}
                 {if $globallyConfigured}
                     <p>
                         {translate key="plugins.generic.plauditPreEndorsement.settings.orcidClientSecret"}: <i>{translate key="plugins.generic.plauditPreEndorsement.settings.hidden"}</i>
                     </p>
                 {else}
-                    {fbvElement type="text" id="orcidClientSecret" class="orcidClientSecret" value=$orcidClientSecret required="false" label="plugins.generic.plauditPreEndorsement.settings.orcidClientSecret" maxlength="40" size=$fbvStyles.size.MEDIUM disabled=$globallyConfigured}
+                    {fbvElement type="text" id="orcidClientSecret" class="orcidClientSecret" value=$orcidClientSecret required="true" label="plugins.generic.plauditPreEndorsement.settings.orcidClientSecret" maxlength="40" size=$fbvStyles.size.MEDIUM disabled=$globallyConfigured}
                 {/if}
+                {fbvElement type="text" id="plauditAPISecret" class="plauditAPISecret" value=$plauditAPISecret required="true" label="plugins.generic.plauditPreEndorsement.settings.plauditAPISecret" size=$fbvStyles.size.MEDIUM}
             {/fbvFormSection}
         {/fbvFormArea}
         {fbvFormButtons}
