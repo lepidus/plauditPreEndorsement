@@ -170,6 +170,19 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
         return false;
     }
 
+    private function getEndorsementStatusSuffix($endorsementStatus): string
+    {
+        $mapStatusToSuffix = [
+            ENDORSEMENT_STATUS_NOT_CONFIRMED => 'NotConfirmed',
+            ENDORSEMENT_STATUS_CONFIRMED => 'Confirmed',
+            ENDORSEMENT_STATUS_DENIED => 'Denied',
+            ENDORSEMENT_STATUS_COMPLETED => 'Completed',
+            ENDORSEMENT_STATUS_COULDNT_COMPLETE => 'CouldntComplete'
+        ];
+
+        return $mapStatusToSuffix[$endorsementStatus];
+    }
+
     function addEndorserFieldsToWorkflow($hookName, $params)
     {
         $smarty = &$params[1];
@@ -181,12 +194,16 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
         $request = PKPApplication::get()->getRequest();
         $updateEndorserUrl = $request->getDispatcher()->url($request, ROUTE_PAGE, null, self::HANDLER_PAGE,'updateEndorser');
 
+        $endorsementStatus = $publication->getData('endorsementStatus');
+        $endorsementStatusSuffix = $this->getEndorsementStatusSuffix($endorsementStatus);
+
         $smarty->assign([
             'submissionId' => $submission->getId(),
             'endorserName' => $publication->getData('endorserName'),
             'endorserEmail' => $publication->getData('endorserEmail'),
             'endorserOrcid' => $publication->getData('endorserOrcid'),
-            'endorsementStatus' => $publication->getData('endorsementStatus'),
+            'endorsementStatus' => $endorsementStatus,
+            'endorsementStatusSuffix' => $endorsementStatusSuffix,
             'updateEndorserUrl' => $updateEndorserUrl
         ]);
 

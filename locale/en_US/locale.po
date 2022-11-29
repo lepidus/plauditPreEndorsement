@@ -33,10 +33,16 @@ msgid "plugins.generic.plauditPreEndorsement.endorsementConfirmed"
 msgstr "The endorsement has been confirmed by the endorser"
 
 msgid "plugins.generic.plauditPreEndorsement.endorsementNotConfirmed"
-msgstr "The endorsement has not been confirmed by the endorser"
+msgstr "The endorsement has not yet been confirmed by the endorser"
 
 msgid "plugins.generic.plauditPreEndorsement.endorsementDenied"
 msgstr "The endorser denied access to his/her ORCID registry"
+
+msgid "plugins.generic.plauditPreEndorsement.endorsementCouldntComplete"
+msgstr "The submission of the endorsement to Plaudit could not be completed"
+
+msgid "plugins.generic.plauditPreEndorsement.endorsementCompleted"
+msgstr "The endorsement was successfully sent to Plaudit"
 
 msgid "plugins.generic.plauditPreEndorsement.preEndorsement"
 msgstr "Pre-Endorsement"

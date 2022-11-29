@@ -33,10 +33,16 @@ msgid "plugins.generic.plauditPreEndorsement.endorsementConfirmed"
 msgstr "El endoso fue confirmado por el endosador"
 
 msgid "plugins.generic.plauditPreEndorsement.endorsementNotConfirmed"
-msgstr "El endoso no fue confirmado por el endosador"
+msgstr "El endoso aún no fue confirmado por el endosador"
 
 msgid "plugins.generic.plauditPreEndorsement.endorsementDenied"
 msgstr "El endosador ha denegado el acceso a su registro ORCID"
+
+msgid "plugins.generic.plauditPreEndorsement.endorsementCouldntComplete"
+msgstr "No se pudo completar el envío del endoso a Plaudit"
+
+msgid "plugins.generic.plauditPreEndorsement.endorsementCompleted"
+msgstr "El endoso se ha enviado correctamente a Plaudit"
 
 msgid "plugins.generic.plauditPreEndorsement.preEndorsement"
 msgstr "Aprobación previa"
