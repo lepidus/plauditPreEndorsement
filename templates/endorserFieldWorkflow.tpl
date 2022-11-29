@@ -48,11 +48,11 @@
 
 {if $canEditEndorsement}
 <script>
-    function updateSuccess(){ldelim}
+    function updateEndorsementSuccess(){ldelim}
         alert("{translate key="form.saved"}");
     {rdelim}
 
-    async function makeSubmit(e){ldelim}
+    async function requestUpdateEndorsement(e){ldelim}
         $.post(
             "{$updateEndorserUrl}",
             {ldelim}
@@ -60,12 +60,12 @@
                 endorserName: $('input[name=endorserNameWorkflow]').val(),
                 endorserEmail: $('input[name=endorserEmailWorkflow]').val()
             {rdelim},
-            updateSuccess()
+            updateEndorsementSuccess()
         );
     {rdelim}
 
     $(function(){ldelim}
-        $('#updateEndorserSubmit').click(makeSubmit);
+        $('#updateEndorserSubmit').click(requestUpdateEndorsement);
     {rdelim});
 </script>
 {/if}
