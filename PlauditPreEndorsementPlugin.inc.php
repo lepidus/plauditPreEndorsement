@@ -180,7 +180,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
             ENDORSEMENT_STATUS_COULDNT_COMPLETE => 'CouldntComplete'
         ];
 
-        return $mapStatusToSuffix[$endorsementStatus];
+        return $mapStatusToSuffix[$endorsementStatus] ?? "";
     }
 
     function addEndorserFieldsToWorkflow($hookName, $params)
@@ -208,7 +208,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
         ]);
 
         $output .= sprintf(
-            '<tab id="screeningInfo" label="%s">%s</tab>',
+            '<tab id="plauditPreEndorsement" label="%s">%s</tab>',
             __('plugins.generic.plauditPreEndorsement.preEndorsement'),
             $smarty->fetch($this->getTemplateResource('endorserFieldWorkflow.tpl'))
         );
