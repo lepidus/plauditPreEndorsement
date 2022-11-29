@@ -11,6 +11,8 @@
  * @brief Plaudit Pre-Endorsement Plugin
  */
 
+use GuzzleHttp\Exception\ClientException;
+
 import('lib.pkp.classes.plugins.GenericPlugin');
 import('plugins.generic.plauditPreEndorsement.classes.PlauditClient');
 
@@ -196,6 +198,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
 
         $endorsementStatus = $publication->getData('endorsementStatus');
         $endorsementStatusSuffix = $this->getEndorsementStatusSuffix($endorsementStatus);
+        $canEditEndorsement = (is_null($endorsementStatus) || $endorsementStatus == ENDORSEMENT_STATUS_NOT_CONFIRMED || $endorsementStatus == ENDORSEMENT_STATUS_DENIED);
 
         $smarty->assign([
             'submissionId' => $submission->getId(),
@@ -204,6 +207,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
             'endorserOrcid' => $publication->getData('endorserOrcid'),
             'endorsementStatus' => $endorsementStatus,
             'endorsementStatusSuffix' => $endorsementStatusSuffix,
+            'canEditEndorsement' => $canEditEndorsement,
             'updateEndorserUrl' => $updateEndorserUrl
         ]);
 
@@ -230,14 +234,13 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
 
             try {
                 $response = $plauditClient->requestEndorsementCreation($publication, $secretKey);
+                $newEndorsementStatus = $plauditClient->getEndorsementStatusByResponse($response);
             }
             catch (ClientException $exception) {
                 $reason = $exception->getResponse()->getBody(false);
                 $this->logInfo("Error while sending endorsement to Plaudit: $reason");
-                return;
+                $newEndorsementStatus = ENDORSEMENT_STATUS_COULDNT_COMPLETE;
             }
-
-            $newEndorsementStatus = $plauditClient->getEndorsementStatusByResponse($response);
 
             $publication->setData('endorsementStatus', $newEndorsementStatus);
             $publicationDao = DAORegistry::getDAO('PublicationDAO');

@@ -7,10 +7,6 @@
 
 <link rel="stylesheet" type="text/css" href="/plugins/generic/plauditPreEndorsement/styles/endorserWorkflowStyleSheet.css">
 
-{capture assign="canEditEndorsement"}
-    {is_null($endorsementStatus) or $endorsementStatus == ENDORSEMENT_STATUS_NOT_CONFIRMED or $endorsementStatus == ENDORSEMENT_STATUS_DENIED}
-{/capture}
-
 <div class="pkp_form" id="updateEndorserForm">
     <div class="endorserFieldDiv">
         <label class="label">{translate key="plugins.generic.plauditPreEndorsement.endorserName"}</label>
