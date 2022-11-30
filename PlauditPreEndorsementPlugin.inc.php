@@ -349,9 +349,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
 
     function buildOAuthUrl($redirectParams) {
 		$request = PKPApplication::get()->getRequest();
-		$context = $request->getContext();
-		assert($context != null);
-		$contextId = $context->getId();
+		$contextId = $request->getContext()->getId();
 
 		if ($this->isMemberApiEnabled($contextId)) {
 			$scope = ENDORSEMENT_ORCID_API_SCOPE_MEMBER;
