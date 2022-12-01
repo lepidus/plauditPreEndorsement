@@ -39,7 +39,7 @@ $(function() {ldelim}
                 {else}
                     {fbvElement type="text" id="orcidClientSecret" class="orcidClientSecret" value=$orcidClientSecret required="true" label="plugins.generic.plauditPreEndorsement.settings.orcidClientSecret" maxlength="40" size=$fbvStyles.size.MEDIUM disabled=$globallyConfigured}
                 {/if}
-                {fbvElement type="text" id="plauditAPISecret" class="plauditAPISecret" value=$plauditAPISecret required="true" label="plugins.generic.plauditPreEndorsement.settings.plauditAPISecret" size=$fbvStyles.size.MEDIUM}
+                {fbvElement type="text" id="plauditAPISecret" class="plauditAPISecret" value=$plauditAPISecret label="plugins.generic.plauditPreEndorsement.settings.plauditAPISecret" size=$fbvStyles.size.MEDIUM}
             {/fbvFormSection}
         {/fbvFormArea}
         {fbvFormButtons}

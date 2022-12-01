@@ -48,7 +48,6 @@ class PlauditPreEndorsementSettingsForm extends Form
             $this->addCheck(new FormValidatorCustom($this, 'orcidClientSecret', 'required', 'plugins.generic.plauditPreEndorsement.settings.orcidClientSecretError', function ($clientSecret) {
                 return $this->validator->validateClientSecret($clientSecret);
             }));
-            $this->addCheck(new FormValidator($this, 'plauditAPISecret', 'required', 'plugins.generic.plauditPreEndorsement.settings.plauditAPISecretRequired'));
         }
     }
 
