@@ -234,7 +234,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
 
             try {
                 $response = $plauditClient->requestEndorsementCreation($publication, $secretKey);
-                $newEndorsementStatus = $plauditClient->getEndorsementStatusByResponse($response);
+                $newEndorsementStatus = $plauditClient->getEndorsementStatusByResponse($response, $publication);
             }
             catch (ClientException $exception) {
                 $reason = $exception->getResponse()->getBody(false);

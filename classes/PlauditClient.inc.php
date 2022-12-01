@@ -9,7 +9,7 @@ class PlauditClient
     private function filterOrcidNumbers(string $orcid): string
     {
         preg_match("~\d{4}-\d{4}-\d{4}-\d{3}(\d|X|x)~", $orcid, $matches);
-        return $matches[0];
+        return strtolower($matches[0]);
     }
 
     public function requestEndorsementCreation($publication, $secretKey)
@@ -29,7 +29,7 @@ class PlauditClient
             PLAUDIT_API_URL,
             [
                 'headers' => $headers,
-                'form_params' => json_encode($postData),
+                'json' => $postData,
             ]
         );
 
@@ -39,13 +39,15 @@ class PlauditClient
     public function getEndorsementStatusByResponse($response, $publication)
     {
         if ($response->getStatusCode() == 200) {
-            $body = json_decode($response->getBody(), true);
+            $body = json_decode($response->getBody()->getContents(), true);
 
             $endorsementData = $body['endorsements'][0];
             $responseDoi = $endorsementData['doi'];
             $responseOrcid = $endorsementData['orcid'];
+            $publicationDoi = strtolower($publication->getData('pub-id::doi'));
+            $publicationOrcid = $this->filterOrcidNumbers($publication->getData('endorserOrcid'));
 
-            if ($responseDoi == $publication->getData('pub-id::doi') && $responseOrcid == $publication->getData('endorserOrcid')) {
+            if ($responseDoi ==  $publicationDoi && $responseOrcid == $publicationOrcid) {
                 return ENDORSEMENT_STATUS_COMPLETED;
             }
         }

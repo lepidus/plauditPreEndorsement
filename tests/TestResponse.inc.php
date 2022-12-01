@@ -1,14 +1,16 @@
 <?php
 
-class TestResponse {
+import('plugins.generic.plauditPreEndorsement.tests.TestStream');
 
+class TestResponse
+{
     private $statusCode;
     private $body;
 
-    public function __construct($statusCode, $body)
+    public function __construct($statusCode, $bodyContent)
     {
         $this->statusCode = $statusCode;
-        $this->body = $body;
+        $this->body = new TestStream($bodyContent);
     }
 
     public function getStatusCode()
@@ -21,5 +23,3 @@ class TestResponse {
         return $this->body;
     }
 }
-
-?>
