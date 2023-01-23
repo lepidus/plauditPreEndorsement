@@ -42,7 +42,7 @@ final class PlauditPreEndorsementHandlerTest extends TestCase
             'token' => $token
         ];
 
-        if($error) {
+        if ($error) {
             $request->_requestVars['error'] = $error;
         }
 
@@ -53,7 +53,7 @@ final class PlauditPreEndorsementHandlerTest extends TestCase
     public function testEndorserAuthenticatesCorrectly(): void
     {
         $result = $this->verifyEndorserAuth($this->endorserEmailToken);
-        $this->assertEquals(AUTH_SUCCESS, $result);  
+        $this->assertEquals(AUTH_SUCCESS, $result);
     }
 
     public function testEndorserTokenIsDifferent(): void

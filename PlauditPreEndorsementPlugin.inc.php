@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @file plugins/generic/plaudit/PlauditPreEndorsementPlugin.inc.php 
+ * @file plugins/generic/plaudit/PlauditPreEndorsementPlugin.inc.php
  *
  * Copyright (c) 2022 Lepidus Tecnologia
  * Distributed under the GNU GPL v3. For full terms see LICENSE or https://www.gnu.org/licenses/gpl-3.0.txt.
@@ -33,8 +33,8 @@ define('ENDORSEMENT_STATUS_COULDNT_COMPLETE', 4);
 
 class PlauditPreEndorsementPlugin extends GenericPlugin
 {
-    const HANDLER_PAGE = 'pre-endorsement-handler';
-    
+    public const HANDLER_PAGE = 'pre-endorsement-handler';
+
     public function register($category, $path, $mainContextId = null)
     {
         $success = parent::register($category, $path, $mainContextId);
@@ -61,12 +61,12 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
     public function setupPlauditPreEndorsementHandler($hookName, $params)
     {
         $page = $params[0];
-		if ($this->getEnabled() && $page == self::HANDLER_PAGE) {
-			$this->import('classes/PlauditPreEndorsementHandler');
-			define('HANDLER_CLASS', 'PlauditPreEndorsementHandler');
-			return true;
-		}
-		return false;
+        if ($this->getEnabled() && $page == self::HANDLER_PAGE) {
+            $this->import('classes/PlauditPreEndorsementHandler');
+            define('HANDLER_CLASS', 'PlauditPreEndorsementHandler');
+            return true;
+        }
+        return false;
     }
 
     public function getDisplayName()
@@ -78,19 +78,22 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
     {
         return __('plugins.generic.plauditPreEndorsement.description');
     }
-    
-    private function writeLog($message, $level) {
-		$fineStamp = date('Y-m-d H:i:s') . substr(microtime(), 1, 4);
-		error_log("$fineStamp $level $message");
-	}
 
-    public function logInfo($message) {
-		$this->writeLog($message, 'INFO');
-	}
+    private function writeLog($message, $level)
+    {
+        $fineStamp = date('Y-m-d H:i:s') . substr(microtime(), 1, 4);
+        error_log("$fineStamp $level $message");
+    }
 
-    public function logError($message) {
-		$this->writeLog($message, 'ERROR');
-	}
+    public function logInfo($message)
+    {
+        $this->writeLog($message, 'INFO');
+    }
+
+    public function logError($message)
+    {
+        $this->writeLog($message, 'ERROR');
+    }
 
     public function addEndorserFieldsToStep3($hookName, $params)
     {
@@ -128,13 +131,13 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
         $publicationDao = DAORegistry::getDAO('PublicationDAO');
         $publicationDao->updateObject($publication);
     }
-    
+
     public function step4SendEmailToEndorser($hookName, $params)
     {
         $step4Form = $params[0];
         $publication = $step4Form->submission->getCurrentPublication();
 
-        if(!empty($publication->getData('endorserEmail'))) {
+        if (!empty($publication->getData('endorserEmail'))) {
             $this->sendEmailToEndorser($publication);
         }
     }
@@ -185,7 +188,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
         return $mapStatusToSuffix[$endorsementStatus] ?? "";
     }
 
-    function addEndorserFieldsToWorkflow($hookName, $params)
+    public function addEndorserFieldsToWorkflow($hookName, $params)
     {
         $smarty = &$params[1];
         $output = &$params[2];
@@ -194,7 +197,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
         $publication = $submission->getCurrentPublication();
 
         $request = PKPApplication::get()->getRequest();
-        $updateEndorserUrl = $request->getDispatcher()->url($request, ROUTE_PAGE, null, self::HANDLER_PAGE,'updateEndorser');
+        $updateEndorserUrl = $request->getDispatcher()->url($request, ROUTE_PAGE, null, self::HANDLER_PAGE, 'updateEndorser');
 
         $endorsementStatus = $publication->getData('endorsementStatus');
         $endorsementStatusSuffix = $this->getEndorsementStatusSuffix($endorsementStatus);
@@ -229,14 +232,13 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
         $publicationHasDoi = !empty($publication->getData('pub-id::doi'));
         $secretKey = $this->getSetting($contextId, 'plauditAPISecret');
 
-        if($endorsementStatusOkay and $publicationHasDoi and !empty($secretKey)) {
+        if ($endorsementStatusOkay and $publicationHasDoi and !empty($secretKey)) {
             $plauditClient = new PlauditClient();
 
             try {
                 $response = $plauditClient->requestEndorsementCreation($publication, $secretKey);
                 $newEndorsementStatus = $plauditClient->getEndorsementStatusByResponse($response, $publication);
-            }
-            catch (ClientException $exception) {
+            } catch (ClientException $exception) {
                 $reason = $exception->getResponse()->getBody(false);
                 $this->logInfo("Error while sending endorsement to Plaudit: $reason");
                 $newEndorsementStatus = ENDORSEMENT_STATUS_COULDNT_COMPLETE;
@@ -244,7 +246,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
 
             $publication->setData('endorsementStatus', $newEndorsementStatus);
             $publicationDao = DAORegistry::getDAO('PublicationDAO');
-			$publicationDao->updateObject($publication);
+            $publicationDao->updateObject($publication);
         }
     }
 
@@ -273,13 +275,12 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
 
             $publication->setData('endorserEmailToken', $endorserEmailToken);
             $publication->setData('endorsementStatus', ENDORSEMENT_STATUS_NOT_CONFIRMED);
-			$publicationDao = DAORegistry::getDAO('PublicationDAO');
-			$publicationDao->updateObject($publication);
-			
+            $publicationDao = DAORegistry::getDAO('PublicationDAO');
+            $publicationDao->updateObject($publication);
         }
     }
 
-    function getInstallEmailTemplatesFile()
+    public function getInstallEmailTemplatesFile()
     {
         return $this->getPluginPath() . '/emailTemplates.xml';
     }
@@ -290,7 +291,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
         return new MailTemplate($emailKey, null, $context, false);
     }
 
-    function orcidIsGloballyConfigured()
+    public function orcidIsGloballyConfigured()
     {
         $apiUrl = Config::getVar('orcid', 'api_url');
         $clientId = Config::getVar('orcid', 'client_id');
@@ -299,99 +300,112 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
             isset($clientSecret) && trim($clientSecret);
     }
 
-    function getActions($request, $actionArgs) {
-		$router = $request->getRouter();
-		import('lib.pkp.classes.linkAction.request.AjaxModal');
-		return array_merge(
-			array(
-				new LinkAction(
-					'settings',
-					new AjaxModal($router->url($request, null, null, 'manage', null, array('verb' => 'settings', 'plugin' => $this->getName(), 'category' => 'generic')), $this->getDisplayName()),
-					__('manager.plugins.settings'),
-					null
-				),
-			),
-			parent::getActions($request, $actionArgs)
-		);
-	}
+    public function getActions($request, $actionArgs)
+    {
+        $router = $request->getRouter();
+        import('lib.pkp.classes.linkAction.request.AjaxModal');
+        return array_merge(
+            array(
+                new LinkAction(
+                    'settings',
+                    new AjaxModal($router->url($request, null, null, 'manage', null, array('verb' => 'settings', 'plugin' => $this->getName(), 'category' => 'generic')), $this->getDisplayName()),
+                    __('manager.plugins.settings'),
+                    null
+                ),
+            ),
+            parent::getActions($request, $actionArgs)
+        );
+    }
 
-    function manage($args, $request) {
-		$context = $request->getContext();
-		$contextId = ($context == null) ? 0 : $context->getId();
+    public function manage($args, $request)
+    {
+        $context = $request->getContext();
+        $contextId = ($context == null) ? 0 : $context->getId();
 
-		switch ($request->getUserVar('verb')) {
-			case 'settings':
-				$templateMgr = TemplateManager::getManager();
-				$templateMgr->registerPlugin('function', 'plugin_url', array($this, 'smartyPluginUrl'));
-				$apiOptions = [
-					ENDORSEMENT_ORCID_API_URL_PUBLIC => 'plugins.generic.plauditPreEndorsement.settings.orcidAPIPath.public',
-					ENDORSEMENT_ORCID_API_URL_PUBLIC_SANDBOX => 'plugins.generic.plauditPreEndorsement.settings.orcidAPIPath.publicSandbox',
-					ENDORSEMENT_ORCID_API_URL_MEMBER => 'plugins.generic.plauditPreEndorsement.settings.orcidAPIPath.member',
-					ENDORSEMENT_ORCID_API_URL_MEMBER_SANDBOX => 'plugins.generic.plauditPreEndorsement.settings.orcidAPIPath.memberSandbox'
-				];
-				$templateMgr->assign('orcidApiUrls', $apiOptions);
+        switch ($request->getUserVar('verb')) {
+            case 'settings':
+                $templateMgr = TemplateManager::getManager();
+                $templateMgr->registerPlugin('function', 'plugin_url', array($this, 'smartyPluginUrl'));
+                $apiOptions = [
+                    ENDORSEMENT_ORCID_API_URL_PUBLIC => 'plugins.generic.plauditPreEndorsement.settings.orcidAPIPath.public',
+                    ENDORSEMENT_ORCID_API_URL_PUBLIC_SANDBOX => 'plugins.generic.plauditPreEndorsement.settings.orcidAPIPath.publicSandbox',
+                    ENDORSEMENT_ORCID_API_URL_MEMBER => 'plugins.generic.plauditPreEndorsement.settings.orcidAPIPath.member',
+                    ENDORSEMENT_ORCID_API_URL_MEMBER_SANDBOX => 'plugins.generic.plauditPreEndorsement.settings.orcidAPIPath.memberSandbox'
+                ];
+                $templateMgr->assign('orcidApiUrls', $apiOptions);
 
-				$this->import('PlauditPreEndorsementSettingsForm');
-				$form = new PlauditPreEndorsementSettingsForm($this, $contextId);
-				if ($request->getUserVar('save')) {
-					$form->readInputData();
-					if ($form->validate()) {
-						$form->execute();
-						return new JSONMessage(true);
-					}
-				} else {
-					$form->initData();
-				}
-				return new JSONMessage(true, $form->fetch($request));
-		}
-		return parent::manage($args, $request);
-	}
+                $this->import('PlauditPreEndorsementSettingsForm');
+                $form = new PlauditPreEndorsementSettingsForm($this, $contextId);
+                if ($request->getUserVar('save')) {
+                    $form->readInputData();
+                    if ($form->validate()) {
+                        $form->execute();
+                        return new JSONMessage(true);
+                    }
+                } else {
+                    $form->initData();
+                }
+                return new JSONMessage(true, $form->fetch($request));
+        }
+        return parent::manage($args, $request);
+    }
 
-    function buildOAuthUrl($redirectParams) {
-		$request = PKPApplication::get()->getRequest();
-		$contextId = $request->getContext()->getId();
+    public function buildOAuthUrl($redirectParams)
+    {
+        $request = PKPApplication::get()->getRequest();
+        $contextId = $request->getContext()->getId();
 
-		if ($this->isMemberApiEnabled($contextId)) {
-			$scope = ENDORSEMENT_ORCID_API_SCOPE_MEMBER;
-		} else {
-			$scope = ENDORSEMENT_ORCID_API_SCOPE_PUBLIC;
-		}
-		
-        $redirectUrl = $request->getDispatcher()->url($request, ROUTE_PAGE, null, self::HANDLER_PAGE,
-			'orcidVerify', null, $redirectParams);
+        if ($this->isMemberApiEnabled($contextId)) {
+            $scope = ENDORSEMENT_ORCID_API_SCOPE_MEMBER;
+        } else {
+            $scope = ENDORSEMENT_ORCID_API_SCOPE_PUBLIC;
+        }
 
-		return $this->getOauthPath() . 'authorize?' . http_build_query(
-				array(
-					'client_id' => $this->getSetting($contextId, 'orcidClientId'),
-					'response_type' => 'code',
-					'scope' => $scope,
-					'redirect_uri' => $redirectUrl)
-			);
-	}
+        $redirectUrl = $request->getDispatcher()->url(
+            $request,
+            ROUTE_PAGE,
+            null,
+            self::HANDLER_PAGE,
+            'orcidVerify',
+            null,
+            $redirectParams
+        );
 
-    public function isMemberApiEnabled($contextId) {
-		$apiUrl = $this->getSetting($contextId, 'orcidProfileAPIPath');
-		if ($apiUrl === ENDORSEMENT_ORCID_API_URL_MEMBER || $apiUrl === ENDORSEMENT_ORCID_API_URL_MEMBER_SANDBOX) {
-			return true;
-		} else {
-			return false;
-		}
-	}
+        return $this->getOauthPath() . 'authorize?' . http_build_query(
+            array(
+                'client_id' => $this->getSetting($contextId, 'orcidClientId'),
+                'response_type' => 'code',
+                'scope' => $scope,
+                'redirect_uri' => $redirectUrl)
+        );
+    }
 
-    function getOauthPath() {
-		return $this->getOrcidUrl() . 'oauth/';
-	}
+    public function isMemberApiEnabled($contextId)
+    {
+        $apiUrl = $this->getSetting($contextId, 'orcidProfileAPIPath');
+        if ($apiUrl === ENDORSEMENT_ORCID_API_URL_MEMBER || $apiUrl === ENDORSEMENT_ORCID_API_URL_MEMBER_SANDBOX) {
+            return true;
+        } else {
+            return false;
+        }
+    }
 
-    function getOrcidUrl() {
-		$request = Application::get()->getRequest();
-		$context = $request->getContext();
-		$contextId = ($context == null) ? 0 : $context->getId();
+    public function getOauthPath()
+    {
+        return $this->getOrcidUrl() . 'oauth/';
+    }
 
-		$apiPath = $this->getSetting($contextId, 'orcidProfileAPIPath');
-		if ($apiPath == ENDORSEMENT_ORCID_API_URL_PUBLIC || $apiPath == ENDORSEMENT_ORCID_API_URL_MEMBER) {
-			return ENDORSEMENT_ORCID_URL;
-		} else {
-			return ENDORSEMENT_ORCID_URL_SANDBOX;
-		}
-	}
+    public function getOrcidUrl()
+    {
+        $request = Application::get()->getRequest();
+        $context = $request->getContext();
+        $contextId = ($context == null) ? 0 : $context->getId();
+
+        $apiPath = $this->getSetting($contextId, 'orcidProfileAPIPath');
+        if ($apiPath == ENDORSEMENT_ORCID_API_URL_PUBLIC || $apiPath == ENDORSEMENT_ORCID_API_URL_MEMBER) {
+            return ENDORSEMENT_ORCID_URL;
+        } else {
+            return ENDORSEMENT_ORCID_URL_SANDBOX;
+        }
+    }
 }

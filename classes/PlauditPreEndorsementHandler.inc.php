@@ -15,7 +15,7 @@ class PlauditPreEndorsementHandler extends Handler
         $submissionId = $request->getUserVar('submissionId');
         $endorserName = $request->getUserVar('endorserName');
         $endorserEmail = $request->getUserVar('endorserEmail');
-        
+
         $submission = DAORegistry::getDAO('SubmissionDAO')->getById($submissionId);
         $publication = $submission->getCurrentPublication();
 
@@ -45,37 +45,34 @@ class PlauditPreEndorsementHandler extends Handler
         $plugin = PluginRegistry::getPlugin('generic', 'plauditpreendorsementplugin');
 
         $statusAuth = $this->getStatusAuthentication($publication, $request);
-        if($statusAuth == AUTH_INVALID_TOKEN) {
+        if ($statusAuth == AUTH_INVALID_TOKEN) {
             $this->logErrorAndDisplayTemplate($request, 'PlauditPreEndorsementHandler::orcidverify - Token from auth is invalid', ['verifySuccess' => false, 'invalidToken' => true]);
-			return;
-        }
-        else if($statusAuth == AUTH_ACCESS_DENIED) {
+            return;
+        } elseif ($statusAuth == AUTH_ACCESS_DENIED) {
             $this->setAccessDeniedEndorsement($publication);
             $logErrorMsg = 'PlauditPreEndorsementHandler::orcidverify - ORCID access was denied: '. $request->getUserVar('error_description');
             $this->logErrorAndDisplayTemplate($request, $logErrorMsg, ['verifySuccess' => false, 'denied' => true]);
-			return;
+            return;
         }
 
-		try {
+        try {
             $response = $this->requestOrcid($request, $plugin);
-			$responseJson = json_decode($response->getBody(), true);
-			$plugin->logInfo('Response body: ' . print_r($responseJson, true));
-		}
-        catch (GuzzleHttp\Exception\RequestException  $exception) {
+            $responseJson = json_decode($response->getBody(), true);
+            $plugin->logInfo('Response body: ' . print_r($responseJson, true));
+        } catch (GuzzleHttp\Exception\RequestException  $exception) {
             $this->logErrorAndDisplayTemplate($request, "Publication fail:  " . $exception->getMessage(), ['orcidAPIError' => $exception->getMessage(), 'verifySuccess' => false]);
             return;
-		}
+        }
 
         $contextId = $request->getContext()->getId();
         $isSandBox = $plugin->getSetting($contextId, 'orcidProfileAPIPath') == ENDORSEMENT_ORCID_API_URL_MEMBER_SANDBOX ||
-			$plugin->getSetting($contextId, 'orcidProfileAPIPath') == ENDORSEMENT_ORCID_API_URL_PUBLIC_SANDBOX;
+            $plugin->getSetting($contextId, 'orcidProfileAPIPath') == ENDORSEMENT_ORCID_API_URL_PUBLIC_SANDBOX;
         $orcidUri = ($isSandBox ? ENDORSEMENT_ORCID_URL_SANDBOX : ENDORSEMENT_ORCID_URL) . $responseJson['orcid'];
 
-		if ($response->getStatusCode() == 200 && strlen($responseJson['orcid']) > 0) {
+        if ($response->getStatusCode() == 200 && strlen($responseJson['orcid']) > 0) {
             $this->setConfirmedEndorsementPublication($publication, $orcidUri);
             $this->logErrorAndDisplayTemplate($request, '', ['verifySuccess' => true, 'orcid' => $orcidUri]);
-        }
-        else {
+        } else {
             $logErrorMsg = 'PlauditPreEndorsementHandler::orcidverify - Unexpected response: ' . $response->getStatusCode();
             $this->logErrorAndDisplayTemplate($request, $logErrorMsg, ['authFailure'=> true, 'orcidAPIError' => $response->getReasonPhrase(), 'verifySuccess' => true]);
         }
@@ -86,18 +83,18 @@ class PlauditPreEndorsementHandler extends Handler
         $contextId = $request->getContext()->getId();
         $orcidRequestUrl = $plugin->getSetting($contextId, 'orcidAPIPath') . OAUTH_TOKEN_URL;
 
-		$httpClient = Application::get()->getHttpClient();
-		$header = ['Accept' => 'application/json'];
-		$postData = [
-			'code' => $request->getUserVar('code'),
-			'grant_type' => 'authorization_code',
-			'client_id' => $plugin->getSetting($contextId, 'orcidClientId'),
-			'client_secret' => $plugin->getSetting($contextId, 'orcidClientSecret')
-		];
+        $httpClient = Application::get()->getHttpClient();
+        $header = ['Accept' => 'application/json'];
+        $postData = [
+            'code' => $request->getUserVar('code'),
+            'grant_type' => 'authorization_code',
+            'client_id' => $plugin->getSetting($contextId, 'orcidClientId'),
+            'client_secret' => $plugin->getSetting($contextId, 'orcidClientSecret')
+        ];
 
-		$plugin->logInfo('POST ' . $orcidRequestUrl);
-		$plugin->logInfo('Request header: ' . var_export($header, true));
-		$plugin->logInfo('Request body: ' . http_build_query($postData));
+        $plugin->logInfo('POST ' . $orcidRequestUrl);
+        $plugin->logInfo('Request header: ' . var_export($header, true));
+        $plugin->logInfo('Request body: ' . http_build_query($postData));
         $response = $httpClient->request(
             'POST',
             $orcidRequestUrl,
@@ -114,8 +111,10 @@ class PlauditPreEndorsementHandler extends Handler
     {
         $plugin = PluginRegistry::getPlugin('generic', 'plauditpreendorsementplugin');
         $templatePath = $plugin->getTemplateResource('orcidVerify.tpl');
-        
-        if($logErrorMsg != "") $plugin->logError($logErrorMsg);
+
+        if ($logErrorMsg != "") {
+            $plugin->logError($logErrorMsg);
+        }
 
         $templateMgr = TemplateManager::getManager($request);
         $templateMgr->assign($dataAssign);
@@ -142,12 +141,10 @@ class PlauditPreEndorsementHandler extends Handler
     public function getStatusAuthentication($publication, $request)
     {
         if ($request->getUserVar('token') != $publication->getData('endorserEmailToken')) {
-			return AUTH_INVALID_TOKEN;
-		}
-        else if($request->getUserVar('error') == 'access_denied'){
+            return AUTH_INVALID_TOKEN;
+        } elseif ($request->getUserVar('error') == 'access_denied') {
             return AUTH_ACCESS_DENIED;
-        }
-        else{
+        } else {
             return AUTH_SUCCESS;
         }
     }

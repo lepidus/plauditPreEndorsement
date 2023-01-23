@@ -18,19 +18,18 @@ import('plugins.generic.plauditPreEndorsement.classes.OrcidCredentialsValidator'
 
 class PlauditPreEndorsementSettingsForm extends Form
 {
-
-    const CONFIG_VARS = array(
+    public const CONFIG_VARS = array(
         'orcidAPIPath' => 'string',
         'orcidClientId' => 'string',
         'orcidClientSecret' => 'string',
         'plauditAPISecret' => 'string'
     );
 
-    var $contextId;
-    var $plugin;
-    var $validator;
+    public $contextId;
+    public $plugin;
+    public $validator;
 
-    function __construct($plugin, $contextId)
+    public function __construct($plugin, $contextId)
     {
         $this->contextId = $contextId;
         $this->plugin = $plugin;
@@ -51,7 +50,7 @@ class PlauditPreEndorsementSettingsForm extends Form
         }
     }
 
-    function initData()
+    public function initData()
     {
         $contextId = $this->contextId;
         $plugin = &$this->plugin;
@@ -61,12 +60,12 @@ class PlauditPreEndorsementSettingsForm extends Form
         }
     }
 
-    function readInputData()
+    public function readInputData()
     {
         $this->readUserVars(array_keys(self::CONFIG_VARS));
     }
 
-    function fetch($request, $template = null, $display = false)
+    public function fetch($request, $template = null, $display = false)
     {
         $templateMgr = TemplateManager::getManager($request);
         $templateMgr->assign('globallyConfigured', $this->plugin->orcidIsGloballyConfigured());
@@ -75,7 +74,7 @@ class PlauditPreEndorsementSettingsForm extends Form
         return parent::fetch($request, $template, $display);
     }
 
-    function execute(...$functionArgs)
+    public function execute(...$functionArgs)
     {
         $plugin = &$this->plugin;
         $contextId = $this->contextId;

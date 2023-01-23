@@ -2,7 +2,6 @@
 
 class OrcidCredentialsValidator
 {
-
     public function validateClientId($str): bool
     {
         $valid = false;
