@@ -20,6 +20,9 @@ msgstr "Esse plugin permite aos autores realizar o pré-endosso das suas submiss
 msgid "plugins.generic.plauditPreEndorsement.endorsement"
 msgstr "Endosso"
 
+msgid "plugins.generic.plauditPreEndorsement.endorsement.description"
+msgstr "Você possui o endosso de um(a) pesquisador(a) experiente na área de conhecimento do manuscrito? Em caso positivo, informe o nome e endereço e-mail do(a) pesquisador(a) endossador(a). Endossos podem acelerar significativamente o processo de moderação. O endosso não pode ser dado por um dos autores do manuscrito."
+
 msgid "plugins.generic.plauditPreEndorsement.endorserName"
 msgstr "Nome do endossador"
 
@@ -107,7 +110,7 @@ msgstr "Falha"
 msgid "plugins.generic.plauditPreEndorsement.verify.invalidToken"
 msgstr "Seu e-mail não corresponde ao informado como endossador da submissão atualmente"
 
-msgid "plugins.generic.plauditPreEndorsement.derify.denied"
+msgid "plugins.generic.plauditPreEndorsement.verify.denied"
 msgstr "Você negou acesso ao seu registro ORCID"
 
 msgid "plugins.generic.plauditPreEndorsement.verify.authFailure"
