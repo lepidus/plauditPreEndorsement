@@ -382,7 +382,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
 
     public function isMemberApiEnabled($contextId)
     {
-        $apiUrl = $this->getSetting($contextId, 'orcidProfileAPIPath');
+        $apiUrl = $this->getSetting($contextId, 'orcidAPIPath');
         if ($apiUrl === ENDORSEMENT_ORCID_API_URL_MEMBER || $apiUrl === ENDORSEMENT_ORCID_API_URL_MEMBER_SANDBOX) {
             return true;
         } else {
@@ -401,7 +401,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
         $context = $request->getContext();
         $contextId = ($context == null) ? 0 : $context->getId();
 
-        $apiPath = $this->getSetting($contextId, 'orcidProfileAPIPath');
+        $apiPath = $this->getSetting($contextId, 'orcidAPIPath');
         if ($apiPath == ENDORSEMENT_ORCID_API_URL_PUBLIC || $apiPath == ENDORSEMENT_ORCID_API_URL_MEMBER) {
             return ENDORSEMENT_ORCID_URL;
         } else {

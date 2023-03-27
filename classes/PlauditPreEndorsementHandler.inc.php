@@ -65,8 +65,8 @@ class PlauditPreEndorsementHandler extends Handler
         }
 
         $contextId = $request->getContext()->getId();
-        $isSandBox = $plugin->getSetting($contextId, 'orcidProfileAPIPath') == ENDORSEMENT_ORCID_API_URL_MEMBER_SANDBOX ||
-            $plugin->getSetting($contextId, 'orcidProfileAPIPath') == ENDORSEMENT_ORCID_API_URL_PUBLIC_SANDBOX;
+        $isSandBox = $plugin->getSetting($contextId, 'orcidAPIPath') == ENDORSEMENT_ORCID_API_URL_MEMBER_SANDBOX ||
+            $plugin->getSetting($contextId, 'orcidAPIPath') == ENDORSEMENT_ORCID_API_URL_PUBLIC_SANDBOX;
         $orcidUri = ($isSandBox ? ENDORSEMENT_ORCID_URL_SANDBOX : ENDORSEMENT_ORCID_URL) . $responseJson['orcid'];
 
         if ($response->getStatusCode() == 200 && strlen($responseJson['orcid']) > 0) {
