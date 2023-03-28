@@ -24,22 +24,22 @@ msgid "plugins.generic.plauditPreEndorsement.endorsement.description"
 msgstr "Você possui o endosso de um(a) pesquisador(a) experiente na área de conhecimento do manuscrito? Em caso positivo, informe o nome e endereço e-mail do(a) pesquisador(a) endossador(a). Endossos podem acelerar significativamente o processo de moderação. O endosso não pode ser dado por um dos autores do manuscrito."
 
 msgid "plugins.generic.plauditPreEndorsement.endorserName"
-msgstr "Nome do endossador"
+msgstr "Nome do(a) endossador(a)"
 
 msgid "plugins.generic.plauditPreEndorsement.endorserEmail"
-msgstr "Endereço de e-mail do endossador"
+msgstr "Endereço de e-mail do(a) endossador(a)"
 
 msgid "plugins.generic.plauditPreEndorsement.endorserOrcid"
-msgstr "ORCID do endossador"
+msgstr "ORCID do(a) endossador(a)"
 
 msgid "plugins.generic.plauditPreEndorsement.endorsementConfirmed"
-msgstr "O endosso foi confirmado pelo endossador"
+msgstr "O endosso foi confirmado pelo(a) endossador(a)"
 
 msgid "plugins.generic.plauditPreEndorsement.endorsementNotConfirmed"
-msgstr "O endosso ainda não foi confirmado pelo endossador"
+msgstr "O endosso ainda não foi confirmado pelo(a) endossador(a)"
 
 msgid "plugins.generic.plauditPreEndorsement.endorsementDenied"
-msgstr "O endossador negou acesso ao seu registro ORCID"
+msgstr "O(A) endossador(a) negou acesso ao seu registro ORCID"
 
 msgid "plugins.generic.plauditPreEndorsement.endorsementCouldntComplete"
 msgstr "O envio do endosso à Plaudit não pôde ser completado"

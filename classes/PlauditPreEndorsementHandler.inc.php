@@ -20,9 +20,7 @@ class PlauditPreEndorsementHandler extends Handler
         $publication = $submission->getCurrentPublication();
 
         $endorsementIsConfirmed = $publication->getData('endorsementStatus') == ENDORSEMENT_STATUS_CONFIRMED;
-        $isOverridingEndorser = ($endorserName == $publication->getData('endorserName') && $endorserEmail == $publication->getData('endorserEmail'));
-
-        if ($endorsementIsConfirmed || $isOverridingEndorser) {
+        if ($endorsementIsConfirmed) {
             return http_response_code(400);
         }
 
