@@ -145,37 +145,22 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
     public function addOurFieldsToPublicationSchema($hookName, $params)
     {
         $schema = &$params[0];
+        $ourFields = [
+            'endorserName' => 'string',
+            'endorserEmail' => 'string',
+            'endorsementStatus' => 'integer',
+            'endorserOrcid' => 'string',
+            'endorserEmailToken' => 'string',
+            'endorserEmailCount' => 'integer',
+        ];
 
-        $schema->properties->{'endorserName'} = (object) [
-            'type' => 'string',
-            'apiSummary' => true,
-            'validation' => ['nullable'],
-        ];
-        $schema->properties->{'endorserEmail'} = (object) [
-            'type' => 'string',
-            'apiSummary' => true,
-            'validation' => ['nullable'],
-        ];
-        $schema->properties->{'endorsementStatus'} = (object) [
-            'type' => 'integer',
-            'apiSummary' => true,
-            'validation' => ['nullable'],
-        ];
-        $schema->properties->{'endorserOrcid'} = (object) [
-            'type' => 'string',
-            'apiSummary' => true,
-            'validation' => ['nullable'],
-        ];
-        $schema->properties->{'endorserEmailToken'} = (object) [
-            'type' => 'string',
-            'apiSummary' => true,
-            'validation' => ['nullable'],
-        ];
-        $schema->properties->{'endorserEmailCount'} = (object) [
-            'type' => 'integer',
-            'apiSummary' => true,
-            'validation' => ['nullable'],
-        ];
+        foreach ($ourFields as $name => $type) {
+            $schema->properties->{$name} = (object) [
+                'type' => $type,
+                'apiSummary' => true,
+                'validation' => ['nullable'],
+            ];
+        }
 
         return false;
     }

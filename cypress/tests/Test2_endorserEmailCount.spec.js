@@ -48,10 +48,10 @@ describe("Plaudit Pre-Endorsement Plugin - Send e-mail to endorser during submis
         submissionStep3();
         submissionStep4();
     });
-    it("Check if e-mail has been sent to endorser", function() {
-        cy.visit('http://0.0.0.0:8025/');
-        
-        cy.contains('Endorsement confirmation').first().click();
-        cy.contains('Queen Elizabeth <queen.elizabeth.2nd@gmail.com>');
+    it("Check e-mail sendings counting message in submission workflow", function() {
+        cy.contains("Review this submission").click();
+        cy.contains("Publication").click();
+        cy.contains("Pre-Endorsement").click();
+        cy.contains("1 endorsement confirmation e-mail has been sent to the endorser");
     });
 });
