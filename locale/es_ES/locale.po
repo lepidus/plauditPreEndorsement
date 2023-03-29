@@ -47,6 +47,12 @@ msgstr "No se pudo completar el envío del endoso a Plaudit"
 msgid "plugins.generic.plauditPreEndorsement.endorsementCompleted"
 msgstr "El endoso se ha enviado correctamente a Plaudit"
 
+msgid "plugins.generic.plauditPreEndorsement.endorserEmailCount.one"
+msgstr "Se ha enviado 1 correo electrónico de confirmación de endoso al endosante"
+
+msgid "plugins.generic.plauditPreEndorsement.endorserEmailCount.many"
+msgstr "Se enviaron {$numEmails} correos electrónicos de confirmación de endoso al endosante"
+
 msgid "plugins.generic.plauditPreEndorsement.preEndorsement"
 msgstr "Aprobación previa"
 

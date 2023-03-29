@@ -145,32 +145,22 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
     public function addOurFieldsToPublicationSchema($hookName, $params)
     {
         $schema = &$params[0];
+        $ourFields = [
+            'endorserName' => 'string',
+            'endorserEmail' => 'string',
+            'endorsementStatus' => 'integer',
+            'endorserOrcid' => 'string',
+            'endorserEmailToken' => 'string',
+            'endorserEmailCount' => 'integer',
+        ];
 
-        $schema->properties->{'endorserName'} = (object) [
-            'type' => 'string',
-            'apiSummary' => true,
-            'validation' => ['nullable'],
-        ];
-        $schema->properties->{'endorserEmail'} = (object) [
-            'type' => 'string',
-            'apiSummary' => true,
-            'validation' => ['nullable'],
-        ];
-        $schema->properties->{'endorsementStatus'} = (object) [
-            'type' => 'integer',
-            'apiSummary' => true,
-            'validation' => ['nullable'],
-        ];
-        $schema->properties->{'endorserOrcid'} = (object) [
-            'type' => 'string',
-            'apiSummary' => true,
-            'validation' => ['nullable'],
-        ];
-        $schema->properties->{'endorserEmailToken'} = (object) [
-            'type' => 'string',
-            'apiSummary' => true,
-            'validation' => ['nullable'],
-        ];
+        foreach ($ourFields as $name => $type) {
+            $schema->properties->{$name} = (object) [
+                'type' => $type,
+                'apiSummary' => true,
+                'validation' => ['nullable'],
+            ];
+        }
 
         return false;
     }
@@ -208,6 +198,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
             'endorserName' => $publication->getData('endorserName'),
             'endorserEmail' => $publication->getData('endorserEmail'),
             'endorserOrcid' => $publication->getData('endorserOrcid'),
+            'endorserEmailCount' => $publication->getData('endorserEmailCount'),
             'endorsementStatus' => $endorsementStatus,
             'endorsementStatusSuffix' => $endorsementStatusSuffix,
             'canEditEndorsement' => $canEditEndorsement,
@@ -250,7 +241,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
         }
     }
 
-    public function sendEmailToEndorser($publication)
+    public function sendEmailToEndorser($publication, $endorserChanged = false)
     {
         $request = PKPApplication::get()->getRequest();
         $context = $request->getContext();
@@ -273,8 +264,14 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
                 'preprintTitle' => htmlspecialchars($publication->getLocalizedTitle()),
             ]);
 
+            if(is_null($publication->getData('endorserEmailCount')) || $endorserChanged)
+                $endorserEmailCount = 0;
+            else
+                $endorserEmailCount = $publication->getData('endorserEmailCount');
+
             $publication->setData('endorserEmailToken', $endorserEmailToken);
             $publication->setData('endorsementStatus', ENDORSEMENT_STATUS_NOT_CONFIRMED);
+            $publication->setData('endorserEmailCount', $endorserEmailCount + 1);
             $publicationDao = DAORegistry::getDAO('PublicationDAO');
             $publicationDao->updateObject($publication);
         }

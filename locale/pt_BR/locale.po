@@ -47,6 +47,12 @@ msgstr "O envio do endosso à Plaudit não pôde ser completado"
 msgid "plugins.generic.plauditPreEndorsement.endorsementCompleted"
 msgstr "O endosso foi enviado com sucesso à Plaudit"
 
+msgid "plugins.generic.plauditPreEndorsement.endorserEmailCount.one"
+msgstr "Foi enviado 1 e-mail de confirmação do endosso para o(a) endossador(a)"
+
+msgid "plugins.generic.plauditPreEndorsement.endorserEmailCount.many"
+msgstr "Foram enviados {$numEmails} e-mails de confirmação do endosso para o(a) endossador(a)"
+
 msgid "plugins.generic.plauditPreEndorsement.preEndorsement"
 msgstr "Pré-endosso"
 

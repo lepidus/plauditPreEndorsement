@@ -15,21 +15,29 @@
 }
 
 #endorsementConfirmed, #endorsementCompleted {
+    margin-left: 0.3125rem;
     padding-left: 0.875rem;
     border-left: .5rem solid #00b28d;
     color: #00b28d;
 }
 
 #endorsementNotConfirmed {
+    margin-left: 0.3125rem;
     padding-left: 0.875rem;
     border-left: .5rem solid #daa520;
     color: #daa520;
 }
 
 #endorsementDenied, #endorsementCouldntComplete {
+    margin-left: 0.3125rem;
     padding-left: 0.875rem;
     border-left: .5rem solid #d00a6c;
     color: #d00a6c;
+}
+
+#endorserEmailCount {
+    margin-top: 0.875rem;
+    margin-left: 0.3125rem;
 }
 
 .formButtons {
