@@ -39,6 +39,16 @@
         </span>
     {/if}
 
+    {if isset($endorserEmailCount)}
+        <span>
+            {if $endorserEmailCount == 1}
+                <div id="endorserEmailCount">{translate key="plugins.generic.plauditPreEndorsement.endorserEmailCount.one"}</div>
+            {else}
+                <div id="endorserEmailCount">{translate key="plugins.generic.plauditPreEndorsement.endorserEmailCount.many" numEmails=$endorserEmailCount}</div>
+            {/if}
+        </span>
+    {/if}
+
     {if $canEditEndorsement}
         <div class="formButtons">
             <button id="updateEndorserSubmit" type="button" class="pkp_button submitFormButton">{translate key="common.save"}</button>

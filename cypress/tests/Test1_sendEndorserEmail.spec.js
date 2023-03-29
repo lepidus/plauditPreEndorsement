@@ -52,7 +52,7 @@ describe("Plaudit Pre-Endorsement Plugin - Send e-mail to endorser during submis
         cy.contains("Review this submission").click();
         cy.contains("Publication").click();
         cy.contains("Pre-Endorsement").click();
-        cy.contains("3 endorsement confirmation e-mails have been sent to the endorser");
+        cy.contains("1 endorsement confirmation e-mail has been sent to the endorser");
     });
     it("Check if e-mail has been sent to endorser", function() {
         cy.visit('http://0.0.0.0:8025/');

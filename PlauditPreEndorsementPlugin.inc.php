@@ -171,6 +171,11 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
             'apiSummary' => true,
             'validation' => ['nullable'],
         ];
+        $schema->properties->{'endorserEmailCount'} = (object) [
+            'type' => 'integer',
+            'apiSummary' => true,
+            'validation' => ['nullable'],
+        ];
 
         return false;
     }
@@ -208,6 +213,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
             'endorserName' => $publication->getData('endorserName'),
             'endorserEmail' => $publication->getData('endorserEmail'),
             'endorserOrcid' => $publication->getData('endorserOrcid'),
+            'endorserEmailCount' => $publication->getData('endorserEmailCount'),
             'endorsementStatus' => $endorsementStatus,
             'endorsementStatusSuffix' => $endorsementStatusSuffix,
             'canEditEndorsement' => $canEditEndorsement,
@@ -275,6 +281,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
 
             $publication->setData('endorserEmailToken', $endorserEmailToken);
             $publication->setData('endorsementStatus', ENDORSEMENT_STATUS_NOT_CONFIRMED);
+            $publication->setData('endorserEmailCount', 1);
             $publicationDao = DAORegistry::getDAO('PublicationDAO');
             $publicationDao->updateObject($publication);
         }
