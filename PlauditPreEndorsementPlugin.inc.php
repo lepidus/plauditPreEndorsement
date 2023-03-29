@@ -264,9 +264,11 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
                 'preprintTitle' => htmlspecialchars($publication->getLocalizedTitle()),
             ]);
 
+            $endorserEmailCount = $publication->getData('endorserEmailCount') ?? 0;
+
             $publication->setData('endorserEmailToken', $endorserEmailToken);
             $publication->setData('endorsementStatus', ENDORSEMENT_STATUS_NOT_CONFIRMED);
-            $publication->setData('endorserEmailCount', 1);
+            $publication->setData('endorserEmailCount', $endorserEmailCount + 1);
             $publicationDao = DAORegistry::getDAO('PublicationDAO');
             $publicationDao->updateObject($publication);
         }

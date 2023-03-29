@@ -53,5 +53,11 @@ describe("Plaudit Pre-Endorsement Plugin - Send e-mail to endorser during submis
         cy.contains("Publication").click();
         cy.contains("Pre-Endorsement").click();
         cy.contains("1 endorsement confirmation e-mail has been sent to the endorser");
+        
+        cy.get("#plauditPreEndorsement").contains("Save").click();
+        cy.reload();
+        cy.contains("Publication").click();
+        cy.contains("Pre-Endorsement").click();
+        cy.contains("2 endorsement confirmation e-mails have been sent to the endorser");
     });
 });
