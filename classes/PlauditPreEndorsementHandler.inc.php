@@ -24,13 +24,15 @@ class PlauditPreEndorsementHandler extends Handler
             return http_response_code(400);
         }
 
+        $endorserChanged = ($endorserEmail != $publication->getData('endorserEmail'));
+
         $publication->setData('endorserName', $endorserName);
         $publication->setData('endorserEmail', $endorserEmail);
         $publicationDao = DAORegistry::getDAO('PublicationDAO');
         $publicationDao->updateObject($publication);
 
         $plugin = new PlauditPreEndorsementPlugin();
-        $plugin->sendEmailToEndorser($publication);
+        $plugin->sendEmailToEndorser($publication, $endorserChanged);
 
         return http_response_code(200);
     }

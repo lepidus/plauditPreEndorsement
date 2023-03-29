@@ -48,7 +48,7 @@ describe("Plaudit Pre-Endorsement Plugin - Send e-mail to endorser during submis
         submissionStep3();
         submissionStep4();
     });
-    it("Check e-mail sendings counting message in submission workflow", function() {
+    it("E-mail sendings counting message in submission workflow", function() {
         cy.contains("Review this submission").click();
         cy.contains("Publication").click();
         cy.contains("Pre-Endorsement").click();
@@ -59,5 +59,14 @@ describe("Plaudit Pre-Endorsement Plugin - Send e-mail to endorser during submis
         cy.contains("Publication").click();
         cy.contains("Pre-Endorsement").click();
         cy.contains("2 endorsement confirmation e-mails have been sent to the endorser");
+    });
+    it("E-mail sendings count set to zero when endorser is changed", function() {
+        cy.get('input[name="endorserNameWorkflow"]').clear().type("Lady Diana", { delay: 0 });
+        cy.get('input[name="endorserEmailWorkflow"]').clear().type("lady.diana@gmail.com", { delay: 0 });
+        cy.get("#plauditPreEndorsement").contains("Save").click();
+        cy.reload();
+        cy.contains("Publication").click();
+        cy.contains("Pre-Endorsement").click();
+        cy.contains("1 endorsement confirmation e-mail has been sent to the endorser");
     });
 });

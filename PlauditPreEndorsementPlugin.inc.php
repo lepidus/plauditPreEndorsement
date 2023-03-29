@@ -241,7 +241,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
         }
     }
 
-    public function sendEmailToEndorser($publication)
+    public function sendEmailToEndorser($publication, $endorserChanged = false)
     {
         $request = PKPApplication::get()->getRequest();
         $context = $request->getContext();
@@ -264,7 +264,10 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
                 'preprintTitle' => htmlspecialchars($publication->getLocalizedTitle()),
             ]);
 
-            $endorserEmailCount = $publication->getData('endorserEmailCount') ?? 0;
+            if(is_null($publication->getData('endorserEmailCount')) || $endorserChanged)
+                $endorserEmailCount = 0;
+            else
+                $endorserEmailCount = $publication->getData('endorserEmailCount');
 
             $publication->setData('endorserEmailToken', $endorserEmailToken);
             $publication->setData('endorsementStatus', ENDORSEMENT_STATUS_NOT_CONFIRMED);
