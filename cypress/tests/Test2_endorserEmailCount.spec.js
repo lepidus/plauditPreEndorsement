@@ -1,3 +1,5 @@
+const submissionsPage = Cypress.env('baseUrl') + 'index.php/publicknowledge/submissions';
+
 function loginAuthorUser() {
     cy.get('input[id=username]').clear();
     cy.get('input[id=username]').type(Cypress.env('OJSAuthorUsername'), { delay: 0 });
@@ -39,7 +41,7 @@ function submissionStep4() {
 
 describe("Plaudit Pre-Endorsement Plugin - Send e-mail to endorser during submission", function() {
     it("Author user submits endorsed submission", function() {
-        cy.visit(Cypress.env('baseUrl') + 'index.php/publicknowledge/submissions');
+        cy.visit(submissionsPage);
         loginAuthorUser();
 
         cy.get('.pkpHeader__actions:visible > a.pkpButton').click();
