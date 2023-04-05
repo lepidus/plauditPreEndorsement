@@ -192,7 +192,10 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
         $endorsementStatus = $publication->getData('endorsementStatus');
         $endorsementStatusSuffix = $this->getEndorsementStatusSuffix($endorsementStatus);
         $canEditEndorsement = (is_null($endorsementStatus) || $endorsementStatus == ENDORSEMENT_STATUS_NOT_CONFIRMED || $endorsementStatus == ENDORSEMENT_STATUS_DENIED);
-
+        $canSendEndorsementManually = $publication->getData('status') === STATUS_PUBLISHED
+            && !$this->userIsAuthor($submission)
+            && ($endorsementStatus == ENDORSEMENT_STATUS_CONFIRMED || $endorsementStatus == ENDORSEMENT_STATUS_COULDNT_COMPLETE);
+        
         $smarty->assign([
             'submissionId' => $submission->getId(),
             'endorserName' => $publication->getData('endorserName'),
@@ -202,7 +205,9 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
             'endorsementStatus' => $endorsementStatus,
             'endorsementStatusSuffix' => $endorsementStatusSuffix,
             'canEditEndorsement' => $canEditEndorsement,
-            'updateEndorserUrl' => $updateEndorserUrl
+            'canSendEndorsementManually' => $canSendEndorsementManually,
+            'updateEndorserUrl' => $updateEndorserUrl,
+            'sendEndorsementManuallyUrl' => $request->getDispatcher()->url($request, ROUTE_PAGE, null, self::HANDLER_PAGE, 'sendEndorsementManually')
         ]);
 
         $output .= sprintf(
@@ -404,5 +409,22 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
         } else {
             return ENDORSEMENT_ORCID_URL_SANDBOX;
         }
+    }
+
+    private function userIsAuthor($submission): bool
+    {
+        $currentUser = Application::get()->getRequest()->getUser();
+        $currentUserAssignedRoles = array();
+        if ($currentUser) {
+            $stageAssignmentDao = DAORegistry::getDAO('StageAssignmentDAO');
+            $stageAssignmentsResult = $stageAssignmentDao->getBySubmissionAndUserIdAndStageId($submission->getId(), $currentUser->getId(), $submission->getData('stageId'));
+            $userGroupDao = DAORegistry::getDAO('UserGroupDAO');
+            while ($stageAssignment = $stageAssignmentsResult->next()) {
+                $userGroup = $userGroupDao->getById($stageAssignment->getUserGroupId(), $submission->getData('contextId'));
+                $currentUserAssignedRoles[] = (int) $userGroup->getRoleId();
+            }
+        }
+
+        return $currentUserAssignedRoles[0] == ROLE_ID_AUTHOR;
     }
 }

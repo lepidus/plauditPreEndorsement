@@ -53,6 +53,9 @@ msgstr "1 endorsement confirmation e-mail has been sent to the endorser"
 msgid "plugins.generic.plauditPreEndorsement.endorserEmailCount.many"
 msgstr "{$numEmails} endorsement confirmation e-mails have been sent to the endorser"
 
+msgid "plugins.generic.plauditPreEndorsement.sendEndorsementToPlaudit"
+msgstr "Send endorsement to Plaudit"
+
 msgid "plugins.generic.plauditPreEndorsement.preEndorsement"
 msgstr "Pre-Endorsement"
 

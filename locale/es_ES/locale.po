@@ -56,6 +56,9 @@ msgstr "Se enviaron {$numEmails} correos electrónicos de confirmación de endos
 msgid "plugins.generic.plauditPreEndorsement.preEndorsement"
 msgstr "Aprobación previa"
 
+msgid "plugins.generic.plauditPreEndorsement.sendEndorsementToPlaudit"
+msgstr "Enviar endoso a Plaudit"
+
 msgid "plugins.generic.plauditPreEndorsement.settings.orcidAPIPathRequired"
 msgstr "Indique qué API de ORCID se debe utilizar"
 
