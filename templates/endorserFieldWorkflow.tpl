@@ -49,11 +49,15 @@
         </span>
     {/if}
 
-    {if $canEditEndorsement}
-        <div class="formButtons">
+    <div class="formButtons">
+        {if $canEditEndorsement}
             <button id="updateEndorserSubmit" type="button" class="pkp_button submitFormButton">{translate key="common.save"}</button>
-        </div>
-    {/if}
+        {/if}
+
+        {if $canSendEndorsementManually}
+            <button id="sendEndorsementManuallySubmit" type="button" class="pkp_button submitFormButton">{translate key="plugins.generic.plauditPreEndorsement.sendEndorsementToPlaudit"}</button>
+        {/if}
+    </div>
 </div>
 
 {if $canEditEndorsement}
@@ -76,6 +80,28 @@
 
     $(function(){ldelim}
         $('#updateEndorserSubmit').click(requestUpdateEndorsement);
+    {rdelim});
+</script>
+{/if}
+
+{if $canSendEndorsementManually}
+<script>
+    function sendEndorsementManuallySuccess(){ldelim}
+        alert("{translate key="form.saved"}");
+    {rdelim}
+
+    async function requestSendEndorsementManually(e){ldelim}
+        $.post(
+            "{$sendEndorsementManuallyUrl}",
+            {ldelim}
+                submissionId: {$submissionId}
+            {rdelim},
+            sendEndorsementManuallySuccess()
+        );
+    {rdelim}
+
+    $(function(){ldelim}
+        $('#sendEndorsementManuallySubmit').click(requestSendEndorsementManually);
     {rdelim});
 </script>
 {/if}

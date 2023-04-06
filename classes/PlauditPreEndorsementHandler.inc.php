@@ -37,6 +37,18 @@ class PlauditPreEndorsementHandler extends Handler
         return http_response_code(200);
     }
 
+    public function sendEndorsementManually($args, $request)
+    {
+        $submissionId = $request->getUserVar('submissionId');
+        $submission = DAORegistry::getDAO('SubmissionDAO')->getById($submissionId);
+        $publication = $submission->getCurrentPublication();
+        $plugin = PluginRegistry::getPlugin('generic', 'plauditpreendorsementplugin');
+        
+        $plugin->sendEndorsementToPlaudit($publication);
+
+        return http_response_code(200);
+    }
+
     public function orcidVerify($args, $request)
     {
         $publicationDao = DAORegistry::getDAO('PublicationDAO');

@@ -51,7 +51,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
             HookRegistry::register('submissionsubmitstep4form::execute', array($this, 'step4SendEmailToEndorser'));
             HookRegistry::register('Schema::get::publication', array($this, 'addOurFieldsToPublicationSchema'));
             HookRegistry::register('Template::Workflow::Publication', array($this, 'addEndorserFieldsToWorkflow'));
-            HookRegistry::register('Publication::publish', array($this, 'sendEndorsementToPlaudit'));
+            HookRegistry::register('Publication::publish', array($this, 'sendEndorsementOnPosting'));
             HookRegistry::register('LoadHandler', array($this, 'setupPlauditPreEndorsementHandler'));
         }
 
@@ -217,9 +217,14 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
         );
     }
 
-    public function sendEndorsementToPlaudit($hookName, $params)
+    public function sendEndorsementOnPosting($hookName, $params)
     {
         $publication = $params[0];
+        $this->sendEndorsementToPlaudit($publication);
+    }
+
+    public function sendEndorsementToPlaudit($publication)
+    {
         $request = PKPApplication::get()->getRequest();
         $contextId = $request->getContext()->getId();
 
