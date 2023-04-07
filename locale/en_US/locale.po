@@ -127,3 +127,7 @@ msgstr "The ORCID authorization link has already been used or is invalid"
 
 msgid "plugins.generic.plauditPreEndorsement.failure.contact"
 msgstr "Please contact the server manager with your name, ORCID iD, and details of your submission"
+
+
+msgid "plugins.generic.plauditPreEndorsement.log.sentEmailEndorser"
+msgstr "An endorsement confirmation e-mail has been sent to {$endorserName} ({$endorserEmail})"

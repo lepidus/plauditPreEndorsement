@@ -127,3 +127,7 @@ msgstr "O link de autorização ORCID já foi utilizado ou é inválido"
 
 msgid "plugins.generic.plauditPreEndorsement.failure.contact"
 msgstr "Por favor, entre em contato com o administrador do servidor, informando seu nome, ORCID ID e detalhes da submissão"
+
+
+msgid "plugins.generic.plauditPreEndorsement.log.sentEmailEndorser"
+msgstr "Foi enviado um e-mail de confirmação de endosso para {$endorserName} ({$endorserEmail})"

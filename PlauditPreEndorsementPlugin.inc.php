@@ -79,6 +79,12 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
         return __('plugins.generic.plauditPreEndorsement.description');
     }
 
+    public function writeOnActivityLog($submission, $message, $messageParams)
+    {
+        $request = Application::get()->getRequest();
+        SubmissionLog::logEvent($request, $submission, SUBMISSION_LOG_METADATA_UPDATE, $message, $messageParams);
+    }
+
     private function writeLog($message, $level)
     {
         $fineStamp = date('Y-m-d H:i:s') . substr(microtime(), 1, 4);
@@ -284,6 +290,9 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
             $publication->setData('endorserEmailCount', $endorserEmailCount + 1);
             $publicationDao = DAORegistry::getDAO('PublicationDAO');
             $publicationDao->updateObject($publication);
+            
+            $submission = DAORegistry::getDAO('SubmissionDAO')->getById($publication->getData('submissionId'));
+            $this->writeOnActivityLog($submission, 'plugins.generic.plauditPreEndorsement.log.sentEmailEndorser', ['endorserName' => $endorserName, 'endorserEmail' => $endorserEmail]);
         }
     }
 

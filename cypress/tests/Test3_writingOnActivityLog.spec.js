@@ -1,6 +1,6 @@
 const submissionsPage = Cypress.env('baseUrl') + 'index.php/publicknowledge/submissions';
 
-function loginAuthorUser() {
+function loginAdminUser() {
     cy.get('input[id=username]').clear();
     cy.get('input[id=username]').type(Cypress.env('OJSAdminUsername'), { delay: 0 });
     cy.get('input[id=password]').type(Cypress.env('OJSAdminPassword'), { delay: 0 });
@@ -42,7 +42,8 @@ function submissionStep4() {
 describe("Plaudit Pre-Endorsement Plugin - Check writing of messages on submission's Activity Log", function() {
     it("Author user submits endorsed submission", function() {
         cy.visit(submissionsPage);
-        loginAuthorUser();
+        loginAdminUser();
+        cy.contains("Submissions").click();
 
         cy.get('.pkpHeader__actions:visible > a.pkpButton').click();
         submissionStep1();
@@ -51,8 +52,8 @@ describe("Plaudit Pre-Endorsement Plugin - Check writing of messages on submissi
         submissionStep4();
     });
     it("Check messages in submission's Activity Log", function() {
-        cy.contains("Review this submission").click();
-        cy.contains("Activity Log").click();
+        cy.contains("Proceed to post").click();
+        cy.get('.pkpWorkflow__header > .pkpHeader__actions').contains('Activity Log').click();
         cy.get(".pkp_modal_panel").contains("An endorsement confirmation e-mail has been sent to Lívia Andrade (livia@gmail.com)");
     });
 });
