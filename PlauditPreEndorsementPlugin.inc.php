@@ -91,11 +91,6 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
         error_log("$fineStamp $level $message");
     }
 
-    public function logInfo($message)
-    {
-        $this->writeLog($message, 'INFO');
-    }
-
     public function logError($message)
     {
         $this->writeLog($message, 'ERROR');
@@ -247,7 +242,8 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
                 $newEndorsementStatus = $plauditClient->getEndorsementStatusByResponse($response, $publication);
             } catch (ClientException $exception) {
                 $reason = $exception->getResponse()->getBody(false);
-                $this->logInfo("Error while sending endorsement to Plaudit: $reason");
+                $submission = DAORegistry::getDAO('SubmissionDAO')->getById($publication->getData('submissionId'));
+                $this->writeOnActivityLog($submission, 'plugins.generic.plauditPreEndorsement.log.failedSendingEndorsement', ['reason' => $reason]);
                 $newEndorsementStatus = ENDORSEMENT_STATUS_COULDNT_COMPLETE;
             }
 

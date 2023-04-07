@@ -131,3 +131,6 @@ msgstr "Comuníquese con el administrador del servidor con su nombre, ORCID ID y
 
 msgid "plugins.generic.plauditPreEndorsement.log.sentEmailEndorser"
 msgstr "Se ha enviado un correo electrónico de confirmación de endoso a {$endorserName} ({$endorserEmail})"
+
+msgid "plugins.generic.plauditPreEndorsement.log.failedSendingEndorsement"
+msgstr "No se pudo enviar lo endoso a Plaudit. El mensaje devuelto fue: {$reason}"

@@ -70,7 +70,6 @@ class PlauditPreEndorsementHandler extends Handler
         try {
             $response = $this->requestOrcid($request, $plugin);
             $responseJson = json_decode($response->getBody(), true);
-            $plugin->logInfo('Response body: ' . print_r($responseJson, true));
         } catch (GuzzleHttp\Exception\RequestException  $exception) {
             $this->logErrorAndDisplayTemplate($request, "Publication fail:  " . $exception->getMessage(), ['orcidAPIError' => $exception->getMessage(), 'verifySuccess' => false]);
             return;
@@ -104,9 +103,6 @@ class PlauditPreEndorsementHandler extends Handler
             'client_secret' => $plugin->getSetting($contextId, 'orcidClientSecret')
         ];
 
-        $plugin->logInfo('POST ' . $orcidRequestUrl);
-        $plugin->logInfo('Request header: ' . var_export($header, true));
-        $plugin->logInfo('Request body: ' . http_build_query($postData));
         $response = $httpClient->request(
             'POST',
             $orcidRequestUrl,

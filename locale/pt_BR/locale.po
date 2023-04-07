@@ -131,3 +131,6 @@ msgstr "Por favor, entre em contato com o administrador do servidor, informando 
 
 msgid "plugins.generic.plauditPreEndorsement.log.sentEmailEndorser"
 msgstr "Foi enviado um e-mail de confirmação de endosso para {$endorserName} ({$endorserEmail})"
+
+msgid "plugins.generic.plauditPreEndorsement.log.failedSendingEndorsement"
+msgstr "O envio do endosso à Plaudit falhou. A mensagem retornada foi: {$reason}"
