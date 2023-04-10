@@ -134,3 +134,15 @@ msgstr "Foi enviado um e-mail de confirmação de endosso para {$endorserName} (
 
 msgid "plugins.generic.plauditPreEndorsement.log.failedSendingEndorsement"
 msgstr "O envio do endosso à Plaudit falhou. A mensagem retornada foi: {$reason}"
+
+msgid "plugins.generic.plauditPreEndorsement.log.invalidToken"
+msgstr "O token utilizado durante a autenticação do ORCID do(a) endossador(a) é inválido. Confirme ser o(a) endossador(a) atual na submissão e que se está usando o link do último e-mail enviado"
+
+msgid "plugins.generic.plauditPreEndorsement.log.orcidAccessDenied"
+msgstr "O(A) endossador(a) negou acesso ao seu ORCID"
+
+msgid "plugins.generic.plauditPreEndorsement.log.orcidRequestError"
+msgstr "Ocorreu um erro durante a requisição do ORCID do(a) endossador(a). A mensagem retornada foi: {$orcidAPIError}"
+
+msgid "plugins.generic.plauditPreEndorsement.log.endorsementConfirmed"
+msgstr "O endosso foi confirmado pelo(a) endossador(a) e seu ORCID foi salvo na submissão"

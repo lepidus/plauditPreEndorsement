@@ -134,3 +134,15 @@ msgstr "An endorsement confirmation e-mail has been sent to {$endorserName} ({$e
 
 msgid "plugins.generic.plauditPreEndorsement.log.failedSendingEndorsement"
 msgstr "Endorsement submission to Plaudit failed. The returned message was: {$reason}"
+
+msgid "plugins.generic.plauditPreEndorsement.log.invalidToken"
+msgstr "The token used during the endorser's ORCID authentication is not valid. Confirm it is the current submission's endorser and that its been using the link from the last email sent"
+
+msgid "plugins.generic.plauditPreEndorsement.log.orcidAccessDenied"
+msgstr "The endorser denied access to its ORCID"
+
+msgid "plugins.generic.plauditPreEndorsement.log.orcidRequestError"
+msgstr "An error occurred during the endorser's ORCID requesting. The message returned was: {$orcidAPIError}"
+
+msgid "plugins.generic.plauditPreEndorsement.log.endorsementConfirmed"
+msgstr "The endorsement has been confirmed by the endorser and its ORCID has been stored in the submission"
