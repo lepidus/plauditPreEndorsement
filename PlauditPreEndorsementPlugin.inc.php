@@ -79,7 +79,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
         return __('plugins.generic.plauditPreEndorsement.description');
     }
 
-    public function writeOnActivityLog($submission, $message, $messageParams)
+    public function writeOnActivityLog($submission, $message, $messageParams = array())
     {
         $request = Application::get()->getRequest();
         SubmissionLog::logEvent($request, $submission, SUBMISSION_LOG_METADATA_UPDATE, $message, $messageParams);
@@ -217,13 +217,23 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
     {
         $request = PKPApplication::get()->getRequest();
         $contextId = $request->getContext()->getId();
+        $submission = DAORegistry::getDAO('SubmissionDAO')->getById($publication->getData('submissionId'));
 
         $endorsementStatusOkay = ($publication->getData('endorsementStatus') == ENDORSEMENT_STATUS_CONFIRMED
             || $publication->getData('endorsementStatus') == ENDORSEMENT_STATUS_COULDNT_COMPLETE);
         $publicationHasDoi = !empty($publication->getData('pub-id::doi'));
         $secretKey = $this->getSetting($contextId, 'plauditAPISecret');
 
-        if ($endorsementStatusOkay and $publicationHasDoi and !empty($secretKey)) {
+        if(!$publicationHasDoi) {
+            $this->writeOnActivityLog($submission, 'plugins.generic.plauditPreEndorsement.log.failedEndorsementSending.doi');
+            return;
+        }
+        else if(empty($secretKey)) {
+            $this->writeOnActivityLog($submission, 'plugins.generic.plauditPreEndorsement.log.failedEndorsementSending.secretKey');
+            return;
+        }
+
+        if ($endorsementStatusOkay) {
             $plauditClient = new PlauditClient();
 
             try {
@@ -231,7 +241,6 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
                 $newEndorsementStatus = $plauditClient->getEndorsementStatusByResponse($response, $publication);
             } catch (ClientException $exception) {
                 $reason = $exception->getResponse()->getBody(false);
-                $submission = DAORegistry::getDAO('SubmissionDAO')->getById($publication->getData('submissionId'));
                 $this->writeOnActivityLog($submission, 'plugins.generic.plauditPreEndorsement.log.failedSendingEndorsement', ['reason' => $reason]);
                 $newEndorsementStatus = ENDORSEMENT_STATUS_COULDNT_COMPLETE;
             }

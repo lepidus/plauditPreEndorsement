@@ -146,3 +146,9 @@ msgstr "An error occurred during the endorser's ORCID requesting. The message re
 
 msgid "plugins.generic.plauditPreEndorsement.log.endorsementConfirmed"
 msgstr "The endorsement has been confirmed by the endorser and its ORCID has been stored in the submission"
+
+msgid "plugins.generic.plauditPreEndorsement.log.failedEndorsementSending.doi"
+msgstr "The sending of the endorsement to Plaudit couldn't be done, as the submission doesn't have a DOI assigned"
+
+msgid "plugins.generic.plauditPreEndorsement.log.failedEndorsementSending.secretKey"
+msgstr "The sending of the endorsement to Plaudit couldn't be done, as the Plaudit API secret was not informed in the plugin settings"

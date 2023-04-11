@@ -146,3 +146,9 @@ msgstr "Ocorreu um erro durante a requisição do ORCID do(a) endossador(a). A m
 
 msgid "plugins.generic.plauditPreEndorsement.log.endorsementConfirmed"
 msgstr "O endosso foi confirmado pelo(a) endossador(a) e seu ORCID foi salvo na submissão"
+
+msgid "plugins.generic.plauditPreEndorsement.log.failedEndorsementSending.doi"
+msgstr "O envio do endosso à Plaudit não pôde ser realizado, pois a submissão não tem um DOI atribuído"
+
+msgid "plugins.generic.plauditPreEndorsement.log.failedEndorsementSending.secretKey"
+msgstr "O envio do endosso à Plaudit não pôde ser realizado, pois não foi informado o segredo da API Plaudit nas configurações do plugin"
