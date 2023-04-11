@@ -79,20 +79,10 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
         return __('plugins.generic.plauditPreEndorsement.description');
     }
 
-    private function writeLog($message, $level)
+    public function writeOnActivityLog($submission, $message, $messageParams = array())
     {
-        $fineStamp = date('Y-m-d H:i:s') . substr(microtime(), 1, 4);
-        error_log("$fineStamp $level $message");
-    }
-
-    public function logInfo($message)
-    {
-        $this->writeLog($message, 'INFO');
-    }
-
-    public function logError($message)
-    {
-        $this->writeLog($message, 'ERROR');
+        $request = Application::get()->getRequest();
+        SubmissionLog::logEvent($request, $submission, SUBMISSION_LOG_METADATA_UPDATE, $message, $messageParams);
     }
 
     public function addEndorserFieldsToStep3($hookName, $params)
@@ -193,7 +183,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
         $endorsementStatusSuffix = $this->getEndorsementStatusSuffix($endorsementStatus);
         $canEditEndorsement = (is_null($endorsementStatus) || $endorsementStatus == ENDORSEMENT_STATUS_NOT_CONFIRMED || $endorsementStatus == ENDORSEMENT_STATUS_DENIED);
         $canSendEndorsementManually = $publication->getData('status') === STATUS_PUBLISHED
-            && !$this->userIsAuthor($submission)
+            && !$this->userAccessingIsAuthor($submission)
             && ($endorsementStatus == ENDORSEMENT_STATUS_CONFIRMED || $endorsementStatus == ENDORSEMENT_STATUS_COULDNT_COMPLETE);
         
         $smarty->assign([
@@ -227,13 +217,23 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
     {
         $request = PKPApplication::get()->getRequest();
         $contextId = $request->getContext()->getId();
+        $submission = DAORegistry::getDAO('SubmissionDAO')->getById($publication->getData('submissionId'));
 
         $endorsementStatusOkay = ($publication->getData('endorsementStatus') == ENDORSEMENT_STATUS_CONFIRMED
             || $publication->getData('endorsementStatus') == ENDORSEMENT_STATUS_COULDNT_COMPLETE);
         $publicationHasDoi = !empty($publication->getData('pub-id::doi'));
         $secretKey = $this->getSetting($contextId, 'plauditAPISecret');
 
-        if ($endorsementStatusOkay and $publicationHasDoi and !empty($secretKey)) {
+        if(!$publicationHasDoi) {
+            $this->writeOnActivityLog($submission, 'plugins.generic.plauditPreEndorsement.log.failedEndorsementSending.doi');
+            return;
+        }
+        else if(empty($secretKey)) {
+            $this->writeOnActivityLog($submission, 'plugins.generic.plauditPreEndorsement.log.failedEndorsementSending.secretKey');
+            return;
+        }
+
+        if ($endorsementStatusOkay) {
             $plauditClient = new PlauditClient();
 
             try {
@@ -241,7 +241,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
                 $newEndorsementStatus = $plauditClient->getEndorsementStatusByResponse($response, $publication);
             } catch (ClientException $exception) {
                 $reason = $exception->getResponse()->getBody(false);
-                $this->logInfo("Error while sending endorsement to Plaudit: $reason");
+                $this->writeOnActivityLog($submission, 'plugins.generic.plauditPreEndorsement.log.failedSendingEndorsement', ['reason' => $reason]);
                 $newEndorsementStatus = ENDORSEMENT_STATUS_COULDNT_COMPLETE;
             }
 
@@ -284,6 +284,9 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
             $publication->setData('endorserEmailCount', $endorserEmailCount + 1);
             $publicationDao = DAORegistry::getDAO('PublicationDAO');
             $publicationDao->updateObject($publication);
+            
+            $submission = DAORegistry::getDAO('SubmissionDAO')->getById($publication->getData('submissionId'));
+            $this->writeOnActivityLog($submission, 'plugins.generic.plauditPreEndorsement.log.sentEmailEndorser', ['endorserName' => $endorserName, 'endorserEmail' => $endorserEmail]);
         }
     }
 
@@ -416,7 +419,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
         }
     }
 
-    private function userIsAuthor($submission): bool
+    public function userAccessingIsAuthor($submission): bool
     {
         $currentUser = Application::get()->getRequest()->getUser();
         $currentUserAssignedRoles = array();
