@@ -43,6 +43,14 @@ class PlauditPreEndorsementHandler extends Handler
         $submission = DAORegistry::getDAO('SubmissionDAO')->getById($submissionId);
         $publication = $submission->getCurrentPublication();
         $plugin = PluginRegistry::getPlugin('generic', 'plauditpreendorsementplugin');
+
+        $endorsementStatus = $publication->getData('endorsementStatus');
+        $canSendEndorsementManually = $publication->getData('status') === STATUS_PUBLISHED
+            && !$plugin->userAccessingIsAuthor($submission)
+            && ($endorsementStatus == ENDORSEMENT_STATUS_CONFIRMED || $endorsementStatus == ENDORSEMENT_STATUS_COULDNT_COMPLETE);
+
+        if(!$canSendEndorsementManually)
+            return http_response_code(400);
         
         $plugin->sendEndorsementToPlaudit($publication);
 

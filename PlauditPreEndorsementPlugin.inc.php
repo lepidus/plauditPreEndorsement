@@ -183,7 +183,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
         $endorsementStatusSuffix = $this->getEndorsementStatusSuffix($endorsementStatus);
         $canEditEndorsement = (is_null($endorsementStatus) || $endorsementStatus == ENDORSEMENT_STATUS_NOT_CONFIRMED || $endorsementStatus == ENDORSEMENT_STATUS_DENIED);
         $canSendEndorsementManually = $publication->getData('status') === STATUS_PUBLISHED
-            && !$this->userIsAuthor($submission)
+            && !$this->userAccessingIsAuthor($submission)
             && ($endorsementStatus == ENDORSEMENT_STATUS_CONFIRMED || $endorsementStatus == ENDORSEMENT_STATUS_COULDNT_COMPLETE);
         
         $smarty->assign([
@@ -419,7 +419,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
         }
     }
 
-    private function userIsAuthor($submission): bool
+    public function userAccessingIsAuthor($submission): bool
     {
         $currentUser = Application::get()->getRequest()->getUser();
         $currentUserAssignedRoles = array();
