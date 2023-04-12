@@ -240,7 +240,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
                 $response = $plauditClient->requestEndorsementCreation($publication, $secretKey);
                 $newEndorsementStatus = $plauditClient->getEndorsementStatusByResponse($response, $publication);
             } catch (ClientException $exception) {
-                $reason = $exception->getResponse()->getBody(false);
+                $reason = print_r($exception->getResponse()->getBody(false), true);
                 $this->writeOnActivityLog($submission, 'plugins.generic.plauditPreEndorsement.log.failedSendingEndorsement', ['reason' => $reason]);
                 $newEndorsementStatus = ENDORSEMENT_STATUS_COULDNT_COMPLETE;
             }
