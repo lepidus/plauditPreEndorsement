@@ -268,10 +268,14 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
             $endorserEmailToken = md5(microtime() . $endorserEmail);
             $oauthUrl = $this->buildOAuthUrl(['token' => $endorserEmailToken, 'state' => $publication->getId()]);
 
+            $userGroupDao = DAORegistry::getDAO('UserGroupDAO');
+			$authorsUserGroups = $userGroupDao->getByContextId($context->getId())->toArray();
             $email->sendWithParams([
                 'orcidOauthUrl' => $oauthUrl,
                 'endorserName' => htmlspecialchars($endorserName),
                 'preprintTitle' => htmlspecialchars($publication->getLocalizedTitle()),
+                'abstract' => $publication->getLocalizedData('abstract'),
+                'authors' => htmlspecialchars($publication->getAuthorString($authorsUserGroups))
             ]);
 
             if(is_null($publication->getData('endorserEmailCount')) || $endorserChanged)
