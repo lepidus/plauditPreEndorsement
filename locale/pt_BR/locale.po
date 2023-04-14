@@ -133,7 +133,7 @@ msgid "plugins.generic.plauditPreEndorsement.log.sentEmailEndorser"
 msgstr "Foi enviado um e-mail de confirmação de endosso para {$endorserName} ({$endorserEmail})"
 
 msgid "plugins.generic.plauditPreEndorsement.log.failedSendingEndorsement"
-msgstr "O envio do endosso à Plaudit falhou. A mensagem retornada foi: {$reason}"
+msgstr "O envio do endosso à Plaudit falhou. O código da resposta foi: {$code}. O corpo da resposta foi: {$body}"
 
 msgid "plugins.generic.plauditPreEndorsement.log.invalidToken"
 msgstr "O token utilizado durante a autenticação do ORCID do(a) endossador(a) é inválido. Confirme ser o(a) endossador(a) atual na submissão e que se está usando o link do último e-mail enviado"
