@@ -133,7 +133,7 @@ msgid "plugins.generic.plauditPreEndorsement.log.sentEmailEndorser"
 msgstr "An endorsement confirmation e-mail has been sent to {$endorserName} ({$endorserEmail})"
 
 msgid "plugins.generic.plauditPreEndorsement.log.failedSendingEndorsement"
-msgstr "Endorsement submission to Plaudit failed. The returned message was: {$reason}"
+msgstr "Endorsement submission to Plaudit failed. The response code was: {$code}. The returned body was: {$body}"
 
 msgid "plugins.generic.plauditPreEndorsement.log.invalidToken"
 msgstr "The token used during the endorser's ORCID authentication is not valid. Confirm it is the current submission's endorser and that its been using the link from the last email sent"
@@ -152,3 +152,6 @@ msgstr "The sending of the endorsement to Plaudit couldn't be done, as the submi
 
 msgid "plugins.generic.plauditPreEndorsement.log.failedEndorsementSending.secretKey"
 msgstr "The sending of the endorsement to Plaudit couldn't be done, as the Plaudit API secret was not informed in the plugin settings"
+
+msgid "plugins.generic.plauditPreEndorsement.log.attemptSendingEndorsement"
+msgstr "Attempt to send endorsement to Plaudit with DOI {$doi} and ORCID {$orcid}"

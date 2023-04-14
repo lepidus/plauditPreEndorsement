@@ -233,6 +233,8 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
             return;
         }
 
+        $this->writeOnActivityLog($submission, 'plugins.generic.plauditPreEndorsement.log.attemptSendingEndorsement', ['doi' => $publication->getData('pub-id::doi'), 'orcid' => $publication->getData('endorserOrcid')]);
+
         if ($endorsementStatusOkay) {
             $plauditClient = new PlauditClient();
 
@@ -240,8 +242,10 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
                 $response = $plauditClient->requestEndorsementCreation($publication, $secretKey);
                 $newEndorsementStatus = $plauditClient->getEndorsementStatusByResponse($response, $publication);
             } catch (ClientException $exception) {
-                $reason = print_r($exception->getResponse()->getBody(false), true);
-                $this->writeOnActivityLog($submission, 'plugins.generic.plauditPreEndorsement.log.failedSendingEndorsement', ['reason' => $reason]);
+                $response = $exception->getResponse();
+                $responseCode = $response->getStatusCode();
+                $responseBody = print_r($response->getBody()->getContents(), true);
+                $this->writeOnActivityLog($submission, 'plugins.generic.plauditPreEndorsement.log.failedSendingEndorsement', ['code' => $responseCode, 'body' => $responseBody]);
                 $newEndorsementStatus = ENDORSEMENT_STATUS_COULDNT_COMPLETE;
             }
 
