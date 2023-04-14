@@ -233,6 +233,8 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
             return;
         }
 
+        $this->writeOnActivityLog($submission, 'plugins.generic.plauditPreEndorsement.log.attemptSendingEndorsement', ['doi' => $publication->getData('pub-id::doi'), 'orcid' => $publication->getData('endorserOrcid')]);
+
         if ($endorsementStatusOkay) {
             $plauditClient = new PlauditClient();
 

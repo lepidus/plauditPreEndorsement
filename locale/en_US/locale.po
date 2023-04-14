@@ -152,3 +152,6 @@ msgstr "The sending of the endorsement to Plaudit couldn't be done, as the submi
 
 msgid "plugins.generic.plauditPreEndorsement.log.failedEndorsementSending.secretKey"
 msgstr "The sending of the endorsement to Plaudit couldn't be done, as the Plaudit API secret was not informed in the plugin settings"
+
+msgid "plugins.generic.plauditPreEndorsement.log.attemptSendingEndorsement"
+msgstr "Attempt to send endorsement to Plaudit with DOI {$doi} and ORCID {$orcid}"
