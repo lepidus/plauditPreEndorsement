@@ -49,12 +49,12 @@ class PlauditPreEndorsementHandler extends Handler
             && !$plugin->userAccessingIsAuthor($submission)
             && ($endorsementStatus == ENDORSEMENT_STATUS_CONFIRMED || $endorsementStatus == ENDORSEMENT_STATUS_COULDNT_COMPLETE);
 
-        if(!$canSendEndorsementManually)
-            return http_response_code(400);
+        if($canSendEndorsementManually) {
+            $plugin->sendEndorsementToPlaudit($publication);
+            return http_response_code(200);
+        }
         
-        $plugin->sendEndorsementToPlaudit($publication);
-
-        return http_response_code(200);
+        return http_response_code(400);
     }
 
     public function orcidVerify($args, $request)
