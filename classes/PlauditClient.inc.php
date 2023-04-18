@@ -2,7 +2,7 @@
 
 import('plugins.generic.plauditPreEndorsement.PlauditPreEndorsementPlugin');
 
-define('PLAUDIT_API_URL', 'https://preview.plaudit.pub/api/v1/endorsements');
+define('PLAUDIT_API_URL', 'https://plaudit.pub/api/v1/endorsements');
 
 class PlauditClient
 {
