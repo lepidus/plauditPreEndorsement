@@ -39,7 +39,7 @@ function submissionStep4() {
     cy.get('.pkp_modal_confirmation > .footer > .ok').click();
 }
 
-describe("Plaudit Pre-Endorsement Plugin - Check writing of messages on submission's Activity Log", function() {
+describe("Plaudit Pre-Endorsement Plugin - Visual indicator at submission workflow", function() {
     it("Admin user submits endorsed submission", function() {
         cy.visit(submissionsPage);
         loginAdminUser();
@@ -51,9 +51,9 @@ describe("Plaudit Pre-Endorsement Plugin - Check writing of messages on submissi
         submissionStep3();
         submissionStep4();
     });
-    it("Check messages in submission's Activity Log", function() {
+    it("Checks presence of visual indicator", function() {
         cy.contains("Proceed to post").click();
-        cy.get('.pkpWorkflow__header > .pkpHeader__actions').contains('Activity Log').click();
-        cy.get(".pkp_modal_panel").contains("An endorsement confirmation e-mail has been sent to Lívia Andrade (livia@gmail.com)");
+        cy.get("#publication-button").click();
+        cy.get("#plauditPreEndorsement-button > .pkpBadge");
     });
 });
