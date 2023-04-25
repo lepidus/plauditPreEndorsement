@@ -200,8 +200,10 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
             'sendEndorsementManuallyUrl' => $request->getDispatcher()->url($request, ROUTE_PAGE, null, self::HANDLER_PAGE, 'sendEndorsementManually')
         ]);
 
+        $tabBadge = (is_null($endorsementStatus) ? '' : 'badge="1"');
         $output .= sprintf(
-            '<tab id="plauditPreEndorsement" label="%s">%s</tab>',
+            '<tab id="plauditPreEndorsement" %s label="%s">%s</tab>',
+            $tabBadge,
             __('plugins.generic.plauditPreEndorsement.preEndorsement'),
             $smarty->fetch($this->getTemplateResource('endorserFieldWorkflow.tpl'))
         );
