@@ -40,7 +40,7 @@ function submissionStep4() {
 }
 
 describe("Plaudit Pre-Endorsement Plugin - Check writing of messages on submission's Activity Log", function() {
-    it("Author user submits endorsed submission", function() {
+    it("Admin user submits endorsed submission", function() {
         cy.visit(submissionsPage);
         loginAdminUser();
         cy.contains("Submissions").click();
