@@ -50,6 +50,10 @@
     {/if}
 
     <div class="formButtons">
+        {if $canRemoveEndorsement}
+            <button id="removeEndorsementSubmit" type="button" class="pkp_button submitFormButton">{translate key="plugins.generic.plauditPreEndorsement.removeEndorsement"}</button>
+        {/if}
+        
         {if $canEditEndorsement}
             <button id="updateEndorserSubmit" type="button" class="pkp_button submitFormButton">{translate key="common.save"}</button>
         {/if}

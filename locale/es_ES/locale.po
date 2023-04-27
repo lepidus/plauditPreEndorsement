@@ -59,6 +59,9 @@ msgstr "Aprobación previa"
 msgid "plugins.generic.plauditPreEndorsement.sendEndorsementToPlaudit"
 msgstr "Enviar endoso a Plaudit"
 
+msgid "plugins.generic.plauditPreEndorsement.removeEndorsement"
+msgstr "Eliminar endoso"
+
 msgid "plugins.generic.plauditPreEndorsement.settings.orcidAPIPathRequired"
 msgstr "Indique qué API de ORCID se debe utilizar"
 

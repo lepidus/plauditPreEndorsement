@@ -56,6 +56,9 @@ msgstr "Foram enviados {$numEmails} e-mails de confirmação do endosso para o(a
 msgid "plugins.generic.plauditPreEndorsement.sendEndorsementToPlaudit"
 msgstr "Enviar endosso à Plaudit"
 
+msgid "plugins.generic.plauditPreEndorsement.removeEndorsement"
+msgstr "Remover endosso"
+
 msgid "plugins.generic.plauditPreEndorsement.preEndorsement"
 msgstr "Pré-endosso"
 
