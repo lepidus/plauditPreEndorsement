@@ -56,6 +56,12 @@ msgstr "Foram enviados {$numEmails} e-mails de confirmação do endosso para o(a
 msgid "plugins.generic.plauditPreEndorsement.sendEndorsementToPlaudit"
 msgstr "Enviar endosso à Plaudit"
 
+msgid "plugins.generic.plauditPreEndorsement.removeEndorsement"
+msgstr "Remover endosso"
+
+msgid "plugins.generic.plauditPreEndorsement.removalConfirmationMessage"
+msgstr "Deseja remover o endosso desta submissão?"
+
 msgid "plugins.generic.plauditPreEndorsement.preEndorsement"
 msgstr "Pré-endosso"
 
@@ -155,3 +161,6 @@ msgstr "O envio do endosso à Plaudit não pôde ser realizado, pois não foi in
 
 msgid "plugins.generic.plauditPreEndorsement.log.attemptSendingEndorsement"
 msgstr "Tentativa de envio do endosso à Plaudit com DOI {$doi} e ORCID {$orcid}"
+
+msgid "plugins.generic.plauditPreEndorsement.log.endorsementRemoved"
+msgstr "O endosso da submissão foi removido"

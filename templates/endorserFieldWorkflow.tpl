@@ -50,6 +50,10 @@
     {/if}
 
     <div class="formButtons">
+        {if $canRemoveEndorsement}
+            <button id="removeEndorsementSubmit" type="button" class="pkp_button submitFormButton">{translate key="plugins.generic.plauditPreEndorsement.removeEndorsement"}</button>
+        {/if}
+        
         {if $canEditEndorsement}
             <button id="updateEndorserSubmit" type="button" class="pkp_button submitFormButton">{translate key="common.save"}</button>
         {/if}
@@ -102,6 +106,30 @@
 
     $(function(){ldelim}
         $('#sendEndorsementManuallySubmit').click(requestSendEndorsementManually);
+    {rdelim});
+</script>
+{/if}
+
+{if $canRemoveEndorsement}
+<script>
+    async function requestRemoveEndorsement(e){ldelim}
+        $.post(
+            "{$removeEndorsementUrl}",
+            {ldelim}
+                submissionId: {$submissionId}
+            {rdelim}
+        );
+    {rdelim}
+
+    function confirmEndorsementRemoval(){ldelim}
+        let removalConfirmed = confirm("{translate key="plugins.generic.plauditPreEndorsement.removalConfirmationMessage"}");
+        if(removalConfirmed) {ldelim}
+            requestRemoveEndorsement();
+        {rdelim}
+    {rdelim}
+    
+    $(function(){ldelim}
+        $('#removeEndorsementSubmit').click(confirmEndorsementRemoval);
     {rdelim});
 </script>
 {/if}

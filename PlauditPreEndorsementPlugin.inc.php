@@ -185,7 +185,8 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
         $canSendEndorsementManually = $publication->getData('status') === STATUS_PUBLISHED
             && !$this->userAccessingIsAuthor($submission)
             && ($endorsementStatus == ENDORSEMENT_STATUS_CONFIRMED || $endorsementStatus == ENDORSEMENT_STATUS_COULDNT_COMPLETE);
-        
+        $canRemoveEndorsement = !is_null($endorsementStatus) && !$this->userAccessingIsAuthor($submission);
+
         $smarty->assign([
             'submissionId' => $submission->getId(),
             'endorserName' => $publication->getData('endorserName'),
@@ -195,12 +196,14 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
             'endorsementStatus' => $endorsementStatus,
             'endorsementStatusSuffix' => $endorsementStatusSuffix,
             'canEditEndorsement' => $canEditEndorsement,
+            'canRemoveEndorsement' => $canRemoveEndorsement,
             'canSendEndorsementManually' => $canSendEndorsementManually,
             'updateEndorserUrl' => $updateEndorserUrl,
+            'removeEndorsementUrl' => $request->getDispatcher()->url($request, ROUTE_PAGE, null, self::HANDLER_PAGE, 'removeEndorsement'),
             'sendEndorsementManuallyUrl' => $request->getDispatcher()->url($request, ROUTE_PAGE, null, self::HANDLER_PAGE, 'sendEndorsementManually')
         ]);
 
-        $tabBadge = (is_null($endorsementStatus) ? '' : 'badge="1"');
+        $tabBadge = (is_null($endorsementStatus) ? 'badge="0"' : 'badge="1"');
         $output .= sprintf(
             '<tab id="plauditPreEndorsement" %s label="%s">%s</tab>',
             $tabBadge,
@@ -208,6 +211,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
             $smarty->fetch($this->getTemplateResource('endorserFieldWorkflow.tpl'))
         );
     }
+    
 
     public function sendEndorsementOnPosting($hookName, $params)
     {

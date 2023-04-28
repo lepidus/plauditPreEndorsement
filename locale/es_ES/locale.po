@@ -59,6 +59,12 @@ msgstr "Aprobación previa"
 msgid "plugins.generic.plauditPreEndorsement.sendEndorsementToPlaudit"
 msgstr "Enviar endoso a Plaudit"
 
+msgid "plugins.generic.plauditPreEndorsement.removeEndorsement"
+msgstr "Eliminar endoso"
+
+msgid "plugins.generic.plauditPreEndorsement.removalConfirmationMessage"
+msgstr "¿Desea eliminar lo endoso de este envío?"
+
 msgid "plugins.generic.plauditPreEndorsement.settings.orcidAPIPathRequired"
 msgstr "Indique qué API de ORCID se debe utilizar"
 
@@ -155,3 +161,6 @@ msgstr "No se pudo realizar el envío del endoso a Plaudit, ya que el secreto de
 
 msgid "plugins.generic.plauditPreEndorsement.log.attemptSendingEndorsement"
 msgstr "Intento de enviar endoso a Plaudit con DOI {$doi} y ORCID {$orcid}"
+
+msgid "plugins.generic.plauditPreEndorsement.log.endorsementRemoved"
+msgstr "Se ha eliminado lo endoso del envío"
