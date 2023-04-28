@@ -59,6 +59,9 @@ msgstr "Send endorsement to Plaudit"
 msgid "plugins.generic.plauditPreEndorsement.removeEndorsement"
 msgstr "Remove endorsement"
 
+msgid "plugins.generic.plauditPreEndorsement.removalConfirmationMessage"
+msgstr "Do you want to remove the endorsement of this submission?"
+
 msgid "plugins.generic.plauditPreEndorsement.preEndorsement"
 msgstr "Pre-Endorsement"
 
@@ -158,3 +161,6 @@ msgstr "The sending of the endorsement to Plaudit couldn't be done, as the Plaud
 
 msgid "plugins.generic.plauditPreEndorsement.log.attemptSendingEndorsement"
 msgstr "Attempt to send endorsement to Plaudit with DOI {$doi} and ORCID {$orcid}"
+
+msgid "plugins.generic.plauditPreEndorsement.log.endorsementRemoved"
+msgstr "The submission endorsement has been removed"

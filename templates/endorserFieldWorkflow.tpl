@@ -109,3 +109,27 @@
     {rdelim});
 </script>
 {/if}
+
+{if $canRemoveEndorsement}
+<script>
+    async function requestRemoveEndorsement(e){ldelim}
+        $.post(
+            "{$removeEndorsementUrl}",
+            {ldelim}
+                submissionId: {$submissionId}
+            {rdelim}
+        );
+    {rdelim}
+
+    function confirmEndorsementRemoval(){ldelim}
+        let removalConfirmed = confirm("{translate key="plugins.generic.plauditPreEndorsement.removalConfirmationMessage"}");
+        if(removalConfirmed) {ldelim}
+            requestRemoveEndorsement();
+        {rdelim}
+    {rdelim}
+    
+    $(function(){ldelim}
+        $('#removeEndorsementSubmit').click(confirmEndorsementRemoval);
+    {rdelim});
+</script>
+{/if}
