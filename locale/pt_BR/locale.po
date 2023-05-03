@@ -62,6 +62,9 @@ msgstr "Remover endosso"
 msgid "plugins.generic.plauditPreEndorsement.removalConfirmationMessage"
 msgstr "Deseja remover o endosso desta submissão?"
 
+msgid "plugins.generic.plauditPreEndorsement.endorsementFromAuthor"
+msgstr "O endosso não pode ser dado por nenhum dos autores do manuscrito"
+
 msgid "plugins.generic.plauditPreEndorsement.preEndorsement"
 msgstr "Pré-endosso"
 

@@ -47,6 +47,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
             HookRegistry::register('Templates::Submission::SubmissionMetadataForm::AdditionalMetadata', array($this, 'addEndorserFieldsToStep3'));
 
             HookRegistry::register('submissionsubmitstep3form::readuservars', array($this, 'allowStep3FormToReadOurFields'));
+            HookRegistry::register('submissionsubmitstep3form::validate', array($this, 'validateEndorsementFromAuthor'));
             HookRegistry::register('submissionsubmitstep3form::execute', array($this, 'step3SaveEndorserEmail'));
             HookRegistry::register('submissionsubmitstep4form::execute', array($this, 'step4SendEmailToEndorser'));
             HookRegistry::register('Schema::get::publication', array($this, 'addOurFieldsToPublicationSchema'));
@@ -85,6 +86,24 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
         SubmissionLog::logEvent($request, $submission, SUBMISSION_LOG_METADATA_UPDATE, $message, $messageParams);
     }
 
+    public function validateEndorsementFromAuthor($hookName, $params)
+    {
+        $form =& $params[0];
+        $form->readUserVars(array('endorserEmail'));
+        $publication = $form->submission->getCurrentPublication();
+        $authors = $publication->getData('authors');
+        
+        $endorserEmail = $form->getData('endorserEmail');
+
+        foreach($authors as $author) {
+            if($author->getData('email') == $endorserEmail) {
+                $form->addErrorField('endorsementFromAuthor');
+                $form->addError('endorsementFromAuthor', __("plugins.generic.plauditPreEndorsement.endorsementFromAuthor"));
+                return;
+            }
+        }
+    }
+    
     public function addEndorserFieldsToStep3($hookName, $params)
     {
         $smarty = &$params[1];
