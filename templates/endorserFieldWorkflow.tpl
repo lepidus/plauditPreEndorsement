@@ -77,9 +77,12 @@
                 submissionId: {$submissionId},
                 endorserName: $('input[name=endorserNameWorkflow]').val(),
                 endorserEmail: $('input[name=endorserEmailWorkflow]').val()
-            {rdelim},
-            updateEndorsementSuccess()
-        );
+            {rdelim}
+        )
+        .done(updateEndorsementSuccess)
+        .fail(function(xhr, status, error){ldelim}
+            alert(xhr.responseJSON['errorMessage']);
+        {rdelim});
     {rdelim}
 
     $(function(){ldelim}
