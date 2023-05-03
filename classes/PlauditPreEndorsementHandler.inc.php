@@ -7,7 +7,6 @@ define('AUTH_SUCCESS', 'success');
 define('AUTH_INVALID_TOKEN', 'invalid_token');
 define('AUTH_ACCESS_DENIED', 'access_denied');
 
-
 class PlauditPreEndorsementHandler extends Handler
 {
     public function updateEndorser($args, $request)
@@ -24,6 +23,13 @@ class PlauditPreEndorsementHandler extends Handler
             return http_response_code(400);
         }
 
+        if($this->checkEndorsementFromAuthor($publication, $endorserEmail)) {
+            http_response_code(400);
+            header('Content-Type: application/json');
+            echo json_encode(['errorMessage' => __('plugins.generic.plauditPreEndorsement.endorsementFromAuthor')]);
+            return;
+        }
+
         $endorserChanged = ($endorserEmail != $publication->getData('endorserEmail'));
 
         $publication->setData('endorserName', $endorserName);
@@ -35,6 +41,19 @@ class PlauditPreEndorsementHandler extends Handler
         $plugin->sendEmailToEndorser($publication, $endorserChanged);
 
         return http_response_code(200);
+    }
+
+    private function checkEndorsementFromAuthor($publication, $endorserEmail): bool
+    {
+        $authors = $publication->getData('authors');
+        
+        foreach($authors as $author) {
+            if($author->getData('email') == $endorserEmail) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public function removeEndorsement($args, $request)
