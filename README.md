@@ -4,11 +4,17 @@
 
 This plugin allows authors to pre-endorse their manuscripts before the posting takes place.
 
+## Compatibility
+
+This plugin is compatible with the following PKP applications:
+
+- OPS 3.3.0-x
+
 ## Installation
 
-1. Enter the administration area of ​​your OJS/OPS website through the __Dashboard__.
-2. Navigate to `Settings`>` Website`> `Plugins`> `Upload a new plugin`.
-3. Under __Upload file__ select the file __plauditPreEndorsement.tar.gz__.
+1. Enter the administration area of ​​your OPS website through the __Dashboard__.
+2. Navigate to `Website Settings` > `Plugins` > `Installed Plugins` > `Upload a new plugin`.
+3. Under __Upload file__ select the file __plauditPreEndorsement.tar.gz__, downloaded from the latest release.
 4. Click __Save__ and the plugin will be installed on your website.
 
 ## Setting
