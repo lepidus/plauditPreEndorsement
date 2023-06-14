@@ -46,7 +46,7 @@ class PlauditPreEndorsementHandler extends Handler
     private function checkEndorsementFromAuthor($publication, $endorserEmail): bool
     {
         $authors = $publication->getData('authors');
-        
+
         foreach($authors as $author) {
             if($author->getData('email') == $endorserEmail) {
                 return true;
@@ -79,7 +79,7 @@ class PlauditPreEndorsementHandler extends Handler
         $publicationDao->updateObject($publication);
 
         $plugin = PluginRegistry::getPlugin('generic', 'plauditpreendorsementplugin');
-        $plugin->writeOnActivityLog($submission, 'plugins.generic.plauditPreEndorsement.log.endorsementRemoved'); 
+        $plugin->writeOnActivityLog($submission, 'plugins.generic.plauditPreEndorsement.log.endorsementRemoved');
 
         return http_response_code(200);
     }
@@ -100,7 +100,7 @@ class PlauditPreEndorsementHandler extends Handler
             $plugin->sendEndorsementToPlaudit($publication);
             return http_response_code(200);
         }
-        
+
         return http_response_code(400);
     }
 
@@ -192,7 +192,7 @@ class PlauditPreEndorsementHandler extends Handler
 
     private function setAccessDeniedEndorsement($publication)
     {
-        $publication->setData('endorserToken', null);
+        $publication->setData('endorserEmailToken', null);
         $publication->setData('endorsementStatus', ENDORSEMENT_STATUS_DENIED);
         $publicationDao = DAORegistry::getDAO('PublicationDAO');
         $publicationDao->updateObject($publication);
