@@ -138,6 +138,10 @@ class PlauditPreEndorsementHandler extends Handler
         if ($response->getStatusCode() == 200 && strlen($responseJson['orcid']) > 0) {
             $this->setConfirmedEndorsementPublication($publication, $orcidUri);
             $this->logMessageAndDisplayTemplate($submission, $request, 'plugins.generic.plauditPreEndorsement.log.endorsementConfirmed', ['verifySuccess' => true, 'orcid' => $orcidUri]);
+
+            if($publication->getData('status') === STATUS_PUBLISHED) {
+                $plugin->sendEndorsementToPlaudit($publication);
+            }
         } else {
             $this->logMessageAndDisplayTemplate($submission, $request, 'plugins.generic.plauditPreEndorsement.log.orcidRequestError', ['authFailure'=> true, 'orcidAPIError' => $response->getReasonPhrase(), 'verifySuccess' => true]);
         }
