@@ -52,7 +52,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
             HookRegistry::register('submissionsubmitstep4form::execute', array($this, 'step4SendEmailToEndorser'));
             HookRegistry::register('Schema::get::publication', array($this, 'addOurFieldsToPublicationSchema'));
             HookRegistry::register('Template::Workflow::Publication', array($this, 'addEndorserFieldsToWorkflow'));
-            HookRegistry::register('Publication::publish', array($this, 'sendEndorsementOnPosting'));
+            HookRegistry::register('Publication::publish', array($this, 'sendEndorsementOnPosting'), HOOK_SEQUENCE_CORE);
             HookRegistry::register('LoadHandler', array($this, 'setupPlauditPreEndorsementHandler'));
         }
 
@@ -260,7 +260,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
 
         $this->writeOnActivityLog($submission, 'plugins.generic.plauditPreEndorsement.log.attemptSendingEndorsement', ['doi' => $publication->getData('pub-id::doi'), 'orcid' => $publication->getData('endorserOrcid')]);
 
-        if ($endorsementStatusOkay) {
+        /*if ($endorsementStatusOkay) {
             $plauditClient = new PlauditClient();
 
             try {
@@ -277,7 +277,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
             $publication->setData('endorsementStatus', $newEndorsementStatus);
             $publicationDao = DAORegistry::getDAO('PublicationDAO');
             $publicationDao->updateObject($publication);
-        }
+        }*/
     }
 
     public function sendEmailToEndorser($publication, $endorserChanged = false)
