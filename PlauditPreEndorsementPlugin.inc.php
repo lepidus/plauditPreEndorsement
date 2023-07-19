@@ -92,7 +92,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
         $form->readUserVars(array('endorserEmail'));
         $publication = $form->submission->getCurrentPublication();
         $authors = $publication->getData('authors');
-        
+
         $endorserEmail = $form->getData('endorserEmail');
 
         foreach($authors as $author) {
@@ -103,7 +103,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
             }
         }
     }
-    
+
     public function addEndorserFieldsToStep3($hookName, $params)
     {
         $smarty = &$params[1];
@@ -230,7 +230,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
             $smarty->fetch($this->getTemplateResource('endorserFieldWorkflow.tpl'))
         );
     }
-    
+
 
     public function sendEndorsementOnPosting($hookName, $params)
     {
@@ -252,15 +252,14 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
         if(!$publicationHasDoi) {
             $this->writeOnActivityLog($submission, 'plugins.generic.plauditPreEndorsement.log.failedEndorsementSending.doi');
             return;
-        }
-        else if(empty($secretKey)) {
+        } elseif(empty($secretKey)) {
             $this->writeOnActivityLog($submission, 'plugins.generic.plauditPreEndorsement.log.failedEndorsementSending.secretKey');
             return;
         }
 
         $this->writeOnActivityLog($submission, 'plugins.generic.plauditPreEndorsement.log.attemptSendingEndorsement', ['doi' => $publication->getData('pub-id::doi'), 'orcid' => $publication->getData('endorserOrcid')]);
 
-        /*if ($endorsementStatusOkay) {
+        if ($endorsementStatusOkay) {
             $plauditClient = new PlauditClient();
 
             try {
@@ -277,7 +276,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
             $publication->setData('endorsementStatus', $newEndorsementStatus);
             $publicationDao = DAORegistry::getDAO('PublicationDAO');
             $publicationDao->updateObject($publication);
-        }*/
+        }
     }
 
     public function sendEmailToEndorser($publication, $endorserChanged = false)
@@ -298,7 +297,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
             $oauthUrl = $this->buildOAuthUrl(['token' => $endorserEmailToken, 'state' => $publication->getId()]);
 
             $userGroupDao = DAORegistry::getDAO('UserGroupDAO');
-			$authorsUserGroups = $userGroupDao->getByContextId($context->getId())->toArray();
+            $authorsUserGroups = $userGroupDao->getByContextId($context->getId())->toArray();
             $email->sendWithParams([
                 'orcidOauthUrl' => $oauthUrl,
                 'contactEmail' => $context->getData('contactEmail'),
@@ -308,17 +307,18 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
                 'authors' => htmlspecialchars($publication->getAuthorString($authorsUserGroups))
             ]);
 
-            if(is_null($publication->getData('endorserEmailCount')) || $endorserChanged)
+            if(is_null($publication->getData('endorserEmailCount')) || $endorserChanged) {
                 $endorserEmailCount = 0;
-            else
+            } else {
                 $endorserEmailCount = $publication->getData('endorserEmailCount');
+            }
 
             $publication->setData('endorserEmailToken', $endorserEmailToken);
             $publication->setData('endorsementStatus', ENDORSEMENT_STATUS_NOT_CONFIRMED);
             $publication->setData('endorserEmailCount', $endorserEmailCount + 1);
             $publicationDao = DAORegistry::getDAO('PublicationDAO');
             $publicationDao->updateObject($publication);
-            
+
             $submission = DAORegistry::getDAO('SubmissionDAO')->getById($publication->getData('submissionId'));
             $this->writeOnActivityLog($submission, 'plugins.generic.plauditPreEndorsement.log.sentEmailEndorser', ['endorserName' => $endorserName, 'endorserEmail' => $endorserEmail]);
         }
