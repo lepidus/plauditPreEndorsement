@@ -13,6 +13,7 @@ final class PlauditClientTest extends TestCase
     private $plauditClient;
     private $doi = '10.1590/LepidusPreprints.1535';
     private $orcid = '0000-0001-5542-5100';
+    private $orcidX = '0000-0001-5542-510X';
 
     public function setUp(): void
     {
@@ -22,6 +23,17 @@ final class PlauditClientTest extends TestCase
         $this->publication->setData('endorserOrcid', $this->orcid);
 
         $this->plauditClient = new PlauditClient();
+    }
+
+    public function testFilterOrcidNumbers(): void
+    {
+        $orcidUrlPrefix = 'https://orcid.org/';
+
+        $orcidNumbers = $this->plauditClient->filterOrcidNumbers($orcidUrlPrefix . $this->orcid);
+        $this->assertEquals($this->orcid, $orcidNumbers);
+        
+        $orcidNumbers = $this->plauditClient->filterOrcidNumbers($orcidUrlPrefix . $this->orcid);
+        $this->assertEquals($this->orcidX, $orcidNumbers);
     }
 
     public function testEndorsementStatusWhenRequestSucceed(): void
