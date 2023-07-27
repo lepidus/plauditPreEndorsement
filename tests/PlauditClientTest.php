@@ -31,8 +31,8 @@ final class PlauditClientTest extends TestCase
 
         $orcidNumbers = $this->plauditClient->filterOrcidNumbers($orcidUrlPrefix . $this->orcid);
         $this->assertEquals($this->orcid, $orcidNumbers);
-        
-        $orcidNumbers = $this->plauditClient->filterOrcidNumbers($orcidUrlPrefix . $this->orcid);
+
+        $orcidNumbers = $this->plauditClient->filterOrcidNumbers($orcidUrlPrefix . $this->orcidX);
         $this->assertEquals($this->orcidX, $orcidNumbers);
     }
 
