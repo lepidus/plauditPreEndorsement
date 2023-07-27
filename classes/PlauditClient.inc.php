@@ -6,10 +6,10 @@ define('PLAUDIT_API_URL', 'https://plaudit.pub/api/v1/endorsements');
 
 class PlauditClient
 {
-    private function filterOrcidNumbers(string $orcid): string
+    public function filterOrcidNumbers(string $orcid): string
     {
-        preg_match("~\d{4}-\d{4}-\d{4}-\d{3}(\d|X|x)~", $orcid, $matches);
-        return strtolower($matches[0]);
+        preg_match("~\d{4}-\d{4}-\d{4}-\d{3}(\d|X)~", $orcid, $matches);
+        return $matches[0];
     }
 
     public function requestEndorsementCreation($publication, $secretKey)
