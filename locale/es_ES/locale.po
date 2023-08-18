@@ -62,6 +62,9 @@ msgstr "Enviar endoso a Plaudit"
 msgid "plugins.generic.plauditPreEndorsement.removeEndorsement"
 msgstr "Eliminar endoso"
 
+msgid "plugins.generic.plauditPreEndorsement.endorsementEmailInvalid"
+msgstr "Introduzca una dirección de correo electrónico válida para el endosante"
+
 msgid "plugins.generic.plauditPreEndorsement.endorsementFromAuthor"
 msgstr "Ninguno de los autores del manuscrito puede dar su endoso"
 

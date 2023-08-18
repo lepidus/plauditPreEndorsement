@@ -11,7 +11,7 @@
     <div class="endorserFieldDiv">
         <label class="label">{translate key="plugins.generic.plauditPreEndorsement.endorserName"}</label>
         {if $canEditEndorsement}
-            {fbvElement type="text" name="endorserNameWorkflow" id="endorserNameWorkflow" value=$endorserName maxlength="90" size=$fbvStyles.size.MEDIUM}
+            {fbvElement type="text" name="endorserNameWorkflow" id="endorserNameWorkflow" value=$endorserName|escape maxlength="90" size=$fbvStyles.size.MEDIUM}
         {else}
             <span>{$endorserName|escape}</span>
         {/if}
@@ -20,7 +20,7 @@
     <div class="endorserFieldDiv">
         <label class="label">{translate key="plugins.generic.plauditPreEndorsement.endorserEmail"}</label>
         {if $canEditEndorsement}
-            {fbvElement type="email" name="endorserEmailWorkflow" id="endorserEmailWorkflow" value=$endorserEmail maxlength="90" size=$fbvStyles.size.MEDIUM}
+            {fbvElement type="email" name="endorserEmailWorkflow" id="endorserEmailWorkflow" value=$endorserEmail|escape maxlength="90" size=$fbvStyles.size.MEDIUM}
         {else}
             <span>{$endorserEmail|escape}</span>
         {/if}
