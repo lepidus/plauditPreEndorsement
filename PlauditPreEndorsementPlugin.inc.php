@@ -88,7 +88,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
 
     public function validateEndorsementFromAuthor($hookName, $params)
     {
-        $form =& $params[0];
+        $form = & $params[0];
         $form->readUserVars(array('endorserEmail'));
         $publication = $form->submission->getCurrentPublication();
         $authors = $publication->getData('authors');

@@ -143,7 +143,7 @@ class PlauditPreEndorsementHandler extends Handler
                 $plugin->sendEndorsementToPlaudit($publication);
             }
         } else {
-            $this->logMessageAndDisplayTemplate($submission, $request, 'plugins.generic.plauditPreEndorsement.log.orcidRequestError', ['authFailure'=> true, 'orcidAPIError' => $response->getReasonPhrase(), 'verifySuccess' => true]);
+            $this->logMessageAndDisplayTemplate($submission, $request, 'plugins.generic.plauditPreEndorsement.log.orcidRequestError', ['authFailure' => true, 'orcidAPIError' => $response->getReasonPhrase(), 'verifySuccess' => true]);
         }
     }
 
