@@ -11,6 +11,7 @@ class PlauditPreEndorsementHandler extends Handler
 {
     public function updateEndorser($args, $request)
     {
+        $plugin = new PlauditPreEndorsementPlugin();
         $submissionId = $request->getUserVar('submissionId');
         $endorserName = $request->getUserVar('endorserName');
         $endorserEmail = $request->getUserVar('endorserEmail');
@@ -21,6 +22,13 @@ class PlauditPreEndorsementHandler extends Handler
         $endorsementIsConfirmed = $publication->getData('endorsementStatus') == ENDORSEMENT_STATUS_CONFIRMED;
         if ($endorsementIsConfirmed) {
             return http_response_code(400);
+        }
+
+        if(!$plugin->inputIsEmail($endorserEmail)) {
+            http_response_code(400);
+            header('Content-Type: application/json');
+            echo json_encode(['errorMessage' => __('plugins.generic.plauditPreEndorsement.endorsementEmailInvalid')]);
+            return;
         }
 
         if($this->checkEndorsementFromAuthor($publication, $endorserEmail)) {
@@ -37,7 +45,6 @@ class PlauditPreEndorsementHandler extends Handler
         $publicationDao = DAORegistry::getDAO('PublicationDAO');
         $publicationDao->updateObject($publication);
 
-        $plugin = new PlauditPreEndorsementPlugin();
         $plugin->sendEmailToEndorser($publication, $endorserChanged);
 
         return http_response_code(200);

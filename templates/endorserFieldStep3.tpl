@@ -8,6 +8,6 @@
 <link rel="stylesheet" type="text/css" href="/plugins/generic/plauditPreEndorsement/styles/endorserStep3StyleSheet.css">
 
 {fbvFormSection id="endorserSection" label="plugins.generic.plauditPreEndorsement.endorsement" description="plugins.generic.plauditPreEndorsement.endorsement.description"}
-    {fbvElement type="text" label="plugins.generic.plauditPreEndorsement.endorserName" name="endorserName" id="endorserName" value=$endorserName size=$fbvStyles.size.MEDIUM}
-    {fbvElement type="email" label="plugins.generic.plauditPreEndorsement.endorserEmail" name="endorserEmail" id="endorserEmail" value=$endorserEmail maxlength="90" size=$fbvStyles.size.MEDIUM}
+    {fbvElement type="text" label="plugins.generic.plauditPreEndorsement.endorserName" name="endorserName" id="endorserName" value=$endorserName|escape size=$fbvStyles.size.MEDIUM}
+    {fbvElement type="email" label="plugins.generic.plauditPreEndorsement.endorserEmail" name="endorserEmail" id="endorserEmail" value=$endorserEmail|escape maxlength="90" size=$fbvStyles.size.MEDIUM}
 {/fbvFormSection}

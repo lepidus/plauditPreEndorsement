@@ -47,7 +47,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
             HookRegistry::register('Templates::Submission::SubmissionMetadataForm::AdditionalMetadata', array($this, 'addEndorserFieldsToStep3'));
 
             HookRegistry::register('submissionsubmitstep3form::readuservars', array($this, 'allowStep3FormToReadOurFields'));
-            HookRegistry::register('submissionsubmitstep3form::validate', array($this, 'validateEndorsementFromAuthor'));
+            HookRegistry::register('submissionsubmitstep3form::validate', array($this, 'validateEndorsement'));
             HookRegistry::register('submissionsubmitstep3form::execute', array($this, 'step3SaveEndorserEmail'));
             HookRegistry::register('submissionsubmitstep4form::execute', array($this, 'step4SendEmailToEndorser'));
             HookRegistry::register('Schema::get::publication', array($this, 'addOurFieldsToPublicationSchema'));
@@ -86,7 +86,12 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
         SubmissionLog::logEvent($request, $submission, SUBMISSION_LOG_METADATA_UPDATE, $message, $messageParams);
     }
 
-    public function validateEndorsementFromAuthor($hookName, $params)
+    public function inputIsEmail(string $input): bool
+    {
+        return filter_var($input, FILTER_VALIDATE_EMAIL);
+    }
+
+    public function validateEndorsement($hookName, $params)
     {
         $form = & $params[0];
         $form->readUserVars(array('endorserEmail'));
@@ -94,6 +99,12 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
         $authors = $publication->getData('authors');
 
         $endorserEmail = $form->getData('endorserEmail');
+
+        if(!$this->inputIsEmail($endorserEmail)) {
+            $form->addErrorField('endorsementEmailInvalid');
+            $form->addError('endorsementEmailInvalid', __("plugins.generic.plauditPreEndorsement.endorsementEmailInvalid"));
+            return;
+        }
 
         foreach($authors as $author) {
             if($author->getData('email') == $endorserEmail) {
