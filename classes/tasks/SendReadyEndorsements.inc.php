@@ -15,9 +15,28 @@ class SendReadyEndorsements extends ScheduledTask
         $readyPublications = $preEndorsementDao->getPublicationsWithEndorsementReadyToSend($context->getId());
 
         foreach($readyPublications as $publication) {
-            $plugin->sendEndorsementToPlaudit($publication);
+            $doiIsDeposited = $this->doiIsDeposited($publication->getData('pub-id::doi'));
+
+            if($doiIsDeposited) {
+                $plugin->sendEndorsementToPlaudit($publication);
+            }
         }
 
         return true;
+    }
+
+    private function doiIsDeposited(string $doi): bool
+    {
+        $doiUrl = "https://doi.org/".$doi;
+        $headers = get_headers($doiUrl);
+        $statusCode = intval(substr($headers[0], 9, 3));
+
+        $HTTP_STATUS_FOUND = 302;
+
+        if(!empty($doi) and $statusCode == $HTTP_STATUS_FOUND) {
+            return true;
+        }
+
+        return false;
     }
 }
