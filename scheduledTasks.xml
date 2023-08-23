@@ -5,6 +5,6 @@
 <scheduled_tasks>
 	<task class="plugins.generic.plauditPreEndorsement.classes.tasks.SendReadyEndorsements">
 		<descr>Send the endorsement of published submissions when it is confirmed</descr>
-		<!-- <frequency minute="?"/> -->
+		<frequency minute="05"/>
 	</task>
 </scheduled_tasks>

@@ -28,9 +28,7 @@ class SendReadyEndorsements extends ScheduledTask
     private function doiIsDeposited(string $doi): bool
     {
         $doiUrl = "https://doi.org/".$doi;
-        $headers = get_headers($doiUrl);
-        $statusCode = intval(substr($headers[0], 9, 3));
-
+        $statusCode = $this->getStatusCode($doiUrl);
         $HTTP_STATUS_FOUND = 302;
 
         if(!empty($doi) and $statusCode == $HTTP_STATUS_FOUND) {
@@ -38,5 +36,19 @@ class SendReadyEndorsements extends ScheduledTask
         }
 
         return false;
+    }
+
+    private function getStatusCode(string $url): int
+    {
+        $getOptions = [
+            'http' => [
+                'method' => 'HEAD',
+                'follow_location' => 0,
+            ],
+        ];
+        $getContext = stream_context_create($getOptions);
+        $headers = get_headers($url, false, $getContext);
+
+        return intval(substr($headers[0], 9, 3));
     }
 }
