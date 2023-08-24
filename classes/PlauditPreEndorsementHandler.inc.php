@@ -31,7 +31,7 @@ class PlauditPreEndorsementHandler extends Handler
             return;
         }
 
-        if($this->checkEndorsementFromAuthor($publication, $endorserEmail)) {
+        if($this->checkDataIsFromAnyAuthor($publication, 'email', $endorserEmail)) {
             http_response_code(400);
             header('Content-Type: application/json');
             echo json_encode(['errorMessage' => __('plugins.generic.plauditPreEndorsement.endorsementFromAuthor')]);
@@ -50,12 +50,12 @@ class PlauditPreEndorsementHandler extends Handler
         return http_response_code(200);
     }
 
-    private function checkEndorsementFromAuthor($publication, $endorserEmail): bool
+    private function checkDataIsFromAnyAuthor($publication, $dataName, $dataValue): bool
     {
         $authors = $publication->getData('authors');
 
         foreach($authors as $author) {
-            if($author->getData('email') == $endorserEmail) {
+            if($author->getData($dataName) == $dataValue) {
                 return true;
             }
         }
@@ -143,7 +143,7 @@ class PlauditPreEndorsementHandler extends Handler
         $orcidUri = ($isSandBox ? ENDORSEMENT_ORCID_URL_SANDBOX : ENDORSEMENT_ORCID_URL) . $responseJson['orcid'];
 
         if ($response->getStatusCode() == 200 && strlen($responseJson['orcid']) > 0) {
-            if($this->checkOrcidIsFromAuthor($publication, $orcidUri)) {
+            if($this->checkDataIsFromAnyAuthor($publication, 'orcid', $orcidUri)) {
                 $this->logMessageAndDisplayTemplate($submission, $request, 'plugins.generic.plauditPreEndorsement.log.endorserOrcidFromAuthor', ['errorType' => 'orcidFromAuthor']);
                 return;
             }
