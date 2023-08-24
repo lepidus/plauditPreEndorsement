@@ -143,6 +143,11 @@ class PlauditPreEndorsementHandler extends Handler
         $orcidUri = ($isSandBox ? ENDORSEMENT_ORCID_URL_SANDBOX : ENDORSEMENT_ORCID_URL) . $responseJson['orcid'];
 
         if ($response->getStatusCode() == 200 && strlen($responseJson['orcid']) > 0) {
+            if($this->checkOrcidIsFromAuthor($publication, $orcidUri)) {
+                $this->logMessageAndDisplayTemplate($submission, $request, 'plugins.generic.plauditPreEndorsement.log.endorserOrcidFromAuthor', ['verifySuccess' => false, 'orcidFromAuthor' => true]);
+                return;
+            }
+
             $this->setConfirmedEndorsementPublication($publication, $orcidUri);
             $this->logMessageAndDisplayTemplate($submission, $request, 'plugins.generic.plauditPreEndorsement.log.endorsementConfirmed', ['verifySuccess' => true, 'orcid' => $orcidUri]);
 

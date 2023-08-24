@@ -33,6 +33,8 @@
                     {translate key="plugins.generic.plauditPreEndorsement.verify.invalidToken"}
                 {elseif $authFailure}
                     {translate key="plugins.generic.plauditPreEndorsement.verify.authFailure"}
+                {elseif $orcidFromAuthor}
+                    {translate key="plugins.generic.plauditPreEndorsement.verify.orcidFromAuthor"}
                 {else}
                     {translate key="plugins.generic.plauditPreEndorsement.verify.failure"}
                 {/if}
