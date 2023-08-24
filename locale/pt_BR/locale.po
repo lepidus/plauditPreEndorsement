@@ -137,6 +137,9 @@ msgstr "Você negou acesso ao seu registro ORCID"
 msgid "plugins.generic.plauditPreEndorsement.verify.authFailure"
 msgstr "O link de autorização ORCID já foi utilizado ou é inválido"
 
+msgid "plugins.generic.plauditPreEndorsement.verify.orcidFromAuthor"
+msgstr "O ORCID informado para o(a) endossador(a) não pode ser o mesmo de um dos autores da submissão"
+
 msgid "plugins.generic.plauditPreEndorsement.failure.contact"
 msgstr "Por favor, entre em contato com o administrador do servidor, informando seu nome, ORCID ID e detalhes da submissão"
 
@@ -155,6 +158,9 @@ msgstr "O(A) endossador(a) negou acesso ao seu ORCID"
 
 msgid "plugins.generic.plauditPreEndorsement.log.orcidRequestError"
 msgstr "Ocorreu um erro durante a requisição do ORCID do(a) endossador(a). A mensagem retornada foi: {$orcidAPIError}"
+
+msgid "plugins.generic.plauditPreEndorsement.log.endorserOrcidFromAuthor"
+msgstr "O endosso não foi confirmado, pois o ORCID informado é de um dos autores"
 
 msgid "plugins.generic.plauditPreEndorsement.log.endorsementConfirmed"
 msgstr "O endosso foi confirmado pelo(a) endossador(a) e seu ORCID foi salvo na submissão"

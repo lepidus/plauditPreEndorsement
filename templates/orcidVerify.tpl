@@ -14,7 +14,7 @@
         {translate key="plugins.generic.plauditPreEndorsement.verify.title"}
     </h2>
     <div class="description">
-        {if $verifySuccess}
+        {if not isset($errorType)}
             <p>
                 <span class="orcid"><a href="{$orcid|escape}" target="_blank">{$orcid|escape}</a></span>
             </p>
@@ -23,19 +23,11 @@
             </div>
         {else}
             <div class="orcid-failure">
-                {if $orcidAPIError}
+                {if isset($orcidAPIError)}
                     {$orcidAPIError}
                 {/if}    
                 
-                {if $denied}
-                    {translate key="plugins.generic.plauditPreEndorsement.verify.denied"}
-                {elseif $invalidToken}
-                    {translate key="plugins.generic.plauditPreEndorsement.verify.invalidToken"}
-                {elseif $authFailure}
-                    {translate key="plugins.generic.plauditPreEndorsement.verify.authFailure"}
-                {else}
-                    {translate key="plugins.generic.plauditPreEndorsement.verify.failure"}
-                {/if}
+                {translate key="plugins.generic.plauditPreEndorsement.verify.{$errorType}"}
             </div>
             {translate key="plugins.generic.plauditPreEndorsement.failure.contact"}
         {/if}

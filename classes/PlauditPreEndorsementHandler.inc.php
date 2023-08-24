@@ -31,7 +31,7 @@ class PlauditPreEndorsementHandler extends Handler
             return;
         }
 
-        if($this->checkEndorsementFromAuthor($publication, $endorserEmail)) {
+        if($this->checkDataIsFromAnyAuthor($publication, 'email', $endorserEmail)) {
             http_response_code(400);
             header('Content-Type: application/json');
             echo json_encode(['errorMessage' => __('plugins.generic.plauditPreEndorsement.endorsementFromAuthor')]);
@@ -50,12 +50,12 @@ class PlauditPreEndorsementHandler extends Handler
         return http_response_code(200);
     }
 
-    private function checkEndorsementFromAuthor($publication, $endorserEmail): bool
+    private function checkDataIsFromAnyAuthor($publication, $dataName, $dataValue): bool
     {
         $authors = $publication->getData('authors');
 
         foreach($authors as $author) {
-            if($author->getData('email') == $endorserEmail) {
+            if($author->getData($dataName) == $dataValue) {
                 return true;
             }
         }
@@ -121,11 +121,11 @@ class PlauditPreEndorsementHandler extends Handler
 
         $statusAuth = $this->getStatusAuthentication($publication, $request);
         if ($statusAuth == AUTH_INVALID_TOKEN) {
-            $this->logMessageAndDisplayTemplate($submission, $request, 'plugins.generic.plauditPreEndorsement.log.invalidToken', ['verifySuccess' => false, 'invalidToken' => true]);
+            $this->logMessageAndDisplayTemplate($submission, $request, 'plugins.generic.plauditPreEndorsement.log.invalidToken', ['errorType' => 'invalidToken']);
             return;
         } elseif ($statusAuth == AUTH_ACCESS_DENIED) {
             $this->setAccessDeniedEndorsement($publication);
-            $this->logMessageAndDisplayTemplate($submission, $request, 'plugins.generic.plauditPreEndorsement.log.orcidAccessDenied', ['verifySuccess' => false, 'denied' => true]);
+            $this->logMessageAndDisplayTemplate($submission, $request, 'plugins.generic.plauditPreEndorsement.log.orcidAccessDenied', ['errorType' => 'denied']);
             return;
         }
 
@@ -133,7 +133,7 @@ class PlauditPreEndorsementHandler extends Handler
             $response = $this->requestOrcid($request, $plugin);
             $responseJson = json_decode($response->getBody(), true);
         } catch (GuzzleHttp\Exception\RequestException  $exception) {
-            $this->logMessageAndDisplayTemplate($submission, $request, 'plugins.generic.plauditPreEndorsement.log.orcidRequestError', ['orcidAPIError' => $exception->getMessage(), 'verifySuccess' => false]);
+            $this->logMessageAndDisplayTemplate($submission, $request, 'plugins.generic.plauditPreEndorsement.log.orcidRequestError', ['errorType' => 'failure', 'orcidAPIError' => $exception->getMessage()]);
             return;
         }
 
@@ -143,14 +143,19 @@ class PlauditPreEndorsementHandler extends Handler
         $orcidUri = ($isSandBox ? ENDORSEMENT_ORCID_URL_SANDBOX : ENDORSEMENT_ORCID_URL) . $responseJson['orcid'];
 
         if ($response->getStatusCode() == 200 && strlen($responseJson['orcid']) > 0) {
+            if($this->checkDataIsFromAnyAuthor($publication, 'orcid', $orcidUri)) {
+                $this->logMessageAndDisplayTemplate($submission, $request, 'plugins.generic.plauditPreEndorsement.log.endorserOrcidFromAuthor', ['errorType' => 'orcidFromAuthor']);
+                return;
+            }
+
             $this->setConfirmedEndorsementPublication($publication, $orcidUri);
-            $this->logMessageAndDisplayTemplate($submission, $request, 'plugins.generic.plauditPreEndorsement.log.endorsementConfirmed', ['verifySuccess' => true, 'orcid' => $orcidUri]);
+            $this->logMessageAndDisplayTemplate($submission, $request, 'plugins.generic.plauditPreEndorsement.log.endorsementConfirmed', ['orcid' => $orcidUri]);
 
             if($publication->getData('status') === STATUS_PUBLISHED) {
                 $plugin->sendEndorsementToPlaudit($publication);
             }
         } else {
-            $this->logMessageAndDisplayTemplate($submission, $request, 'plugins.generic.plauditPreEndorsement.log.orcidRequestError', ['authFailure' => true, 'orcidAPIError' => $response->getReasonPhrase(), 'verifySuccess' => true]);
+            $this->logMessageAndDisplayTemplate($submission, $request, 'plugins.generic.plauditPreEndorsement.log.orcidRequestError', ['errorType' => 'authFailure', 'orcidAPIError' => $response->getReasonPhrase()]);
         }
     }
 
