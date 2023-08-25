@@ -310,11 +310,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
         $statusCode = $this->getStatusCode($doiUrl);
         $HTTP_STATUS_FOUND = 302;
 
-        if(!empty($doi) and $statusCode == $HTTP_STATUS_FOUND) {
-            return true;
-        }
-
-        return false;
+        return $statusCode == $HTTP_STATUS_FOUND;
     }
 
     private function getStatusCode(string $url): int
