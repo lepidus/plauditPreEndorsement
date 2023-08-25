@@ -251,26 +251,11 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
 
     public function sendEndorsementToPlaudit($publication)
     {
-        $request = PKPApplication::get()->getRequest();
-        $contextId = $request->getContext()->getId();
-        $submission = DAORegistry::getDAO('SubmissionDAO')->getById($publication->getData('submissionId'));
+        $canSendEndorsement = $this->endorsementSendingValidation($publication);
 
-        $endorsementStatusOkay = ($publication->getData('endorsementStatus') == ENDORSEMENT_STATUS_CONFIRMED
-            || $publication->getData('endorsementStatus') == ENDORSEMENT_STATUS_COULDNT_COMPLETE);
-        $publicationHasDoi = !empty($publication->getData('pub-id::doi'));
-        $secretKey = $this->getSetting($contextId, 'plauditAPISecret');
+        if ($canSendEndorsement) {
+            $this->writeOnActivityLog($submission, 'plugins.generic.plauditPreEndorsement.log.attemptSendingEndorsement', ['doi' => $publication->getData('pub-id::doi'), 'orcid' => $publication->getData('endorserOrcid')]);
 
-        if(!$publicationHasDoi) {
-            $this->writeOnActivityLog($submission, 'plugins.generic.plauditPreEndorsement.log.failedEndorsementSending.doi');
-            return;
-        } elseif(empty($secretKey)) {
-            $this->writeOnActivityLog($submission, 'plugins.generic.plauditPreEndorsement.log.failedEndorsementSending.secretKey');
-            return;
-        }
-
-        $this->writeOnActivityLog($submission, 'plugins.generic.plauditPreEndorsement.log.attemptSendingEndorsement', ['doi' => $publication->getData('pub-id::doi'), 'orcid' => $publication->getData('endorserOrcid')]);
-
-        if ($endorsementStatusOkay) {
             $plauditClient = new PlauditClient();
 
             try {
@@ -288,6 +273,62 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
             $publicationDao = DAORegistry::getDAO('PublicationDAO');
             $publicationDao->updateObject($publication);
         }
+    }
+
+    private function endorsementSendingValidation($publication): bool
+    {
+        $request = Application::get()->getRequest();
+        $contextId = $request->getContext()->getId();
+        $submission = DAORegistry::getDAO('SubmissionDAO')->getById($publication->getData('submissionId'));
+
+        $endorsementStatusOkay = ($publication->getData('endorsementStatus') == ENDORSEMENT_STATUS_CONFIRMED
+            || $publication->getData('endorsementStatus') == ENDORSEMENT_STATUS_COULDNT_COMPLETE);
+        $doi = $publication->getData('pub-id::doi');
+        $secretKey = $this->getSetting($contextId, 'plauditAPISecret');
+
+        if(empty($doi)) {
+            $this->writeOnActivityLog($submission, 'plugins.generic.plauditPreEndorsement.log.failedEndorsementSending.emptyDoi');
+            return false;
+        }
+
+        if(!$this->doiIsDeposited($doi)) {
+            $this->writeOnActivityLog($submission, 'plugins.generic.plauditPreEndorsement.log.failedEndorsementSending.doiNotDeposited');
+            return false;
+        }
+
+        if(empty($secretKey)) {
+            $this->writeOnActivityLog($submission, 'plugins.generic.plauditPreEndorsement.log.failedEndorsementSending.secretKey');
+            return false;
+        }
+
+        return true;
+    }
+
+    private function doiIsDeposited(string $doi): bool
+    {
+        $doiUrl = "https://doi.org/".$doi;
+        $statusCode = $this->getStatusCode($doiUrl);
+        $HTTP_STATUS_FOUND = 302;
+
+        if(!empty($doi) and $statusCode == $HTTP_STATUS_FOUND) {
+            return true;
+        }
+
+        return false;
+    }
+
+    private function getStatusCode(string $url): int
+    {
+        $getOptions = [
+            'http' => [
+                'method' => 'HEAD',
+                'follow_location' => 0,
+            ],
+        ];
+        $getContext = stream_context_create($getOptions);
+        $headers = get_headers($url, false, $getContext);
+
+        return intval(substr($headers[0], 9, 3));
     }
 
     public function sendEmailToEndorser($publication, $endorserChanged = false)
