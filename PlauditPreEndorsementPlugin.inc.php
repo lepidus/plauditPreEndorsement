@@ -52,7 +52,6 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
             HookRegistry::register('submissionsubmitstep4form::execute', array($this, 'step4SendEmailToEndorser'));
             HookRegistry::register('Schema::get::publication', array($this, 'addOurFieldsToPublicationSchema'));
             HookRegistry::register('Template::Workflow::Publication', array($this, 'addEndorserFieldsToWorkflow'));
-            HookRegistry::register('Publication::publish', array($this, 'sendEndorsementOnPosting'), HOOK_SEQUENCE_CORE);
             HookRegistry::register('LoadHandler', array($this, 'setupPlauditPreEndorsementHandler'));
             HookRegistry::register('AcronPlugin::parseCronTab', array($this, 'addEndorsementTasksToCrontab'));
         }
@@ -248,13 +247,6 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
             __('plugins.generic.plauditPreEndorsement.preEndorsement'),
             $smarty->fetch($this->getTemplateResource('endorserFieldWorkflow.tpl'))
         );
-    }
-
-
-    public function sendEndorsementOnPosting($hookName, $params)
-    {
-        $publication = $params[0];
-        $this->sendEndorsementToPlaudit($publication);
     }
 
     public function sendEndorsementToPlaudit($publication)
