@@ -251,14 +251,18 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
 
     public function sendEndorsementToPlaudit($publication)
     {
-        $canSendEndorsement = $this->endorsementSendingValidation($publication);
+        $submission = DAORegistry::getDAO('SubmissionDAO')->getById($publication->getData('submissionId'));
+        $canSendEndorsement = $this->endorsementSendingValidation($submission, $publication);
 
         if ($canSendEndorsement) {
             $this->writeOnActivityLog($submission, 'plugins.generic.plauditPreEndorsement.log.attemptSendingEndorsement', ['doi' => $publication->getData('pub-id::doi'), 'orcid' => $publication->getData('endorserOrcid')]);
 
+            $request = Application::get()->getRequest();
+            $contextId = $request->getContext()->getId();
             $plauditClient = new PlauditClient();
 
             try {
+                $secretKey = $this->getSetting($contextId, 'plauditAPISecret');
                 $response = $plauditClient->requestEndorsementCreation($publication, $secretKey);
                 $newEndorsementStatus = $plauditClient->getEndorsementStatusByResponse($response, $publication);
             } catch (ClientException $exception) {
@@ -275,14 +279,11 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
         }
     }
 
-    private function endorsementSendingValidation($publication): bool
+    private function endorsementSendingValidation($submission, $publication): bool
     {
         $request = Application::get()->getRequest();
         $contextId = $request->getContext()->getId();
-        $submission = DAORegistry::getDAO('SubmissionDAO')->getById($publication->getData('submissionId'));
 
-        $endorsementStatusOkay = ($publication->getData('endorsementStatus') == ENDORSEMENT_STATUS_CONFIRMED
-            || $publication->getData('endorsementStatus') == ENDORSEMENT_STATUS_COULDNT_COMPLETE);
         $doi = $publication->getData('pub-id::doi');
         $secretKey = $this->getSetting($contextId, 'plauditAPISecret');
 
@@ -323,8 +324,9 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
         ];
         $getContext = stream_context_create($getOptions);
         $headers = get_headers($url, false, $getContext);
+        $statusLine = $headers[0];
 
-        return intval(substr($headers[0], 9, 3));
+        return intval(explode(' ', $statusLine)[1]);
     }
 
     public function sendEmailToEndorser($publication, $endorserChanged = false)
