@@ -15,6 +15,7 @@ use GuzzleHttp\Exception\ClientException;
 
 import('lib.pkp.classes.plugins.GenericPlugin');
 import('plugins.generic.plauditPreEndorsement.classes.PlauditClient');
+import('plugins.generic.plauditPreEndorsement.classes.CrossrefClient');
 
 define('ENDORSEMENT_ORCID_URL', 'https://orcid.org/');
 define('ENDORSEMENT_ORCID_URL_SANDBOX', 'https://sandbox.orcid.org/');
@@ -286,13 +287,14 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
 
         $doi = $publication->getData('pub-id::doi');
         $secretKey = $this->getSetting($contextId, 'plauditAPISecret');
+        $crossrefClient = new CrossrefClient();
 
         if(empty($doi)) {
             $this->writeOnActivityLog($submission, 'plugins.generic.plauditPreEndorsement.log.failedEndorsementSending.emptyDoi');
             return false;
         }
 
-        if(!$this->doiIsDeposited($doi)) {
+        if(!$crossrefClient->doiIsDeposited($doi)) {
             $this->writeOnActivityLog($submission, 'plugins.generic.plauditPreEndorsement.log.failedEndorsementSending.doiNotDeposited');
             return false;
         }
@@ -303,30 +305,6 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
         }
 
         return true;
-    }
-
-    private function doiIsDeposited(string $doi): bool
-    {
-        $doiUrl = "https://doi.org/".$doi;
-        $statusCode = $this->getStatusCode($doiUrl);
-        $HTTP_STATUS_FOUND = 302;
-
-        return $statusCode == $HTTP_STATUS_FOUND;
-    }
-
-    private function getStatusCode(string $url): int
-    {
-        $getOptions = [
-            'http' => [
-                'method' => 'HEAD',
-                'follow_location' => 0,
-            ],
-        ];
-        $getContext = stream_context_create($getOptions);
-        $headers = get_headers($url, false, $getContext);
-        $statusLine = $headers[0];
-
-        return intval(explode(' ', $statusLine)[1]);
     }
 
     public function sendEmailToEndorser($publication, $endorserChanged = false)
