@@ -46,7 +46,7 @@ class EndorsementService
         }
 
         if(!$this->crossrefClient->doiIsIndexed($doi)) {
-            return 'plugins.generic.plauditPreEndorsement.log.failedEndorsementSending.doiNotDeposited';
+            return 'plugins.generic.plauditPreEndorsement.log.failedEndorsementSending.doiNotIndexed';
         }
 
         if(empty($secretKey)) {

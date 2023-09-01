@@ -58,7 +58,7 @@ final class EndorsementServiceTest extends DatabaseTestCase
 
         $this->publication->setData('pub-id::doi', $this->doi);
         $validateResult = $this->endorsementService->validateEndorsementSending($this->publication);
-        $this->assertEquals('plugins.generic.plauditPreEndorsement.log.failedEndorsementSending.doiNotDeposited', $validateResult);
+        $this->assertEquals('plugins.generic.plauditPreEndorsement.log.failedEndorsementSending.doiNotIndexed', $validateResult);
 
         $mockCrossrefClient = $this->getMockCrossrefClient();
         $this->endorsementService->setCrossrefClient($mockCrossrefClient);
