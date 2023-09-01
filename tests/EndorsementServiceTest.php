@@ -74,8 +74,11 @@ final class EndorsementServiceTest extends DatabaseTestCase
     {
         $today = Core::getCurrentDate();
         $message = 'common.ok';
-        $this->createEventLog($today, $message);
 
+        $alreadyLoggedToday = $this->endorsementService->messageWasAlreadyLoggedToday($this->submissionId, $message);
+        $this->assertFalse($alreadyLoggedToday);
+
+        $this->createEventLog($today, $message);
         $alreadyLoggedToday = $this->endorsementService->messageWasAlreadyLoggedToday($this->submissionId, $message);
         $this->assertTrue($alreadyLoggedToday);
     }
