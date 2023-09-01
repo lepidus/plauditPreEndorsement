@@ -22,7 +22,6 @@ final class EndorsementServiceTest extends DatabaseTestCase
         $this->publication = new Publication();
         $this->plugin = new PlauditPreEndorsementPlugin();
         $this->endorsementService = new EndorsementService($this->contextId, $this->plugin);
-        $this->endorsementService->setCrossrefClient(new CrossrefClient());
     }
 
     protected function getAffectedTables(): array

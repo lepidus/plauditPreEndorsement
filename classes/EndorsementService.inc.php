@@ -1,6 +1,7 @@
 <?php
 
 import('plugins.generic.plauditPreEndorsement.classes.PlauditClient');
+import('plugins.generic.plauditPreEndorsement.classes.CrossrefClient');
 
 class EndorsementService
 {
@@ -12,11 +13,27 @@ class EndorsementService
     {
         $this->plugin = $plugin;
         $this->contextId = $contextId;
+        $this->crossrefClient = new CrossrefClient();
     }
 
     public function setCrossrefClient($crossrefClient)
     {
         $this->crossrefClient = $crossrefClient;
+    }
+
+    public function sendEndorsement($publication, $checkMessageWasLoggedToday = false)
+    {
+        $validationResult = $this->validateEndorsementSending($publication);
+
+        if($validationResult == 'ok') {
+            $this->sendEndorsementToPlaudit($publication);
+        } else {
+            $submissionId = $publication->getData('submissionId');
+            if($checkMessageWasLoggedToday and !$this->messageWasAlreadyLoggedToday($submissionId, $validationResult)) {
+                $submission = DAORegistry::getDAO('SubmissionDAO')->getById($submissionId);
+                $this->plugin->writeOnActivityLog($submission, $validationResult);
+            }
+        }
     }
 
     public function validateEndorsementSending($publication): string
@@ -39,15 +56,15 @@ class EndorsementService
         return 'ok';
     }
 
-    public function sendEndorsementToPlaudit($plugin, $contextId, $publication)
+    public function sendEndorsementToPlaudit($publication)
     {
         $submission = DAORegistry::getDAO('SubmissionDAO')->getById($publication->getData('submissionId'));
-        $plugin->writeOnActivityLog($submission, 'plugins.generic.plauditPreEndorsement.log.attemptSendingEndorsement', ['doi' => $publication->getData('pub-id::doi'), 'orcid' => $publication->getData('endorserOrcid')]);
+        $this->plugin->writeOnActivityLog($submission, 'plugins.generic.plauditPreEndorsement.log.attemptSendingEndorsement', ['doi' => $publication->getData('pub-id::doi'), 'orcid' => $publication->getData('endorserOrcid')]);
 
         $plauditClient = new PlauditClient();
 
         try {
-            $secretKey = $plugin->getSetting($contextId, 'plauditAPISecret');
+            $secretKey = $this->plugin->getSetting($this->contextId, 'plauditAPISecret');
             $response = $plauditClient->requestEndorsementCreation($publication, $secretKey);
             $newEndorsementStatus = $plauditClient->getEndorsementStatusByResponse($response, $publication);
         } catch (ClientException $exception) {
@@ -55,7 +72,7 @@ class EndorsementService
             $responseCode = $response->getStatusCode();
             $responseBody = print_r($response->getBody()->getContents(), true);
 
-            $plugin->writeOnActivityLog($submission, 'plugins.generic.plauditPreEndorsement.log.failedSendingEndorsement', ['code' => $responseCode, 'body' => $responseBody]);
+            $this->plugin->writeOnActivityLog($submission, 'plugins.generic.plauditPreEndorsement.log.failedSendingEndorsement', ['code' => $responseCode, 'body' => $responseBody]);
             $newEndorsementStatus = ENDORSEMENT_STATUS_COULDNT_COMPLETE;
         }
 

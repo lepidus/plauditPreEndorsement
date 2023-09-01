@@ -2,6 +2,7 @@
 
 import('lib.pkp.classes.scheduledTask.ScheduledTask');
 import('plugins.generic.plauditPreEndorsement.classes.PlauditPreEndorsementDAO');
+import('plugins.generic.plauditPreEndorsement.classes.EndorsementService');
 
 class SendReadyEndorsements extends ScheduledTask
 {
@@ -15,7 +16,8 @@ class SendReadyEndorsements extends ScheduledTask
         $readyPublications = $preEndorsementDao->getPublicationsWithEndorsementReadyToSend($context->getId());
 
         foreach($readyPublications as $publication) {
-            $plugin->sendEndorsementToPlaudit($publication);
+            $endorsementService = new EndorsementService($context->getId(), $plugin);
+            $endorsementService->sendEndorsement($publication, true);
         }
 
         return true;

@@ -104,7 +104,8 @@ class PlauditPreEndorsementHandler extends Handler
             && ($endorsementStatus == ENDORSEMENT_STATUS_CONFIRMED || $endorsementStatus == ENDORSEMENT_STATUS_COULDNT_COMPLETE);
 
         if($canSendEndorsementManually) {
-            $plugin->sendEndorsementToPlaudit($publication);
+            $endorsementService = new EndorsementService($request->getContext()->getId(), $plugin);
+            $endorsementService->sendEndorsement($publication);
             return http_response_code(200);
         }
 
@@ -152,7 +153,8 @@ class PlauditPreEndorsementHandler extends Handler
             $this->logMessageAndDisplayTemplate($submission, $request, 'plugins.generic.plauditPreEndorsement.log.endorsementConfirmed', ['orcid' => $orcidUri]);
 
             if($publication->getData('status') === STATUS_PUBLISHED) {
-                $plugin->sendEndorsementToPlaudit($publication);
+                $endorsementService = new EndorsementService($contextId, $plugin);
+                $endorsementService->sendEndorsement($publication);
             }
         } else {
             $this->logMessageAndDisplayTemplate($submission, $request, 'plugins.generic.plauditPreEndorsement.log.orcidRequestError', ['errorType' => 'authFailure', 'orcidAPIError' => $response->getReasonPhrase()]);

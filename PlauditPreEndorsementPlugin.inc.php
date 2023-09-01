@@ -250,63 +250,6 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
         );
     }
 
-    public function sendEndorsementToPlaudit($publication)
-    {
-        $submission = DAORegistry::getDAO('SubmissionDAO')->getById($publication->getData('submissionId'));
-        $canSendEndorsement = $this->endorsementSendingValidation($submission, $publication);
-
-        if ($canSendEndorsement) {
-            $this->writeOnActivityLog($submission, 'plugins.generic.plauditPreEndorsement.log.attemptSendingEndorsement', ['doi' => $publication->getData('pub-id::doi'), 'orcid' => $publication->getData('endorserOrcid')]);
-
-            $request = Application::get()->getRequest();
-            $contextId = $request->getContext()->getId();
-            $plauditClient = new PlauditClient();
-
-            try {
-                $secretKey = $this->getSetting($contextId, 'plauditAPISecret');
-                $response = $plauditClient->requestEndorsementCreation($publication, $secretKey);
-                $newEndorsementStatus = $plauditClient->getEndorsementStatusByResponse($response, $publication);
-            } catch (ClientException $exception) {
-                $response = $exception->getResponse();
-                $responseCode = $response->getStatusCode();
-                $responseBody = print_r($response->getBody()->getContents(), true);
-                $this->writeOnActivityLog($submission, 'plugins.generic.plauditPreEndorsement.log.failedSendingEndorsement', ['code' => $responseCode, 'body' => $responseBody]);
-                $newEndorsementStatus = ENDORSEMENT_STATUS_COULDNT_COMPLETE;
-            }
-
-            $publication->setData('endorsementStatus', $newEndorsementStatus);
-            $publicationDao = DAORegistry::getDAO('PublicationDAO');
-            $publicationDao->updateObject($publication);
-        }
-    }
-
-    private function endorsementSendingValidation($submission, $publication): bool
-    {
-        $request = Application::get()->getRequest();
-        $contextId = $request->getContext()->getId();
-
-        $doi = $publication->getData('pub-id::doi');
-        $secretKey = $this->getSetting($contextId, 'plauditAPISecret');
-        $crossrefClient = new CrossrefClient();
-
-        if(empty($doi)) {
-            $this->writeOnActivityLog($submission, 'plugins.generic.plauditPreEndorsement.log.failedEndorsementSending.emptyDoi');
-            return false;
-        }
-
-        if(!$crossrefClient->doiIsDeposited($doi)) {
-            $this->writeOnActivityLog($submission, 'plugins.generic.plauditPreEndorsement.log.failedEndorsementSending.doiNotDeposited');
-            return false;
-        }
-
-        if(empty($secretKey)) {
-            $this->writeOnActivityLog($submission, 'plugins.generic.plauditPreEndorsement.log.failedEndorsementSending.secretKey');
-            return false;
-        }
-
-        return true;
-    }
-
     public function sendEmailToEndorser($publication, $endorserChanged = false)
     {
         $request = PKPApplication::get()->getRequest();
