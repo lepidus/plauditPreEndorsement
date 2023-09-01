@@ -2,11 +2,11 @@
 
 class CrossrefClient
 {
-    public function doiIsDeposited(string $doi): bool
+    public function doiIsIndexed(string $doi): bool
     {
         $crossrefApiUrl = "https://api.crossref.org/works/".$doi;
 
-        $headers = get_headers($url);
+        $headers = get_headers($crossrefApiUrl);
         $statusCode = $this->getStatusCode($headers);
         $HTTP_STATUS_OK = 200;
 
