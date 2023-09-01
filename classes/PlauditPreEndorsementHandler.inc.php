@@ -2,6 +2,7 @@
 
 import('classes.handler.Handler');
 import('plugins.generic.plauditPreEndorsement.PlauditPreEndorsementPlugin');
+import('plugins.generic.plauditPreEndorsement.classes.EndorsementService');
 
 define('AUTH_SUCCESS', 'success');
 define('AUTH_INVALID_TOKEN', 'invalid_token');

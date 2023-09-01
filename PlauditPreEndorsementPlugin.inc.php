@@ -11,11 +11,7 @@
  * @brief Plaudit Pre-Endorsement Plugin
  */
 
-use GuzzleHttp\Exception\ClientException;
-
 import('lib.pkp.classes.plugins.GenericPlugin');
-import('plugins.generic.plauditPreEndorsement.classes.PlauditClient');
-import('plugins.generic.plauditPreEndorsement.classes.CrossrefClient');
 
 define('ENDORSEMENT_ORCID_URL', 'https://orcid.org/');
 define('ENDORSEMENT_ORCID_URL_SANDBOX', 'https://sandbox.orcid.org/');

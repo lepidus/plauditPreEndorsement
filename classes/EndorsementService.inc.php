@@ -1,5 +1,7 @@
 <?php
 
+use GuzzleHttp\Exception\ClientException;
+
 import('plugins.generic.plauditPreEndorsement.classes.PlauditClient');
 import('plugins.generic.plauditPreEndorsement.classes.CrossrefClient');
 
@@ -21,7 +23,7 @@ class EndorsementService
         $this->crossrefClient = $crossrefClient;
     }
 
-    public function sendEndorsement($publication, $checkMessageWasLoggedToday = false)
+    public function sendEndorsement($publication, $needCheckMessageWasLoggedToday = false)
     {
         $validationResult = $this->validateEndorsementSending($publication);
 
@@ -29,7 +31,7 @@ class EndorsementService
             $this->sendEndorsementToPlaudit($publication);
         } else {
             $submissionId = $publication->getData('submissionId');
-            if($checkMessageWasLoggedToday and !$this->messageWasAlreadyLoggedToday($submissionId, $validationResult)) {
+            if(!$needCheckMessageWasLoggedToday or !$this->messageWasAlreadyLoggedToday($submissionId, $validationResult)) {
                 $submission = DAORegistry::getDAO('SubmissionDAO')->getById($submissionId);
                 $this->plugin->writeOnActivityLog($submission, $validationResult);
             }
