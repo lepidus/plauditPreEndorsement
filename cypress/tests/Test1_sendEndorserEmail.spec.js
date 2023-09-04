@@ -1,14 +1,6 @@
 const submissionsPage = Cypress.env('baseUrl') + 'index.php/publicknowledge/submissions';
 
-function loginAuthorUser() {
-    cy.get('input[id=username]').clear();
-    cy.get('input[id=username]').type(Cypress.env('OJSAuthorUsername'), { delay: 0 });
-    cy.get('input[id=password]').type(Cypress.env('OJSAuthorPassword'), { delay: 0 });
-    cy.get('button[class=submit]').click();
-}
-
 function submissionStep1() {
-    cy.get('#sectionId').select('1');
     cy.get('#pkp_submissionChecklist > ul > li > label > input').check();
     cy.get('#privacyConsent').check();
 
@@ -29,9 +21,15 @@ function submissionStep3() {
     cy.get('ul[id^="en_US-keywords-"]').then(node => {
         node.tagit('createTag', "Dummy keyword");
     });
-    cy.get('input[name^="endorserName"]').type("Queen Elizabeth", { delay: 0 });
-    cy.get('input[name^="endorserEmail"]').type("queen.elizabeth.2nd@gmail.com", { delay: 0 });
     cy.get('#submitStep3Form > .formButtons > .submitFormButton').click();
+    cy.contains("Your submission has been uploaded and is ready to be sent.");
+    
+    cy.get('a:contains("3. Enter Metadata")').click();
+    cy.wait(1000);
+    cy.get('input[name="endorserName"]').type("Queen Elizabeth", { delay: 0 });
+    cy.get('input[name="endorserEmail"]').type("queen.elizabeth.2nd@gmail.com", { delay: 0 });
+    cy.get('#submitStep3Form > .formButtons > .submitFormButton').click();
+    cy.wait(1000);
 }
 
 function submissionStep4() {
@@ -41,10 +39,9 @@ function submissionStep4() {
 
 describe("Plaudit Pre-Endorsement Plugin - Send e-mail to endorser during submission", function() {
     it("Author user submits endorsed submission", function() {
-        cy.visit(submissionsPage);
-        loginAuthorUser();
+        cy.login('ckwantes', null, 'publicknowledge');
 
-        cy.get('.pkpHeader__actions:visible > a.pkpButton').click();
+        cy.get('div#myQueue a:contains("New Submission")').click();
         submissionStep1();
         submissionStep2();
         submissionStep3();
