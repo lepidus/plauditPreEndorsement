@@ -168,8 +168,8 @@ msgstr "O endosso foi confirmado pelo(a) endossador(a) e seu ORCID foi salvo na 
 msgid "plugins.generic.plauditPreEndorsement.log.failedEndorsementSending.emptyDoi"
 msgstr "O envio do endosso à Plaudit não pôde ser realizado, pois a submissão não tem um DOI atribuído"
 
-msgid "plugins.generic.plauditPreEndorsement.log.failedEndorsementSending.doiNotDeposited"
-msgstr "O envio do endosso à Plaudit não pôde ser realizado, pois o DOI da submissão não está depositado em www.doi.org"
+msgid "plugins.generic.plauditPreEndorsement.log.failedEndorsementSending.doiNotIndexed"
+msgstr "O envio do endosso à Plaudit não pôde ser realizado, pois o DOI da submissão não está indexado pela CrossRef"
 
 msgid "plugins.generic.plauditPreEndorsement.log.failedEndorsementSending.secretKey"
 msgstr "O envio do endosso à Plaudit não pôde ser realizado, pois não foi informado o segredo da API Plaudit nas configurações do plugin"

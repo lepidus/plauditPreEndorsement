@@ -11,10 +11,7 @@
  * @brief Plaudit Pre-Endorsement Plugin
  */
 
-use GuzzleHttp\Exception\ClientException;
-
 import('lib.pkp.classes.plugins.GenericPlugin');
-import('plugins.generic.plauditPreEndorsement.classes.PlauditClient');
 
 define('ENDORSEMENT_ORCID_URL', 'https://orcid.org/');
 define('ENDORSEMENT_ORCID_URL_SANDBOX', 'https://sandbox.orcid.org/');
@@ -247,86 +244,6 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
             __('plugins.generic.plauditPreEndorsement.preEndorsement'),
             $smarty->fetch($this->getTemplateResource('endorserFieldWorkflow.tpl'))
         );
-    }
-
-    public function sendEndorsementToPlaudit($publication)
-    {
-        $submission = DAORegistry::getDAO('SubmissionDAO')->getById($publication->getData('submissionId'));
-        $canSendEndorsement = $this->endorsementSendingValidation($submission, $publication);
-
-        if ($canSendEndorsement) {
-            $this->writeOnActivityLog($submission, 'plugins.generic.plauditPreEndorsement.log.attemptSendingEndorsement', ['doi' => $publication->getData('pub-id::doi'), 'orcid' => $publication->getData('endorserOrcid')]);
-
-            $request = Application::get()->getRequest();
-            $contextId = $request->getContext()->getId();
-            $plauditClient = new PlauditClient();
-
-            try {
-                $secretKey = $this->getSetting($contextId, 'plauditAPISecret');
-                $response = $plauditClient->requestEndorsementCreation($publication, $secretKey);
-                $newEndorsementStatus = $plauditClient->getEndorsementStatusByResponse($response, $publication);
-            } catch (ClientException $exception) {
-                $response = $exception->getResponse();
-                $responseCode = $response->getStatusCode();
-                $responseBody = print_r($response->getBody()->getContents(), true);
-                $this->writeOnActivityLog($submission, 'plugins.generic.plauditPreEndorsement.log.failedSendingEndorsement', ['code' => $responseCode, 'body' => $responseBody]);
-                $newEndorsementStatus = ENDORSEMENT_STATUS_COULDNT_COMPLETE;
-            }
-
-            $publication->setData('endorsementStatus', $newEndorsementStatus);
-            $publicationDao = DAORegistry::getDAO('PublicationDAO');
-            $publicationDao->updateObject($publication);
-        }
-    }
-
-    private function endorsementSendingValidation($submission, $publication): bool
-    {
-        $request = Application::get()->getRequest();
-        $contextId = $request->getContext()->getId();
-
-        $doi = $publication->getData('pub-id::doi');
-        $secretKey = $this->getSetting($contextId, 'plauditAPISecret');
-
-        if(empty($doi)) {
-            $this->writeOnActivityLog($submission, 'plugins.generic.plauditPreEndorsement.log.failedEndorsementSending.emptyDoi');
-            return false;
-        }
-
-        if(!$this->doiIsDeposited($doi)) {
-            $this->writeOnActivityLog($submission, 'plugins.generic.plauditPreEndorsement.log.failedEndorsementSending.doiNotDeposited');
-            return false;
-        }
-
-        if(empty($secretKey)) {
-            $this->writeOnActivityLog($submission, 'plugins.generic.plauditPreEndorsement.log.failedEndorsementSending.secretKey');
-            return false;
-        }
-
-        return true;
-    }
-
-    private function doiIsDeposited(string $doi): bool
-    {
-        $doiUrl = "https://doi.org/".$doi;
-        $statusCode = $this->getStatusCode($doiUrl);
-        $HTTP_STATUS_FOUND = 302;
-
-        return $statusCode == $HTTP_STATUS_FOUND;
-    }
-
-    private function getStatusCode(string $url): int
-    {
-        $getOptions = [
-            'http' => [
-                'method' => 'HEAD',
-                'follow_location' => 0,
-            ],
-        ];
-        $getContext = stream_context_create($getOptions);
-        $headers = get_headers($url, false, $getContext);
-        $statusLine = $headers[0];
-
-        return intval(explode(' ', $statusLine)[1]);
     }
 
     public function sendEmailToEndorser($publication, $endorserChanged = false)
