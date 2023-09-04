@@ -104,17 +104,19 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
 
         $endorserEmail = $form->getData('endorserEmail');
 
-        if(!$this->inputIsEmail($endorserEmail)) {
-            $form->addErrorField('endorsementEmailInvalid');
-            $form->addError('endorsementEmailInvalid', __("plugins.generic.plauditPreEndorsement.endorsementEmailInvalid"));
-            return;
-        }
-
-        foreach($authors as $author) {
-            if($author->getData('email') == $endorserEmail) {
-                $form->addErrorField('endorsementFromAuthor');
-                $form->addError('endorsementFromAuthor', __("plugins.generic.plauditPreEndorsement.endorsementFromAuthor"));
+        if(!empty($endorserEmail)) {
+            if(!$this->inputIsEmail($endorserEmail)) {
+                $form->addErrorField('endorsementEmailInvalid');
+                $form->addError('endorsementEmailInvalid', __("plugins.generic.plauditPreEndorsement.endorsementEmailInvalid"));
                 return;
+            }
+
+            foreach($authors as $author) {
+                if($author->getData('email') == $endorserEmail) {
+                    $form->addErrorField('endorsementFromAuthor');
+                    $form->addError('endorsementFromAuthor', __("plugins.generic.plauditPreEndorsement.endorsementFromAuthor"));
+                    return;
+                }
             }
         }
     }
