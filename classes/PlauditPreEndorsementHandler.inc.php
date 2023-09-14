@@ -152,11 +152,13 @@ class PlauditPreEndorsementHandler extends Handler
                 return;
             }
 
+            $endorsementService = new EndorsementService($contextId, $plugin);
+            $endorsementService->updateEndorserNameFromOrcid($publication, $orcid);
+
             $this->setConfirmedEndorsementPublication($publication, $orcidUri);
             $this->logMessageAndDisplayTemplate($submission, $request, 'plugins.generic.plauditPreEndorsement.log.endorsementConfirmed', ['orcid' => $orcidUri]);
 
             if($publication->getData('status') === STATUS_PUBLISHED) {
-                $endorsementService = new EndorsementService($contextId, $plugin);
                 $endorsementService->sendEndorsement($publication);
             }
         }

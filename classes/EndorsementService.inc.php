@@ -17,7 +17,7 @@ class EndorsementService
         $this->plugin = $plugin;
         $this->contextId = $contextId;
         $this->crossrefClient = new CrossrefClient();
-        $this->crossrefClient = new CrossrefClient();
+        $this->orcidClient = new OrcidClient($plugin, $contextId);
     }
 
     public function setCrossrefClient($crossrefClient)
