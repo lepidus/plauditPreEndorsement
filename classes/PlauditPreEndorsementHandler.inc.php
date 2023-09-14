@@ -3,6 +3,7 @@
 import('classes.handler.Handler');
 import('plugins.generic.plauditPreEndorsement.PlauditPreEndorsementPlugin');
 import('plugins.generic.plauditPreEndorsement.classes.EndorsementService');
+import('plugins.generic.plauditPreEndorsement.classes.OrcidClient');
 
 define('AUTH_SUCCESS', 'success');
 define('AUTH_INVALID_TOKEN', 'invalid_token');
@@ -120,6 +121,7 @@ class PlauditPreEndorsementHandler extends Handler
         $submission = DAORegistry::getDAO('SubmissionDAO')->getById($publication->getData('submissionId'));
 
         $plugin = PluginRegistry::getPlugin('generic', 'plauditpreendorsementplugin');
+        $contextId = $request->getContext()->getId();
 
         $statusAuth = $this->getStatusAuthentication($publication, $request);
         if ($statusAuth == AUTH_INVALID_TOKEN) {
@@ -132,60 +134,34 @@ class PlauditPreEndorsementHandler extends Handler
         }
 
         try {
-            $response = $this->requestOrcid($request, $plugin);
-            $responseJson = json_decode($response->getBody(), true);
+            $code = $request->getUserVar('code');
+            $orcidClient = new OrcidClient($plugin, $contextId);
+            $orcid = $orcidClient->requestOrcid($code);
         } catch (GuzzleHttp\Exception\RequestException  $exception) {
             $this->logMessageAndDisplayTemplate($submission, $request, 'plugins.generic.plauditPreEndorsement.log.orcidRequestError', ['errorType' => 'failure', 'orcidAPIError' => $exception->getMessage()]);
             return;
         }
 
-        $contextId = $request->getContext()->getId();
         $isSandBox = $plugin->getSetting($contextId, 'orcidAPIPath') == ENDORSEMENT_ORCID_API_URL_MEMBER_SANDBOX ||
             $plugin->getSetting($contextId, 'orcidAPIPath') == ENDORSEMENT_ORCID_API_URL_PUBLIC_SANDBOX;
-        $orcidUri = ($isSandBox ? ENDORSEMENT_ORCID_URL_SANDBOX : ENDORSEMENT_ORCID_URL) . $responseJson['orcid'];
+        $orcidUri = ($isSandBox ? ENDORSEMENT_ORCID_URL_SANDBOX : ENDORSEMENT_ORCID_URL) . $orcid;
 
-        if ($response->getStatusCode() == 200 && strlen($responseJson['orcid']) > 0) {
+        if (strlen($orcid) > 0) {
             if($this->checkDataIsFromAnyAuthor($publication, 'orcid', $orcidUri)) {
                 $this->logMessageAndDisplayTemplate($submission, $request, 'plugins.generic.plauditPreEndorsement.log.endorserOrcidFromAuthor', ['errorType' => 'orcidFromAuthor']);
                 return;
             }
 
+            $endorsementService = new EndorsementService($contextId, $plugin);
+            $endorsementService->updateEndorserNameFromOrcid($publication, $orcid);
+
             $this->setConfirmedEndorsementPublication($publication, $orcidUri);
             $this->logMessageAndDisplayTemplate($submission, $request, 'plugins.generic.plauditPreEndorsement.log.endorsementConfirmed', ['orcid' => $orcidUri]);
 
             if($publication->getData('status') === STATUS_PUBLISHED) {
-                $endorsementService = new EndorsementService($contextId, $plugin);
                 $endorsementService->sendEndorsement($publication);
             }
-        } else {
-            $this->logMessageAndDisplayTemplate($submission, $request, 'plugins.generic.plauditPreEndorsement.log.orcidRequestError', ['errorType' => 'authFailure', 'orcidAPIError' => $response->getReasonPhrase()]);
         }
-    }
-
-    private function requestOrcid($request, $plugin)
-    {
-        $contextId = $request->getContext()->getId();
-        $orcidRequestUrl = $plugin->getSetting($contextId, 'orcidAPIPath') . OAUTH_TOKEN_URL;
-
-        $httpClient = Application::get()->getHttpClient();
-        $header = ['Accept' => 'application/json'];
-        $postData = [
-            'code' => $request->getUserVar('code'),
-            'grant_type' => 'authorization_code',
-            'client_id' => $plugin->getSetting($contextId, 'orcidClientId'),
-            'client_secret' => $plugin->getSetting($contextId, 'orcidClientSecret')
-        ];
-
-        $response = $httpClient->request(
-            'POST',
-            $orcidRequestUrl,
-            [
-                'headers' => $header,
-                'form_params' => $postData,
-            ]
-        );
-
-        return $response;
     }
 
     private function logMessageAndDisplayTemplate($submission, $request, string $message, array $data)
