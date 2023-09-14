@@ -4,6 +4,7 @@ use GuzzleHttp\Exception\ClientException;
 
 import('plugins.generic.plauditPreEndorsement.classes.PlauditClient');
 import('plugins.generic.plauditPreEndorsement.classes.CrossrefClient');
+import('plugins.generic.plauditPreEndorsement.classes.OrcidClient');
 
 class EndorsementService
 {
@@ -16,11 +17,17 @@ class EndorsementService
         $this->plugin = $plugin;
         $this->contextId = $contextId;
         $this->crossrefClient = new CrossrefClient();
+        $this->crossrefClient = new CrossrefClient();
     }
 
     public function setCrossrefClient($crossrefClient)
     {
         $this->crossrefClient = $crossrefClient;
+    }
+
+    public function setOrcidClient($orcidClient)
+    {
+        $this->orcidClient = $orcidClient;
     }
 
     public function sendEndorsement($publication, $needCheckMessageWasLoggedToday = false)
@@ -81,6 +88,18 @@ class EndorsementService
         $publication->setData('endorsementStatus', $newEndorsementStatus);
         $publicationDao = DAORegistry::getDAO('PublicationDAO');
         $publicationDao->updateObject($publication);
+    }
+
+    public function updateEndorserNameFromOrcid($publication, $orcid)
+    {
+        $accessToken = $this->orcidClient->getReadPublicAccessToken();
+        $orcidRecord = $this->orcidClient->getOrcidRecord($orcid, $accessToken);
+        $fullName = $this->orcidClient->getFullNameFromRecord($orcidRecord);
+
+        $publication->setData('endorserName', $fullName);
+        DAORegistry::getDAO('PublicationDAO')->updateObject($publication);
+
+        return $publication;
     }
 
     public function messageWasAlreadyLoggedToday(int $submissionId, string $message): bool

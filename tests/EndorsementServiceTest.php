@@ -85,8 +85,11 @@ final class EndorsementServiceTest extends DatabaseTestCase
 
         $mockOrcidClient = $this->createMock(OrcidClient::class);
         $mockOrcidClient->method('getReadPublicAccessToken')->willReturn($fictionalAccessToken);
-        $mockOrcidClient->method('getReadPublicAccessToken')->willReturnMap([
+        $mockOrcidClient->method('getOrcidRecord')->willReturnMap([
             [$this->endorserOrcid, $fictionalAccessToken, $testRecord]
+        ]);
+        $mockOrcidClient->method('getFullNameFromRecord')->willReturnMap([
+            [$testRecord, $this->endorserGivenNameOrcid . ' ' . $this->endorserFamilyNameOrcid]
         ]);
 
         return $mockOrcidClient;
@@ -129,8 +132,7 @@ final class EndorsementServiceTest extends DatabaseTestCase
         $mockOrcidClient = $this->getMockOrcidClient();
         $this->endorsementService->setOrcidClient($mockOrcidClient);
 
-        $this->endorsementService->updateEndorserNameFromOrcid($publication, $this->endorserOrcid);
-        $publication = DAORegistry::getDAO('PublicationDAO')->getById($publication->getId());
+        $publication = $this->endorsementService->updateEndorserNameFromOrcid($publication, $this->endorserOrcid);
         $expectedNewName = $this->endorserGivenNameOrcid . ' ' . $this->endorserFamilyNameOrcid;
 
         $this->assertEquals($expectedNewName, $publication->getData('endorserName'));
