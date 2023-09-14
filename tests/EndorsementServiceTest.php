@@ -3,18 +3,23 @@
 import('classes.publication.Publication');
 import('lib.pkp.tests.DatabaseTestCase');
 import('plugins.generic.plauditPreEndorsement.classes.CrossrefClient');
+import('plugins.generic.plauditPreEndorsement.classes.OrcidClient');
 import('plugins.generic.plauditPreEndorsement.classes.EndorsementService');
 import('plugins.generic.plauditPreEndorsement.PlauditPreEndorsementPlugin');
 
 final class EndorsementServiceTest extends DatabaseTestCase
 {
     private $endorsementService;
-    private $contextId = 1;
+    private $contextId = 2;
     private $submissionId = 1234;
     private $publication;
     private $plugin;
     private $doi = '10.1234/TestePublication.1234';
     private $secretKey = 'a1b2c3d4-e5f6g7h8';
+    private $endorserName = 'Caio Anjo';
+    private $endorserOrcid = '0010-1010-1101-0001';
+    private $endorserGivenNameOrcid = 'Caio';
+    private $endorserFamilyNameOrcid = 'dos Anjos';
 
     public function setUp(): void
     {
@@ -26,7 +31,19 @@ final class EndorsementServiceTest extends DatabaseTestCase
 
     protected function getAffectedTables(): array
     {
-        return array('event_log', 'event_log_settings', 'plugin_settings');
+        return array('event_log', 'event_log_settings', 'plugin_settings', 'publications', 'publication_settings');
+    }
+
+    private function createEndorsedPublication(): Publication
+    {
+        $publication = new Publication();
+        $publication->setData('endorserName', $this->endorserName);
+        $publication->setData('submissionId', $this->submissionId);
+
+        $publicationId = DAORegistry::getDAO('PublicationDAO')->insertObject($publication);
+        $publication->setData('id', $publicationId);
+
+        return $publication;
     }
 
     private function getMockCrossrefClient()
@@ -37,6 +54,42 @@ final class EndorsementServiceTest extends DatabaseTestCase
         ]);
 
         return $mockCrossrefClient;
+    }
+
+    private function getMockOrcidClient()
+    {
+        $fictionalAccessToken = 'kjh-adf-fictional-1362m';
+        $testRecord = [
+            'person' => [
+                'last-modified-date' => '',
+                'name' => [
+                    'created-date' => [
+                        'value' => 1666816304613
+                    ],
+                    'last-modified-date' => [
+                        'value' => 1666816304613
+                    ],
+                    'given-names' => [
+                        'value' => $this->endorserGivenNameOrcid
+                    ],
+                    'family-name' => [
+                        'value' => $this->endorserFamilyNameOrcid
+                    ],
+                    'credit-name' => '',
+                    'source' => '',
+                    'visibility' => 'public',
+                    'path' => $this->endorserOrcid
+                ]
+            ]
+        ];
+
+        $mockOrcidClient = $this->createMock(OrcidClient::class);
+        $mockOrcidClient->method('getReadPublicAccessToken')->willReturn($fictionalAccessToken);
+        $mockOrcidClient->method('getReadPublicAccessToken')->willReturnMap([
+            [$this->endorserOrcid, $fictionalAccessToken, $testRecord]
+        ]);
+
+        return $mockOrcidClient;
     }
 
     private function createEventLog(string $date, string $message)
@@ -68,6 +121,19 @@ final class EndorsementServiceTest extends DatabaseTestCase
         $this->plugin->updateSetting($this->contextId, 'plauditAPISecret', $this->secretKey);
         $validateResult = $this->endorsementService->validateEndorsementSending($this->publication);
         $this->assertEquals('ok', $validateResult);
+    }
+
+    public function testUpdateEndorserName(): void
+    {
+        $publication = $this->createEndorsedPublication();
+        $mockOrcidClient = $this->getMockOrcidClient();
+        $this->endorsementService->setOrcidClient($mockOrcidClient);
+
+        $this->endorsementService->updateEndorserNameFromOrcid($publication, $this->endorserOrcid);
+        $publication = DAORegistry::getDAO('PublicationDAO')->getById($publication->getId());
+        $expectedNewName = $this->endorserGivenNameOrcid . ' ' . $this->endorserFamilyNameOrcid;
+
+        $this->assertEquals($expectedNewName, $publication->getData('endorserName'));
     }
 
     public function testMessageWasAlreadyLoggedToday(): void
