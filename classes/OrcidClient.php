@@ -1,5 +1,9 @@
 <?php
 
+namespace APP\plugins\generic\plauditPreEndorsement\classes;
+
+use APP\core\Application;
+
 class OrcidClient
 {
     private $plugin;

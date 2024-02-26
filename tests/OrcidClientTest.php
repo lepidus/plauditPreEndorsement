@@ -1,8 +1,7 @@
 <?php
 
-import('plugins.generic.plauditPreEndorsement.classes.OrcidClient');
-import('plugins.generic.plauditPreEndorsement.PlauditPreEndorsementPlugin');
-
+use APP\plugins\generic\plauditPreEndorsement\classes\OrcidClient;
+use APP\plugins\generic\plauditPreEndorsement\PlauditPreEndorsementPlugin;
 use PHPUnit\Framework\TestCase;
 
 final class OrcidClientTest extends TestCase

@@ -1,5 +1,7 @@
 <?php
 
+namespace APP\plugins\generic\plauditPreEndorsement\tests;
+
 class TestStream
 {
     private $content;

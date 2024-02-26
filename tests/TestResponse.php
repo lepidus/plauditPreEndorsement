@@ -1,6 +1,8 @@
 <?php
 
-import('plugins.generic.plauditPreEndorsement.tests.TestStream');
+namespace APP\plugins\generic\plauditPreEndorsement\tests;
+
+use APP\plugins\generic\plauditPreEndorsement\tests\TestStream;
 
 class TestResponse
 {

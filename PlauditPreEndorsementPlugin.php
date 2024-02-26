@@ -26,12 +26,6 @@ define('ENDORSEMENT_ORCID_API_URL_MEMBER_SANDBOX', 'https://api.sandbox.orcid.or
 define('ENDORSEMENT_ORCID_API_SCOPE_PUBLIC', '/authenticate');
 define('ENDORSEMENT_ORCID_API_SCOPE_MEMBER', '/activities/update');
 
-define('ENDORSEMENT_STATUS_NOT_CONFIRMED', 0);
-define('ENDORSEMENT_STATUS_CONFIRMED', 1);
-define('ENDORSEMENT_STATUS_DENIED', 2);
-define('ENDORSEMENT_STATUS_COMPLETED', 3);
-define('ENDORSEMENT_STATUS_COULDNT_COMPLETE', 4);
-
 class PlauditPreEndorsementPlugin extends GenericPlugin
 {
     public const HANDLER_PAGE = 'pre-endorsement-handler';
