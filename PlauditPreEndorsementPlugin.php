@@ -11,7 +11,11 @@
  * @brief Plaudit Pre-Endorsement Plugin
  */
 
-import('lib.pkp.classes.plugins.GenericPlugin');
+namespace APP\plugins\generic\plauditPreEndorsement;
+
+use PKP\plugins\GenericPlugin;
+use APP\core\Application;
+use PKP\plugins\Hook;
 
 define('ENDORSEMENT_ORCID_URL', 'https://orcid.org/');
 define('ENDORSEMENT_ORCID_URL_SANDBOX', 'https://sandbox.orcid.org/');
@@ -36,21 +40,21 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
     {
         $success = parent::register($category, $path, $mainContextId);
 
-        if (!Config::getVar('general', 'installed') || defined('RUNNING_UPGRADE')) {
-            return true;
+        if (Application::isUnderMaintenance()) {
+            return $success;
         }
 
         if ($success && $this->getEnabled($mainContextId)) {
-            HookRegistry::register('Templates::Submission::SubmissionMetadataForm::AdditionalMetadata', array($this, 'addEndorserFieldsToStep3'));
+            // Hook::add('Templates::Submission::SubmissionMetadataForm::AdditionalMetadata', [$this, 'addEndorserFieldsToStep3']);
 
-            HookRegistry::register('submissionsubmitstep3form::readuservars', array($this, 'allowStep3FormToReadOurFields'));
-            HookRegistry::register('submissionsubmitstep3form::validate', array($this, 'validateEndorsement'));
-            HookRegistry::register('submissionsubmitstep3form::execute', array($this, 'step3SaveEndorserEmail'));
-            HookRegistry::register('submissionsubmitstep4form::execute', array($this, 'step4SendEmailToEndorser'));
-            HookRegistry::register('Schema::get::publication', array($this, 'addOurFieldsToPublicationSchema'));
-            HookRegistry::register('Template::Workflow::Publication', array($this, 'addEndorserFieldsToWorkflow'));
-            HookRegistry::register('LoadHandler', array($this, 'setupPlauditPreEndorsementHandler'));
-            HookRegistry::register('AcronPlugin::parseCronTab', array($this, 'addEndorsementTasksToCrontab'));
+            // Hook::add('submissionsubmitstep3form::readuservars', [$this, 'allowStep3FormToReadOurFields']);
+            // Hook::add('submissionsubmitstep3form::validate', [$this, 'validateEndorsement']);
+            // Hook::add('submissionsubmitstep3form::execute', [$this, 'step3SaveEndorserEmail']);
+            // Hook::add('submissionsubmitstep4form::execute', [$this, 'step4SendEmailToEndorser']);
+            // Hook::add('Schema::get::publication', [$this, 'addOurFieldsToPublicationSchema']);
+            // Hook::add('Template::Workflow::Publication', [$this, 'addEndorserFieldsToWorkflow']);
+            // Hook::add('LoadHandler', [$this, 'setupPlauditPreEndorsementHandler']);
+            // Hook::add('AcronPlugin::parseCronTab', [$this, 'addEndorsementTasksToCrontab']);
         }
 
         return $success;
