@@ -38,11 +38,14 @@ final class EndorsementServiceTest extends DatabaseTestCase
         parent::tearDown();
         $submission = Repo::submission()->get($this->submissionId);
         Repo::submission()->delete($submission);
+
+        $pluginSettingsDao = DAORegistry::getDAO('PluginSettingsDAO');
+        $pluginSettingsDao->deleteSetting($this->contextId, $this->plugin->getName(), 'plauditAPISecret');
     }
 
     protected function getAffectedTables(): array
     {
-        return ['event_log', 'event_log_settings', 'plugin_settings'];
+        return ['event_log', 'event_log_settings'];
     }
 
     private function createEndorsedPublication(): Publication
