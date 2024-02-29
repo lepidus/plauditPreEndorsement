@@ -17,7 +17,7 @@ class PlauditPreEndorsementHandler extends Handler
     public const AUTH_SUCCESS = 'success';
     public const AUTH_INVALID_TOKEN = 'invalid_token';
     public const AUTH_ACCESS_DENIED = 'access_denied';
-    
+
     public function updateEndorser($args, $request)
     {
         $plugin = new PlauditPreEndorsementPlugin();

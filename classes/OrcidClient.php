@@ -14,7 +14,7 @@ class OrcidClient
     public const ORCID_API_URL_MEMBER_SANDBOX = 'https://api.sandbox.orcid.org/';
     public const ORCID_API_SCOPE_PUBLIC = '/authenticate';
     public const ORCID_API_SCOPE_MEMBER = '/activities/update';
-    
+
     private $plugin;
     private $contextId;
 
