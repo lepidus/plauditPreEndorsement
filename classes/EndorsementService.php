@@ -102,7 +102,8 @@ class EndorsementService
         $fullName = $this->orcidClient->getFullNameFromRecord($orcidRecord);
 
         $publication->setData('endorserName', $fullName);
-        Repo::publication()->edit($publication, []);
+        $publicationDao = Repo::publication()->dao;
+        $publicationDao->update($publication);
 
         return $publication;
     }
