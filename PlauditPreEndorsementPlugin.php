@@ -3,7 +3,7 @@
 /**
  * @file plugins/generic/plaudit/PlauditPreEndorsementPlugin.inc.php
  *
- * Copyright (c) 2022 Lepidus Tecnologia
+ * Copyright (c) 2022 - 2024 Lepidus Tecnologia
  * Distributed under the GNU GPL v3. For full terms see LICENSE or https://www.gnu.org/licenses/gpl-3.0.txt.
  *
  * @class PlauditPreEndorsementPlugin
@@ -16,6 +16,10 @@ namespace APP\plugins\generic\plauditPreEndorsement;
 use PKP\plugins\GenericPlugin;
 use APP\core\Application;
 use PKP\plugins\Hook;
+use PKP\linkAction\LinkAction;
+use PKP\linkAction\request\AjaxModal;
+use APP\plugins\generic\plauditPreEndorsement\classes\OrcidClient;
+use APP\plugins\generic\plauditPreEndorsement\PlauditPreEndorsementSettingsForm;
 
 class PlauditPreEndorsementPlugin extends GenericPlugin
 {
@@ -305,7 +309,6 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
     public function getActions($request, $actionArgs)
     {
         $router = $request->getRouter();
-        import('lib.pkp.classes.linkAction.request.AjaxModal');
         return array_merge(
             array(
                 new LinkAction(
@@ -329,14 +332,13 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
                 $templateMgr = TemplateManager::getManager();
                 $templateMgr->registerPlugin('function', 'plugin_url', array($this, 'smartyPluginUrl'));
                 $apiOptions = [
-                    ENDORSEMENT_ORCID_API_URL_PUBLIC => 'plugins.generic.plauditPreEndorsement.settings.orcidAPIPath.public',
-                    ENDORSEMENT_ORCID_API_URL_PUBLIC_SANDBOX => 'plugins.generic.plauditPreEndorsement.settings.orcidAPIPath.publicSandbox',
-                    ENDORSEMENT_ORCID_API_URL_MEMBER => 'plugins.generic.plauditPreEndorsement.settings.orcidAPIPath.member',
-                    ENDORSEMENT_ORCID_API_URL_MEMBER_SANDBOX => 'plugins.generic.plauditPreEndorsement.settings.orcidAPIPath.memberSandbox'
+                    OrcidClient::ORCID_API_URL_PUBLIC => 'plugins.generic.plauditPreEndorsement.settings.orcidAPIPath.public',
+                    OrcidClient::ORCID_API_URL_PUBLIC_SANDBOX => 'plugins.generic.plauditPreEndorsement.settings.orcidAPIPath.publicSandbox',
+                    OrcidClient::ORCID_API_URL_MEMBER => 'plugins.generic.plauditPreEndorsement.settings.orcidAPIPath.member',
+                    OrcidClient::ORCID_API_URL_MEMBER_SANDBOX => 'plugins.generic.plauditPreEndorsement.settings.orcidAPIPath.memberSandbox'
                 ];
                 $templateMgr->assign('orcidApiUrls', $apiOptions);
 
-                $this->import('PlauditPreEndorsementSettingsForm');
                 $form = new PlauditPreEndorsementSettingsForm($this, $contextId);
                 if ($request->getUserVar('save')) {
                     $form->readInputData();
