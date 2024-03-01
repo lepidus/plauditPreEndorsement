@@ -38,8 +38,9 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
         if ($success && $this->getEnabled($mainContextId)) {
             Hook::add('TemplateManager::display', [$this, 'modifySubmissionSteps']);
             Hook::add('Schema::get::publication', [$this, 'addOurFieldsToPublicationSchema']);
+            Hook::add('Submission::validateSubmit', [$this, 'validateEndorsement']);
+            Hook::add('Template::SubmissionWizard::Section::Review', [$this, 'modifyReviewSections']);
 
-            // Hook::add('submissionsubmitstep3form::validate', [$this, 'validateEndorsement']);
             // Hook::add('submissionsubmitstep4form::execute', [$this, 'step4SendEmailToEndorser']);
             // Hook::add('Template::Workflow::Publication', [$this, 'addEndorserFieldsToWorkflow']);
             // Hook::add('LoadHandler', [$this, 'setupPlauditPreEndorsementHandler']);
@@ -140,27 +141,34 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
 
     public function validateEndorsement($hookName, $params)
     {
-        $form = & $params[0];
-        $form->readUserVars(array('endorserEmail'));
-        $publication = $form->submission->getCurrentPublication();
-        $authors = $publication->getData('authors');
+        $errors = &$params[0];
+        $submission = $params[1];
+        $publication = $submission->getCurrentPublication();
+        $endorserEmail = $publication->getData('endorserEmail');
 
-        $endorserEmail = $form->getData('endorserEmail');
-
-        if(!empty($endorserEmail)) {
-            if(!$this->inputIsEmail($endorserEmail)) {
-                $form->addErrorField('endorsementEmailInvalid');
-                $form->addError('endorsementEmailInvalid', __("plugins.generic.plauditPreEndorsement.endorsementEmailInvalid"));
-                return;
-            }
-
-            foreach($authors as $author) {
-                if($author->getData('email') == $endorserEmail) {
-                    $form->addErrorField('endorsementFromAuthor');
-                    $form->addError('endorsementFromAuthor', __("plugins.generic.plauditPreEndorsement.endorsementFromAuthor"));
-                    return;
+        if ($endorserEmail) {
+            if (!$this->inputIsEmail($endorserEmail)) {
+                $errors['endorsement']  = [__("plugins.generic.plauditPreEndorsement.endorsementEmailInvalid")];
+            } else {
+                foreach ($publication->getData('authors') as $author) {
+                    if($author->getData('email') == $endorserEmail) {
+                        $errors['endorsement'] = [__("plugins.generic.plauditPreEndorsement.endorsementFromAuthor")];
+                    }
                 }
             }
+        }
+
+        return false;
+    }
+
+    public function modifyReviewSections($hookName, $params)
+    {
+        $step = $params[0]['step'];
+        $templateMgr = $params[1];
+        $output = &$params[2];
+
+        if ($step == 'details') {
+            $output .= $templateMgr->fetch($this->getTemplateResource('reviewEndorsement.tpl'));
         }
     }
 
