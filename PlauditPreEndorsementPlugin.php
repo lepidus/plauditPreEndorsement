@@ -19,9 +19,15 @@ use PKP\plugins\Hook;
 use PKP\linkAction\LinkAction;
 use PKP\linkAction\request\AjaxModal;
 use APP\pages\submission\SubmissionHandler;
+use APP\facades\Repo;
+use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Mail;
 use APP\plugins\generic\plauditPreEndorsement\classes\OrcidClient;
+use APP\plugins\generic\plauditPreEndorsement\classes\Endorsement;
 use APP\plugins\generic\plauditPreEndorsement\classes\components\forms\EndorsementForm;
 use APP\plugins\generic\plauditPreEndorsement\PlauditPreEndorsementSettingsForm;
+use APP\plugins\generic\plauditPreEndorsement\classes\mail\mailables\OrcidRequestEndorserAuthorization;
+use APP\plugins\generic\plauditPreEndorsement\classes\observers\listeners\SendEmailToEndorser;
 
 class PlauditPreEndorsementPlugin extends GenericPlugin
 {
@@ -36,12 +42,13 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
         }
 
         if ($success && $this->getEnabled($mainContextId)) {
+            Event::subscribe(new SendEmailToEndorser());
+
             Hook::add('TemplateManager::display', [$this, 'modifySubmissionSteps']);
             Hook::add('Schema::get::publication', [$this, 'addOurFieldsToPublicationSchema']);
             Hook::add('Submission::validateSubmit', [$this, 'validateEndorsement']);
             Hook::add('Template::SubmissionWizard::Section::Review', [$this, 'modifyReviewSections']);
 
-            // Hook::add('submissionsubmitstep4form::execute', [$this, 'step4SendEmailToEndorser']);
             // Hook::add('Template::Workflow::Publication', [$this, 'addEndorserFieldsToWorkflow']);
             // Hook::add('LoadHandler', [$this, 'setupPlauditPreEndorsementHandler']);
             // Hook::add('AcronPlugin::parseCronTab', [$this, 'addEndorsementTasksToCrontab']);
@@ -172,16 +179,6 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
         }
     }
 
-    public function step4SendEmailToEndorser($hookName, $params)
-    {
-        $step4Form = $params[0];
-        $publication = $step4Form->submission->getCurrentPublication();
-
-        if (!empty($publication->getData('endorserEmail'))) {
-            $this->sendEmailToEndorser($publication);
-        }
-    }
-
     public function addOurFieldsToPublicationSchema($hookName, $params)
     {
         $schema = &$params[0];
@@ -264,31 +261,32 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
 
     public function sendEmailToEndorser($publication, $endorserChanged = false)
     {
-        $request = PKPApplication::get()->getRequest();
+        $request = Application::get()->getRequest();
         $context = $request->getContext();
         $endorserName = $publication->getData('endorserName');
         $endorserEmail = $publication->getData('endorserEmail');
 
         if (!is_null($context) && !empty($endorserEmail)) {
-            $emailTemplate = 'ORCID_REQUEST_ENDORSER_AUTHORIZATION';
-            $email = $this->getMailTemplate($emailTemplate, $context);
-
-            $email->setFrom($context->getData('contactEmail'), $context->getData('contactName'));
-            $email->setRecipients([['name' => $endorserName, 'email' => $endorserEmail]]);
+            $submission = Repo::submission()->get($publication->getData('submissionId'));
+            $emailTemplate = Repo::emailTemplate()->getByKey(
+                $context->getId(),
+                'ORCID_REQUEST_ENDORSER_AUTHORIZATION'
+            );
 
             $endorserEmailToken = md5(microtime() . $endorserEmail);
             $oauthUrl = $this->buildOAuthUrl(['token' => $endorserEmailToken, 'state' => $publication->getId()]);
-
-            $userGroupDao = DAORegistry::getDAO('UserGroupDAO');
-            $authorsUserGroups = $userGroupDao->getByContextId($context->getId())->toArray();
-            $email->sendWithParams([
+            $emailParams = [
                 'orcidOauthUrl' => $oauthUrl,
-                'contactEmail' => $context->getData('contactEmail'),
                 'endorserName' => htmlspecialchars($endorserName),
-                'preprintTitle' => htmlspecialchars($publication->getLocalizedTitle()),
-                'abstract' => $publication->getLocalizedData('abstract'),
-                'authors' => htmlspecialchars($publication->getAuthorString($authorsUserGroups))
-            ]);
+            ];
+
+            $email = new OrcidRequestEndorserAuthorization($context, $submission, $emailParams);
+            $email->from($context->getData('contactEmail'), $context->getData('contactName'));
+            $email->to([['name' => $endorserName, 'email' => $endorserEmail]]);
+            $email->subject($emailTemplate->getLocalizedData('subject'));
+            $email->body($emailTemplate->getLocalizedData('body'));
+
+            Mail::send($email);
 
             if(is_null($publication->getData('endorserEmailCount')) || $endorserChanged) {
                 $endorserEmailCount = 0;
@@ -297,25 +295,17 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
             }
 
             $publication->setData('endorserEmailToken', $endorserEmailToken);
-            $publication->setData('endorsementStatus', ENDORSEMENT_STATUS_NOT_CONFIRMED);
+            $publication->setData('endorsementStatus', Endorsement::STATUS_NOT_CONFIRMED);
             $publication->setData('endorserEmailCount', $endorserEmailCount + 1);
-            $publicationDao = DAORegistry::getDAO('PublicationDAO');
-            $publicationDao->updateObject($publication);
+            Repo::publication()->edit($publication, []);
 
-            $submission = DAORegistry::getDAO('SubmissionDAO')->getById($publication->getData('submissionId'));
-            $this->writeOnActivityLog($submission, 'plugins.generic.plauditPreEndorsement.log.sentEmailEndorser', ['endorserName' => $endorserName, 'endorserEmail' => $endorserEmail]);
+            // $this->writeOnActivityLog($submission, 'plugins.generic.plauditPreEndorsement.log.sentEmailEndorser', ['endorserName' => $endorserName, 'endorserEmail' => $endorserEmail]);
         }
     }
 
     public function getInstallEmailTemplatesFile()
     {
         return $this->getPluginPath() . '/emailTemplates.xml';
-    }
-
-    private function getMailTemplate($emailKey, $context = null)
-    {
-        import('lib.pkp.classes.mail.MailTemplate');
-        return new MailTemplate($emailKey, null, $context, false);
     }
 
     public function orcidIsGloballyConfigured()
@@ -377,18 +367,18 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
 
     public function buildOAuthUrl($redirectParams)
     {
-        $request = PKPApplication::get()->getRequest();
+        $request = Application::get()->getRequest();
         $contextId = $request->getContext()->getId();
 
         if ($this->isMemberApiEnabled($contextId)) {
-            $scope = ENDORSEMENT_ORCID_API_SCOPE_MEMBER;
+            $scope = OrcidClient::ORCID_API_SCOPE_MEMBER;
         } else {
-            $scope = ENDORSEMENT_ORCID_API_SCOPE_PUBLIC;
+            $scope = OrcidClient::ORCID_API_SCOPE_PUBLIC;
         }
 
         $redirectUrl = $request->getDispatcher()->url(
             $request,
-            ROUTE_PAGE,
+            Application::ROUTE_PAGE,
             null,
             self::HANDLER_PAGE,
             'orcidVerify',
@@ -408,7 +398,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
     public function isMemberApiEnabled($contextId)
     {
         $apiUrl = $this->getSetting($contextId, 'orcidAPIPath');
-        if ($apiUrl === ENDORSEMENT_ORCID_API_URL_MEMBER || $apiUrl === ENDORSEMENT_ORCID_API_URL_MEMBER_SANDBOX) {
+        if ($apiUrl == OrcidClient::ORCID_API_URL_MEMBER || $apiUrl === OrcidClient::ORCID_API_URL_MEMBER_SANDBOX) {
             return true;
         } else {
             return false;
@@ -427,10 +417,10 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
         $contextId = ($context == null) ? 0 : $context->getId();
 
         $apiPath = $this->getSetting($contextId, 'orcidAPIPath');
-        if ($apiPath == ENDORSEMENT_ORCID_API_URL_PUBLIC || $apiPath == ENDORSEMENT_ORCID_API_URL_MEMBER) {
-            return ENDORSEMENT_ORCID_URL;
+        if ($apiPath == OrcidClient::ORCID_API_URL_PUBLIC || $apiPath == OrcidClient::ORCID_API_URL_MEMBER) {
+            return OrcidClient::ORCID_URL;
         } else {
-            return ENDORSEMENT_ORCID_URL_SANDBOX;
+            return OrcidClient::ORCID_URL_SANDBOX;
         }
     }
 
