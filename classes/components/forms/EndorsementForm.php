@@ -6,9 +6,9 @@ use PKP\components\forms\FormComponent;
 use PKP\components\forms\FieldText;
 use APP\publication\Publication;
 
-class EndorserForm extends FormComponent
+class EndorsementForm extends FormComponent
 {
-    public $id = 'endorserForm';
+    public $id = 'endorsementForm';
     public $method = 'PUT';
 
     public function __construct(string $action, Publication $publication)

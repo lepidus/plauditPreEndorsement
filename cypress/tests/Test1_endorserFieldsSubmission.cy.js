@@ -10,6 +10,8 @@ function beginSubmission(submissionData) {
 describe("Plaudit Pre-Endorsement Plugin - Endorser fields in submission wizard", function() {
     let submissionData;
     let dummyPdf;
+    let endorserName = 'Bong Joon-ho';
+    let endorserEmail = 'bong.joon-ho@email.kr';
     
     before(function() {
         Cypress.config('defaultCommandTimeout', 4000);
@@ -30,7 +32,8 @@ describe("Plaudit Pre-Endorsement Plugin - Endorser fields in submission wizard"
         cy.get('div#myQueue a:contains("New Submission")').click();
 
         beginSubmission(submissionData);
-
+        
+        cy.setTinyMceContent('titleAbstract-abstract-control-en', submissionData.abstract);
         cy.contains('h2', 'Endorsement');
         cy.contains('Do you have the endorsement of an experienced researcher in the field of knowledge of the manuscript?');
         cy.contains('If yes, please provide the name and e-mail address of the endorsing researcher. Endorsements can significantly speed up the moderation process.');

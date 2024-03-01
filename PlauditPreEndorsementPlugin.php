@@ -18,7 +18,9 @@ use APP\core\Application;
 use PKP\plugins\Hook;
 use PKP\linkAction\LinkAction;
 use PKP\linkAction\request\AjaxModal;
+use APP\pages\submission\SubmissionHandler;
 use APP\plugins\generic\plauditPreEndorsement\classes\OrcidClient;
+use APP\plugins\generic\plauditPreEndorsement\classes\components\forms\EndorsementForm;
 use APP\plugins\generic\plauditPreEndorsement\PlauditPreEndorsementSettingsForm;
 
 class PlauditPreEndorsementPlugin extends GenericPlugin
@@ -34,19 +36,30 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
         }
 
         if ($success && $this->getEnabled($mainContextId)) {
+            Hook::add('TemplateManager::display', [$this, 'modifySubmissionSteps']);
+            Hook::add('Schema::get::publication', [$this, 'addOurFieldsToPublicationSchema']);
             // Hook::add('Templates::Submission::SubmissionMetadataForm::AdditionalMetadata', [$this, 'addEndorserFieldsToStep3']);
 
             // Hook::add('submissionsubmitstep3form::readuservars', [$this, 'allowStep3FormToReadOurFields']);
             // Hook::add('submissionsubmitstep3form::validate', [$this, 'validateEndorsement']);
             // Hook::add('submissionsubmitstep3form::execute', [$this, 'step3SaveEndorserEmail']);
             // Hook::add('submissionsubmitstep4form::execute', [$this, 'step4SendEmailToEndorser']);
-            // Hook::add('Schema::get::publication', [$this, 'addOurFieldsToPublicationSchema']);
             // Hook::add('Template::Workflow::Publication', [$this, 'addEndorserFieldsToWorkflow']);
             // Hook::add('LoadHandler', [$this, 'setupPlauditPreEndorsementHandler']);
             // Hook::add('AcronPlugin::parseCronTab', [$this, 'addEndorsementTasksToCrontab']);
         }
 
         return $success;
+    }
+
+    public function getDisplayName()
+    {
+        return __('plugins.generic.plauditPreEndorsement.displayName');
+    }
+
+    public function getDescription()
+    {
+        return __('plugins.generic.plauditPreEndorsement.description');
     }
 
     public function setupPlauditPreEndorsementHandler($hookName, $params)
@@ -67,16 +80,6 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
         return false;
     }
 
-    public function getDisplayName()
-    {
-        return __('plugins.generic.plauditPreEndorsement.displayName');
-    }
-
-    public function getDescription()
-    {
-        return __('plugins.generic.plauditPreEndorsement.description');
-    }
-
     public function writeOnActivityLog($submission, $message, $messageParams = array())
     {
         $request = Application::get()->getRequest();
@@ -86,6 +89,56 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
     public function inputIsEmail(string $input): bool
     {
         return filter_var($input, FILTER_VALIDATE_EMAIL);
+    }
+
+    public function modifySubmissionSteps($hookName, $params)
+    {
+        $request = Application::get()->getRequest();
+        $context = $request->getContext();
+        $templateMgr = $params[0];
+
+        if ($request->getRequestedPage() != 'submission' || $request->getRequestedOp() == 'saved') {
+            return false;
+        }
+
+        $submission = $request
+            ->getRouter()
+            ->getHandler()
+            ->getAuthorizedContextObject(Application::ASSOC_TYPE_SUBMISSION);
+
+        if (!$submission || !$submission->getData('submissionProgress')) {
+            return false;
+        }
+
+        $publication = $submission->getCurrentPublication();
+        $publicationApiUrl = $request->getDispatcher()->url(
+            $request,
+            Application::ROUTE_API,
+            $request->getContext()->getPath(),
+            'submissions/' . $submission->getId() . '/publications/' . $publication->getId()
+        );
+        $endorsementForm = new EndorsementForm(
+            $publicationApiUrl,
+            $publication,
+        );
+
+        $steps = $templateMgr->getState('steps');
+        $steps = array_map(function ($step) use ($endorsementForm) {
+            if ($step['id'] == 'details') {
+                $step['sections'][] = [
+                    'id' => 'endorsement',
+                    'name' => __('plugins.generic.plauditPreEndorsement.endorsement'),
+                    'description' => __('plugins.generic.plauditPreEndorsement.endorsement.description'),
+                    'type' => SubmissionHandler::SECTION_TYPE_FORM,
+                    'form' => $endorsementForm->getConfig(),
+                ];
+            }
+            return $step;
+        }, $steps);
+
+        $templateMgr->setState(['steps' => $steps]);
+
+        return false;
     }
 
     public function validateEndorsement($hookName, $params)
