@@ -38,11 +38,8 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
         if ($success && $this->getEnabled($mainContextId)) {
             Hook::add('TemplateManager::display', [$this, 'modifySubmissionSteps']);
             Hook::add('Schema::get::publication', [$this, 'addOurFieldsToPublicationSchema']);
-            // Hook::add('Templates::Submission::SubmissionMetadataForm::AdditionalMetadata', [$this, 'addEndorserFieldsToStep3']);
 
-            // Hook::add('submissionsubmitstep3form::readuservars', [$this, 'allowStep3FormToReadOurFields']);
             // Hook::add('submissionsubmitstep3form::validate', [$this, 'validateEndorsement']);
-            // Hook::add('submissionsubmitstep3form::execute', [$this, 'step3SaveEndorserEmail']);
             // Hook::add('submissionsubmitstep4form::execute', [$this, 'step4SendEmailToEndorser']);
             // Hook::add('Template::Workflow::Publication', [$this, 'addEndorserFieldsToWorkflow']);
             // Hook::add('LoadHandler', [$this, 'setupPlauditPreEndorsementHandler']);
@@ -165,43 +162,6 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
                 }
             }
         }
-    }
-
-    public function addEndorserFieldsToStep3($hookName, $params)
-    {
-        $smarty = &$params[1];
-        $output = &$params[2];
-
-        $submissionId = $smarty->smarty->get_template_vars('submissionId');
-        $submission = DAORegistry::getDAO('SubmissionDAO')->getById($submissionId);
-        $publication = $submission->getCurrentPublication();
-
-        $smarty->assign('endorserName', $publication->getData('endorserName'));
-        $smarty->assign('endorserEmail', $publication->getData('endorserEmail'));
-
-        $output .= $smarty->fetch($this->getTemplateResource('endorserFieldStep3.tpl'));
-        return false;
-    }
-
-    public function allowStep3FormToReadOurFields($hookName, $params)
-    {
-        $formFields = &$params[1];
-        $ourFields = ['endorserName', 'endorserEmail'];
-
-        $formFields = array_merge($formFields, $ourFields);
-    }
-
-    public function step3SaveEndorserEmail($hookName, $params)
-    {
-        $step3Form = $params[0];
-        $publication = $step3Form->submission->getCurrentPublication();
-        $endorserName = $step3Form->getData('endorserName');
-        $endorserEmail = $step3Form->getData('endorserEmail');
-
-        $publication->setData('endorserName', $endorserName);
-        $publication->setData('endorserEmail', $endorserEmail);
-        $publicationDao = DAORegistry::getDAO('PublicationDAO');
-        $publicationDao->updateObject($publication);
     }
 
     public function step4SendEmailToEndorser($hookName, $params)

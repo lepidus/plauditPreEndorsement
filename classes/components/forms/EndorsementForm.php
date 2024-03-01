@@ -23,6 +23,7 @@ class EndorsementForm extends FormComponent
         $this->addField(new FieldText('endorserEmail', [
             'label' => __('plugins.generic.plauditPreEndorsement.endorserEmail'),
             'value' => $publication->getData('endorserEmail'),
+            'inputType' => 'email'
         ]));
     }
 }
