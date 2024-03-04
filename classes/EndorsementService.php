@@ -6,6 +6,7 @@ use GuzzleHttp\Exception\ClientException;
 use APP\core\Application;
 use APP\facades\Repo;
 use PKP\core\Core;
+use APP\plugins\generic\plauditPreEndorsement\classes\Endorsement;
 use APP\plugins\generic\plauditPreEndorsement\classes\PlauditClient;
 use APP\plugins\generic\plauditPreEndorsement\classes\CrossrefClient;
 use APP\plugins\generic\plauditPreEndorsement\classes\OrcidClient;
@@ -87,7 +88,7 @@ class EndorsementService
             $responseBody = print_r($response->getBody()->getContents(), true);
 
             $this->plugin->writeOnActivityLog($submission, 'plugins.generic.plauditPreEndorsement.log.failedSendingEndorsement', ['code' => $responseCode, 'body' => $responseBody]);
-            $newEndorsementStatus = ENDORSEMENT_STATUS_COULDNT_COMPLETE;
+            $newEndorsementStatus = Endorsement::STATUS_COULDNT_COMPLETE;
         }
 
         Repo::publication()->edit($publication, [

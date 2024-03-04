@@ -77,4 +77,14 @@ describe("Plaudit Pre-Endorsement Plugin - Workflow features", function() {
         cy.contains("1 endorsement confirmation e-mail has been sent to the endorser");
         cy.get('#plauditPreEndorsement-button .pkpBadge:contains("1")');
     });
+    it("Endorsement actions are written in submission's Activity Log", function() {
+        cy.login('ckwantes', null, 'publicknowledge');
+        cy.findSubmission('myQueue', submissionTitle);
+        cy.contains('button', 'Activity Log').click();
+
+        cy.contains('An endorsement confirmation e-mail has been sent to Bong Joon-ho (bong.joon-ho@email.kr)');
+        cy.contains('An endorsement confirmation e-mail has been sent to Lady Diana (lady.diana@gmail.com)');
+        cy.contains('The submission endorsement has been removed');
+        cy.contains('An endorsement confirmation e-mail has been sent to Francis Ford Coppola (francis.coppola@hollywood.com)');
+    });
 });
