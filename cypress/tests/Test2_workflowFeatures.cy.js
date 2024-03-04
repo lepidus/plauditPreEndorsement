@@ -78,8 +78,8 @@ describe("Plaudit Pre-Endorsement Plugin - Workflow features", function() {
         cy.get('#plauditPreEndorsement-button .pkpBadge:contains("1")');
     });
     it("Endorsement actions are written in submission's Activity Log", function() {
-        cy.login('ckwantes', null, 'publicknowledge');
-        cy.findSubmission('myQueue', submissionTitle);
+        cy.login('dbarnes', null, 'publicknowledge');
+        cy.findSubmission('active', submissionTitle);
         cy.contains('button', 'Activity Log').click();
 
         cy.contains('An endorsement confirmation e-mail has been sent to Bong Joon-ho (bong.joon-ho@email.kr)');

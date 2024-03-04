@@ -19,7 +19,9 @@ use PKP\plugins\Hook;
 use PKP\linkAction\LinkAction;
 use PKP\linkAction\request\AjaxModal;
 use APP\pages\submission\SubmissionHandler;
+use PKP\log\event\PKPSubmissionEventLogEntry;
 use PKP\db\DAORegistry;
+use PKP\core\Core;
 use APP\facades\Repo;
 use PKP\security\Role;
 use Illuminate\Support\Facades\Event;
@@ -88,8 +90,21 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
 
     public function writeOnActivityLog($submission, $message, $messageParams = array())
     {
-        $request = Application::get()->getRequest();
-        SubmissionLog::logEvent($request, $submission, SUBMISSION_LOG_METADATA_UPDATE, $message, $messageParams);
+        $user = Application::get()->getRequest()->getUser();
+
+        error_log(print_r($messageParams, true));
+
+        $eventLog = Repo::eventLog()->newDataObject([
+            'assocType' => Application::ASSOC_TYPE_SUBMISSION,
+            'assocId' => $submission->getId(),
+            'eventType' => PKPSubmissionEventLogEntry::SUBMISSION_LOG_METADATA_UPDATE,
+            'userId' => $user->getId(),
+            'message' => __($message, $messageParams),
+            'isTranslated' => true,
+            'dateLogged' => Core::getCurrentDate(),
+        ]);
+
+        Repo::eventLog()->add($eventLog);
     }
 
     public function inputIsEmail(string $input): bool
@@ -298,7 +313,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
             $publication->setData('endorserEmailCount', $endorserEmailCount + 1);
             Repo::publication()->edit($publication, []);
 
-            // $this->writeOnActivityLog($submission, 'plugins.generic.plauditPreEndorsement.log.sentEmailEndorser', ['endorserName' => $endorserName, 'endorserEmail' => $endorserEmail]);
+            $this->writeOnActivityLog($submission, 'plugins.generic.plauditPreEndorsement.log.sentEmailEndorser', ['endorserName' => $endorserName, 'endorserEmail' => $endorserEmail]);
         }
     }
 
