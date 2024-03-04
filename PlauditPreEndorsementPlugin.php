@@ -19,6 +19,7 @@ use PKP\plugins\Hook;
 use PKP\linkAction\LinkAction;
 use PKP\linkAction\request\AjaxModal;
 use APP\pages\submission\SubmissionHandler;
+use PKP\db\DAORegistry;
 use APP\facades\Repo;
 use PKP\security\Role;
 use Illuminate\Support\Facades\Event;

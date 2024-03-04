@@ -49,10 +49,9 @@ class PlauditPreEndorsementHandler extends Handler
 
         $endorserChanged = ($endorserEmail != $publication->getData('endorserEmail'));
 
-        Repo::publication()->edit($publication, [
-            'endorserName' => $endorserName,
-            'endorserEmail' => $endorserEmail
-        ]);
+        $publication->setData('endorserName', $endorserName);
+        $publication->setData('endorserEmail', $endorserEmail);
+        Repo::publication()->edit($publication, []);
 
         $plugin->sendEmailToEndorser($publication, $endorserChanged);
 
