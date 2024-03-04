@@ -31,8 +31,6 @@ describe("Plaudit Pre-Endorsement Plugin - Workflow features", function() {
         cy.get("#plauditPreEndorsement").contains("Save").click();
         
         cy.reload();
-        cy.get("#publication-button").click();
-        cy.contains("Pre-Endorsement").click();
         cy.contains("1 endorsement confirmation e-mail has been sent to the endorser");
     });
     it("Endorsement removal", function() {
@@ -57,5 +55,26 @@ describe("Plaudit Pre-Endorsement Plugin - Workflow features", function() {
         cy.contains('The endorsement has not yet been confirmed by the endorser').should('not.exist');
         cy.contains("1 endorsement confirmation e-mail has been sent to the endorser").should('not.exist');
         cy.get('#plauditPreEndorsement-button .pkpBadge:contains("0")');
+    });
+    it("Endorsement adding on workflow", function() {
+        let newEndorserName = 'Francis Ford Coppola';
+        let newEndorserEmail = 'francis.coppola@hollywood.com';
+        
+        cy.login('ckwantes', null, 'publicknowledge');
+        cy.findSubmission('myQueue', submissionTitle);
+
+        cy.get("#publication-button").click();
+        cy.contains("Pre-Endorsement").click();
+
+        cy.get('input[name="endorserNameWorkflow"]').clear().type(newEndorserName, { delay: 0 });
+        cy.get('input[name="endorserEmailWorkflow"]').clear().type(newEndorserEmail, { delay: 0 });
+        cy.get("#plauditPreEndorsement").contains("Save").click();
+        
+        cy.reload();
+        cy.get('input[name="endorserNameWorkflow"]').should('have.value', newEndorserName);
+        cy.get('input[name="endorserEmailWorkflow"]').should('have.value', newEndorserEmail);
+        cy.contains('The endorsement has not yet been confirmed by the endorser');
+        cy.contains("1 endorsement confirmation e-mail has been sent to the endorser");
+        cy.get('#plauditPreEndorsement-button .pkpBadge:contains("1")');
     });
 });
