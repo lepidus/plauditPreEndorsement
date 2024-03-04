@@ -92,8 +92,8 @@ class PlauditPreEndorsementHandler extends Handler
 
         Repo::publication()->edit($publication, []);
 
-        $plugin = PluginRegistry::getPlugin('generic', 'plauditpreendorsementplugin');
-        $plugin->writeOnActivityLog($submission, 'plugins.generic.plauditPreEndorsement.log.endorsementRemoved');
+        // $plugin = PluginRegistry::getPlugin('generic', 'plauditpreendorsementplugin');
+        // $plugin->writeOnActivityLog($submission, 'plugins.generic.plauditPreEndorsement.log.endorsementRemoved');
 
         return http_response_code(200);
     }

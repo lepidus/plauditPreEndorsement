@@ -13,6 +13,7 @@ describe("Plaudit Pre-Endorsement Plugin - Workflow features", function() {
         cy.get('input[name="endorserEmailWorkflow"]').should('have.value', 'bong.joon-ho@email.kr');
         cy.contains('The endorsement has not yet been confirmed by the endorser');
         cy.contains("1 endorsement confirmation e-mail has been sent to the endorser");
+        cy.get('#plauditPreEndorsement-button .pkpBadge:contains("1")');
     });
     it("E-mail sendings counting in workflow tab", function() {
         cy.login('ckwantes', null, 'publicknowledge');
@@ -33,5 +34,28 @@ describe("Plaudit Pre-Endorsement Plugin - Workflow features", function() {
         cy.get("#publication-button").click();
         cy.contains("Pre-Endorsement").click();
         cy.contains("1 endorsement confirmation e-mail has been sent to the endorser");
+    });
+    it("Endorsement removal", function() {
+        cy.login('ckwantes', null, 'publicknowledge');
+        cy.findSubmission('myQueue', submissionTitle);
+
+        cy.get("#publication-button").click();
+        cy.contains("Pre-Endorsement").click();
+        cy.contains('button', 'Remove endorsement').should('not.exist');
+        cy.logout();
+
+        cy.login('dbarnes', null, 'publicknowledge');
+        cy.findSubmission('active', submissionTitle);
+        cy.get("#publication-button").click();
+        cy.contains("Pre-Endorsement").click();
+        cy.contains('button', 'Remove endorsement').click();
+        cy.on('window:confirm', () => true);
+        cy.reload();
+
+        cy.get('input[name="endorserNameWorkflow"]').should('have.value', '');
+        cy.get('input[name="endorserEmailWorkflow"]').should('have.value', '');
+        cy.contains('The endorsement has not yet been confirmed by the endorser').should('not.exist');
+        cy.contains("1 endorsement confirmation e-mail has been sent to the endorser").should('not.exist');
+        cy.get('#plauditPreEndorsement-button .pkpBadge:contains("0")');
     });
 });
