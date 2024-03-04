@@ -72,7 +72,7 @@
 
     async function requestUpdateEndorsement(e){ldelim}
         $.post(
-            "{$updateEndorserUrl}",
+            "{$handlerUrl}/updateEndorser",
             {ldelim}
                 submissionId: {$submissionId},
                 endorserName: $('input[name=endorserNameWorkflow]').val(),
@@ -99,7 +99,7 @@
 
     async function requestSendEndorsementManually(e){ldelim}
         $.post(
-            "{$sendEndorsementManuallyUrl}",
+            "{$handlerUrl}/sendEndorsementManually",
             {ldelim}
                 submissionId: {$submissionId}
             {rdelim},
@@ -117,7 +117,7 @@
 <script>
     async function requestRemoveEndorsement(e){ldelim}
         $.post(
-            "{$removeEndorsementUrl}",
+            "{$handlerUrl}/removeEndorsement",
             {ldelim}
                 submissionId: {$submissionId}
             {rdelim}

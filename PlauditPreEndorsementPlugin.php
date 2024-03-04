@@ -20,6 +20,7 @@ use PKP\linkAction\LinkAction;
 use PKP\linkAction\request\AjaxModal;
 use APP\pages\submission\SubmissionHandler;
 use APP\facades\Repo;
+use PKP\security\Role;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Mail;
 use APP\plugins\generic\plauditPreEndorsement\classes\OrcidClient;
@@ -49,8 +50,8 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
             Hook::add('Submission::validateSubmit', [$this, 'validateEndorsement']);
             Hook::add('Template::SubmissionWizard::Section::Review', [$this, 'modifyReviewSections']);
 
-            // Hook::add('Template::Workflow::Publication', [$this, 'addEndorserFieldsToWorkflow']);
-            // Hook::add('LoadHandler', [$this, 'setupPlauditPreEndorsementHandler']);
+            Hook::add('Template::Workflow::Publication', [$this, 'addEndorserFieldsToWorkflow']);
+            Hook::add('LoadHandler', [$this, 'setupPreEndorsementHandler']);
             // Hook::add('AcronPlugin::parseCronTab', [$this, 'addEndorsementTasksToCrontab']);
         }
 
@@ -67,12 +68,11 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
         return __('plugins.generic.plauditPreEndorsement.description');
     }
 
-    public function setupPlauditPreEndorsementHandler($hookName, $params)
+    public function setupPreEndorsementHandler($hookName, $params)
     {
         $page = $params[0];
         if ($this->getEnabled() && $page == self::HANDLER_PAGE) {
-            $this->import('classes/PlauditPreEndorsementHandler');
-            define('HANDLER_CLASS', 'PlauditPreEndorsementHandler');
+            define('HANDLER_CLASS', 'APP\plugins\generic\plauditPreEndorsement\classes\PlauditPreEndorsementHandler');
             return true;
         }
         return false;
@@ -205,11 +205,11 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
     private function getEndorsementStatusSuffix($endorsementStatus): string
     {
         $mapStatusToSuffix = [
-            ENDORSEMENT_STATUS_NOT_CONFIRMED => 'NotConfirmed',
-            ENDORSEMENT_STATUS_CONFIRMED => 'Confirmed',
-            ENDORSEMENT_STATUS_DENIED => 'Denied',
-            ENDORSEMENT_STATUS_COMPLETED => 'Completed',
-            ENDORSEMENT_STATUS_COULDNT_COMPLETE => 'CouldntComplete'
+            Endorsement::STATUS_NOT_CONFIRMED => 'NotConfirmed',
+            Endorsement::STATUS_CONFIRMED => 'Confirmed',
+            Endorsement::STATUS_DENIED => 'Denied',
+            Endorsement::STATUS_COMPLETED => 'Completed',
+            Endorsement::STATUS_COULDNT_COMPLETE => 'CouldntComplete'
         ];
 
         return $mapStatusToSuffix[$endorsementStatus] ?? "";
@@ -220,18 +220,18 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
         $smarty = &$params[1];
         $output = &$params[2];
 
-        $submission = $smarty->get_template_vars('submission');
+        $submission = $smarty->getTemplateVars('submission');
         $publication = $submission->getCurrentPublication();
 
-        $request = PKPApplication::get()->getRequest();
-        $updateEndorserUrl = $request->getDispatcher()->url($request, ROUTE_PAGE, null, self::HANDLER_PAGE, 'updateEndorser');
+        $request = Application::get()->getRequest();
+        $handlerUrl = $request->getDispatcher()->url($request, Application::ROUTE_PAGE, null, self::HANDLER_PAGE);
 
         $endorsementStatus = $publication->getData('endorsementStatus');
         $endorsementStatusSuffix = $this->getEndorsementStatusSuffix($endorsementStatus);
-        $canEditEndorsement = (is_null($endorsementStatus) || $endorsementStatus == ENDORSEMENT_STATUS_NOT_CONFIRMED || $endorsementStatus == ENDORSEMENT_STATUS_DENIED);
-        $canSendEndorsementManually = $publication->getData('status') === STATUS_PUBLISHED
+        $canEditEndorsement = (is_null($endorsementStatus) || $endorsementStatus == Endorsement::STATUS_NOT_CONFIRMED || $endorsementStatus == Endorsement::STATUS_DENIED);
+        $canSendEndorsementManually = $publication->getData('status') == STATUS_PUBLISHED
             && !$this->userAccessingIsAuthor($submission)
-            && ($endorsementStatus == ENDORSEMENT_STATUS_CONFIRMED || $endorsementStatus == ENDORSEMENT_STATUS_COULDNT_COMPLETE);
+            && ($endorsementStatus == Endorsement::STATUS_CONFIRMED || $endorsementStatus == Endorsement::STATUS_COULDNT_COMPLETE);
         $canRemoveEndorsement = !is_null($endorsementStatus) && !$this->userAccessingIsAuthor($submission);
 
         $smarty->assign([
@@ -245,9 +245,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
             'canEditEndorsement' => $canEditEndorsement,
             'canRemoveEndorsement' => $canRemoveEndorsement,
             'canSendEndorsementManually' => $canSendEndorsementManually,
-            'updateEndorserUrl' => $updateEndorserUrl,
-            'removeEndorsementUrl' => $request->getDispatcher()->url($request, ROUTE_PAGE, null, self::HANDLER_PAGE, 'removeEndorsement'),
-            'sendEndorsementManuallyUrl' => $request->getDispatcher()->url($request, ROUTE_PAGE, null, self::HANDLER_PAGE, 'sendEndorsementManually')
+            'handlerUrl' => $handlerUrl,
         ]);
 
         $tabBadge = (is_null($endorsementStatus) ? 'badge="0"' : 'badge="1"');
@@ -431,13 +429,13 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
         if ($currentUser) {
             $stageAssignmentDao = DAORegistry::getDAO('StageAssignmentDAO');
             $stageAssignmentsResult = $stageAssignmentDao->getBySubmissionAndUserIdAndStageId($submission->getId(), $currentUser->getId(), $submission->getData('stageId'));
-            $userGroupDao = DAORegistry::getDAO('UserGroupDAO');
+
             while ($stageAssignment = $stageAssignmentsResult->next()) {
-                $userGroup = $userGroupDao->getById($stageAssignment->getUserGroupId(), $submission->getData('contextId'));
+                $userGroup = Repo::userGroup()->get($stageAssignment->getUserGroupId(), $submission->getData('contextId'));
                 $currentUserAssignedRoles[] = (int) $userGroup->getRoleId();
             }
         }
 
-        return $currentUserAssignedRoles[0] == ROLE_ID_AUTHOR;
+        return $currentUserAssignedRoles[0] == Role::ROLE_ID_AUTHOR;
     }
 }
