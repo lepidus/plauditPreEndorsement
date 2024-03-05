@@ -23,11 +23,11 @@ describe('Plaudit Pre-endorsement - Plugin setup', function () {
 		cy.get('a[id^=' + pluginRowId + '-settings-button]').click();
 
 		cy.get('#orcidAPIPath').select('Member Sandbox');
-		cy.get('#orcidClientId').clear().type(Cypress.env('orcidClientId'), {delay: 0});
-		cy.get('#orcidClientSecret').clear().type(Cypress.env('orcidClientSecret'), {delay: 0});
-		cy.get('#plauditAPISecret').clear().type(dummyPlauditApiSecret, {delay: 0});
+		cy.get('input[name="orcidClientId"]').clear().type(Cypress.env('orcidClientId'), {delay: 0});
+		cy.get('input[name="orcidClientSecret"]').clear().type(Cypress.env('orcidClientSecret'), {delay: 0});
+		cy.get('input[name="plauditAPISecret"]').clear().type(dummyPlauditApiSecret, {delay: 0});
 
 		cy.get('#plauditPreEndorsementSettingsForm button:contains("OK")').click();
-		cy.get('div:contains("Your changes have been saved.")');
+		cy.contains('Please configure the ORCID API access for use in pulling ORCID profile information').should('not.exist');
 	});
 });
