@@ -24,7 +24,7 @@ class PlauditClient
         $postData = [
             'secret_key' => $secretKey,
             'orcid' => $orcid,
-            'doi' => $publication->getData('pub-id::doi')
+            'doi' => $publication->getDoi()
         ];
 
         $response = $httpClient->request(
@@ -47,7 +47,7 @@ class PlauditClient
             $endorsementData = $body['endorsements'][0];
             $responseDoi = $endorsementData['doi'];
             $responseOrcid = $endorsementData['orcid'];
-            $publicationDoi = strtolower($publication->getData('pub-id::doi'));
+            $publicationDoi = strtolower($publication->getDoi());
             $publicationOrcid = $this->filterOrcidNumbers($publication->getData('endorserOrcid'));
 
             if ($responseDoi ==  $publicationDoi && $responseOrcid == $publicationOrcid) {
