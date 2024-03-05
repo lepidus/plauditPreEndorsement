@@ -22,7 +22,7 @@ describe('Plaudit Pre-endorsement - Plugin setup', function () {
 		cy.get('tr#' + pluginRowId + ' a.show_extras').click();
 		cy.get('a[id^=' + pluginRowId + '-settings-button]').click();
 
-		cy.get('#orcidAPIPath').select('Member Sandbox');
+		cy.get('#orcidAPIPath').select('Public Sandbox');
 		cy.get('input[name="orcidClientId"]').clear().type(Cypress.env('orcidClientId'), {delay: 0});
 		cy.get('input[name="orcidClientSecret"]').clear().type(Cypress.env('orcidClientSecret'), {delay: 0});
 		cy.get('input[name="plauditAPISecret"]').clear().type(dummyPlauditApiSecret, {delay: 0});

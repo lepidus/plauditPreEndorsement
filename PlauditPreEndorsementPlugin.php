@@ -93,20 +93,21 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
 
     public function writeOnActivityLog($submission, $message, $messageParams = array())
     {
-        $user = Application::get()->getRequest()->getUser();
-
-        error_log(print_r($messageParams, true));
-
-        $eventLog = Repo::eventLog()->newDataObject([
+        $eventLogData = [
             'assocType' => Application::ASSOC_TYPE_SUBMISSION,
             'assocId' => $submission->getId(),
             'eventType' => PKPSubmissionEventLogEntry::SUBMISSION_LOG_METADATA_UPDATE,
-            'userId' => $user->getId(),
             'message' => __($message, $messageParams),
             'isTranslated' => true,
             'dateLogged' => Core::getCurrentDate(),
-        ]);
+        ];
 
+        $user = Application::get()->getRequest()->getUser();
+        if ($user) {
+            $eventLogData['userId'] = $user->getId();
+        }
+
+        $eventLog = Repo::eventLog()->newDataObject($eventLogData);
         Repo::eventLog()->add($eventLog);
     }
 
