@@ -3,6 +3,7 @@
 use PKP\tests\DatabaseTestCase;
 use APP\submission\Submission;
 use APP\publication\Publication;
+use PKP\doi\Doi;
 use APP\core\Application;
 use APP\facades\Repo;
 use PKP\core\Core;
@@ -133,7 +134,9 @@ final class EndorsementServiceTest extends DatabaseTestCase
         $validateResult = $this->endorsementService->validateEndorsementSending($this->publication);
         $this->assertEquals('plugins.generic.plauditPreEndorsement.log.failedEndorsementSending.emptyDoi', $validateResult);
 
-        $this->publication->setData('pub-id::doi', $this->doi);
+        $doiObject = new Doi();
+        $doiObject->setData('doi', $this->doi);
+        $this->publication->setData('doiObject', $doiObject);
         $validateResult = $this->endorsementService->validateEndorsementSending($this->publication);
         $this->assertEquals('plugins.generic.plauditPreEndorsement.log.failedEndorsementSending.doiNotIndexed', $validateResult);
 

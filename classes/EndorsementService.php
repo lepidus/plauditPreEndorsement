@@ -53,7 +53,7 @@ class EndorsementService
 
     public function validateEndorsementSending($publication): string
     {
-        $doi = $publication->getData('pub-id::doi');
+        $doi = $publication->getDoi();
         $secretKey = $this->plugin->getSetting($this->contextId, 'plauditAPISecret');
 
         if(empty($doi)) {
@@ -74,7 +74,7 @@ class EndorsementService
     public function sendEndorsementToPlaudit($publication)
     {
         $submission = Repo::submission()->get($publication->getData('submissionId'));
-        $this->plugin->writeOnActivityLog($submission, 'plugins.generic.plauditPreEndorsement.log.attemptSendingEndorsement', ['doi' => $publication->getData('pub-id::doi'), 'orcid' => $publication->getData('endorserOrcid')]);
+        $this->plugin->writeOnActivityLog($submission, 'plugins.generic.plauditPreEndorsement.log.attemptSendingEndorsement', ['doi' => $publication->getDoi(), 'orcid' => $publication->getData('endorserOrcid')]);
 
         $plauditClient = new PlauditClient();
 
