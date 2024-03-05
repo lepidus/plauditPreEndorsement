@@ -24,10 +24,10 @@
         {else}
             <div class="orcid-failure">
                 {if isset($orcidAPIError)}
-                    {$orcidAPIError}
+                    {$orcidAPIError|escape}
                 {/if}    
                 
-                {translate key="plugins.generic.plauditPreEndorsement.verify.{$errorType}"}
+                {translate key="plugins.generic.plauditPreEndorsement.verify.{$errorType|escape}"}
             </div>
             {translate key="plugins.generic.plauditPreEndorsement.failure.contact"}
         {/if}
