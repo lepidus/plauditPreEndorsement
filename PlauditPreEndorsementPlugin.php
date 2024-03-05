@@ -58,7 +58,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
 
             Hook::add('Template::Workflow::Publication', [$this, 'addEndorserFieldsToWorkflow']);
             Hook::add('LoadHandler', [$this, 'setupPreEndorsementHandler']);
-            // Hook::add('AcronPlugin::parseCronTab', [$this, 'addEndorsementTasksToCrontab']);
+            Hook::add('AcronPlugin::parseCronTab', [$this, 'addEndorsementTasksToCrontab']);
         }
 
         return $success;
@@ -86,7 +86,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
 
     public function addEndorsementTasksToCrontab($hookName, $params)
     {
-        $taskFilesPath = & $params[0];
+        $taskFilesPath = &$params[0];
         $taskFilesPath[] = $this->getPluginPath() . DIRECTORY_SEPARATOR . 'scheduledTasks.xml';
         return false;
     }

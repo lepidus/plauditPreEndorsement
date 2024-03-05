@@ -1,8 +1,12 @@
 <?php
 
-import('lib.pkp.classes.scheduledTask.ScheduledTask');
-import('plugins.generic.plauditPreEndorsement.classes.PlauditPreEndorsementDAO');
-import('plugins.generic.plauditPreEndorsement.classes.EndorsementService');
+namespace APP\plugins\generic\plauditPreEndorsement\classes\tasks;
+
+use PKP\scheduledTask\ScheduledTask;
+use PKP\plugins\PluginRegistry;
+use APP\core\Application;
+use APP\plugins\generic\plauditPreEndorsement\classes\PlauditPreEndorsementDAO;
+use APP\plugins\generic\plauditPreEndorsement\classes\EndorsementService;
 
 class SendReadyEndorsements extends ScheduledTask
 {
