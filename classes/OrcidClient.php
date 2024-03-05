@@ -102,4 +102,54 @@ class OrcidClient
 
         return "$givenName $familyName";
     }
+
+    public function buildOAuthUrl($redirectParams)
+    {
+        $request = Application::get()->getRequest();
+
+        if ($this->isMemberApiEnabled($this->contextId)) {
+            $scope = self::ORCID_API_SCOPE_MEMBER;
+        } else {
+            $scope = self::ORCID_API_SCOPE_PUBLIC;
+        }
+
+        $redirectUrl = $request->getDispatcher()->url(
+            $request,
+            Application::ROUTE_PAGE,
+            null,
+            $this->plugin::HANDLER_PAGE,
+            'orcidVerify',
+            null,
+            $redirectParams
+        );
+
+        return $this->getOauthPath() . 'authorize?' . http_build_query(
+            array(
+                'client_id' => $this->plugin->getSetting($this->contextId, 'orcidClientId'),
+                'response_type' => 'code',
+                'scope' => $scope,
+                'redirect_uri' => $redirectUrl)
+        );
+    }
+
+    private function isMemberApiEnabled()
+    {
+        $apiUrl = $this->plugin->getSetting($this->contextId, 'orcidAPIPath');
+        return ($apiUrl == self::ORCID_API_URL_MEMBER || $apiUrl == self::ORCID_API_URL_MEMBER_SANDBOX);
+    }
+
+    private function getOauthPath()
+    {
+        return $this->getOrcidUrl() . 'oauth/';
+    }
+
+    private function getOrcidUrl()
+    {
+        $apiPath = $this->plugin->getSetting($this->contextId, 'orcidAPIPath');
+        if ($apiPath == self::ORCID_API_URL_PUBLIC || $apiPath == self::ORCID_API_URL_MEMBER) {
+            return self::ORCID_URL;
+        } else {
+            return self::ORCID_URL_SANDBOX;
+        }
+    }
 }

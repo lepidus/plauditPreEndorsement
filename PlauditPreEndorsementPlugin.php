@@ -292,7 +292,8 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
             );
 
             $endorserEmailToken = md5(microtime() . $endorserEmail);
-            $oauthUrl = $this->buildOAuthUrl(['token' => $endorserEmailToken, 'state' => $publication->getId()]);
+            $orcidClient = new OrcidClient($this, $context->getId());
+            $oauthUrl = $orcidClient->buildOAuthUrl(['token' => $endorserEmailToken, 'state' => $publication->getId()]);
             $emailParams = [
                 'orcidOauthUrl' => $oauthUrl,
                 'endorserName' => htmlspecialchars($endorserName),
@@ -381,65 +382,6 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
                 return new JSONMessage(true, $form->fetch($request));
         }
         return parent::manage($args, $request);
-    }
-
-    public function buildOAuthUrl($redirectParams)
-    {
-        $request = Application::get()->getRequest();
-        $contextId = $request->getContext()->getId();
-
-        if ($this->isMemberApiEnabled($contextId)) {
-            $scope = OrcidClient::ORCID_API_SCOPE_MEMBER;
-        } else {
-            $scope = OrcidClient::ORCID_API_SCOPE_PUBLIC;
-        }
-
-        $redirectUrl = $request->getDispatcher()->url(
-            $request,
-            Application::ROUTE_PAGE,
-            null,
-            self::HANDLER_PAGE,
-            'orcidVerify',
-            null,
-            $redirectParams
-        );
-
-        return $this->getOauthPath() . 'authorize?' . http_build_query(
-            array(
-                'client_id' => $this->getSetting($contextId, 'orcidClientId'),
-                'response_type' => 'code',
-                'scope' => $scope,
-                'redirect_uri' => $redirectUrl)
-        );
-    }
-
-    public function isMemberApiEnabled($contextId)
-    {
-        $apiUrl = $this->getSetting($contextId, 'orcidAPIPath');
-        if ($apiUrl == OrcidClient::ORCID_API_URL_MEMBER || $apiUrl === OrcidClient::ORCID_API_URL_MEMBER_SANDBOX) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    public function getOauthPath()
-    {
-        return $this->getOrcidUrl() . 'oauth/';
-    }
-
-    public function getOrcidUrl()
-    {
-        $request = Application::get()->getRequest();
-        $context = $request->getContext();
-        $contextId = ($context == null) ? 0 : $context->getId();
-
-        $apiPath = $this->getSetting($contextId, 'orcidAPIPath');
-        if ($apiPath == OrcidClient::ORCID_API_URL_PUBLIC || $apiPath == OrcidClient::ORCID_API_URL_MEMBER) {
-            return OrcidClient::ORCID_URL;
-        } else {
-            return OrcidClient::ORCID_URL_SANDBOX;
-        }
     }
 
     public function userAccessingIsAuthor($submission): bool
