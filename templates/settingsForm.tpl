@@ -1,7 +1,9 @@
 {**
  * templates/settingsForm.tpl
  *
- * Copyright (c) 2022 Lepidus Tecnologia
+ * Copyright (c) 2022 - 2024 SciELO
+ * Copyright (c) 2022 - 2024 Lepidus Tecnologia
+ *
  * Distributed under the GNU GPL v3. For full terms see the file docs/COPYING.
 *
 * Plaudit Pre-Endorsement plugin settings

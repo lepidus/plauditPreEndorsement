@@ -1,6 +1,6 @@
 {*
-  * Copyright (c) 2022 Lepidus Tecnologia
-  * Copyright (c) 2022 SciELO
+  * Copyright (c) 2022 - 2024 SciELO
+  * Copyright (c) 2022 - 2024 Lepidus Tecnologia
   * Distributed under the GNU GPL v3. For full terms see LICENSE or https://www.gnu.org/licenses/gpl-3.0.txt
   *
   *}
