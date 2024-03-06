@@ -23,7 +23,6 @@ use APP\pages\submission\SubmissionHandler;
 use PKP\log\event\PKPSubmissionEventLogEntry;
 use PKP\db\DAORegistry;
 use PKP\core\Core;
-use PKP\config\Config;
 use APP\facades\Repo;
 use PKP\security\Role;
 use PKP\core\JSONMessage;
@@ -325,15 +324,6 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
     public function getInstallEmailTemplatesFile()
     {
         return $this->getPluginPath() . '/emailTemplates.xml';
-    }
-
-    public function orcidIsGloballyConfigured()
-    {
-        $apiUrl = Config::getVar('orcid', 'api_url');
-        $clientId = Config::getVar('orcid', 'client_id');
-        $clientSecret = Config::getVar('orcid', 'client_secret');
-        return isset($apiUrl) && trim($apiUrl) && isset($clientId) && trim($clientId) &&
-            isset($clientSecret) && trim($clientSecret);
     }
 
     public function getActions($request, $actionArgs)
