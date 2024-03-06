@@ -1,5 +1,7 @@
 <?php
 
+namespace APP\plugins\generic\plauditPreEndorsement\classes;
+
 class OrcidCredentialsValidator
 {
     public function validateClientId($str): bool

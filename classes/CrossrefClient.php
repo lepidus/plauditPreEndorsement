@@ -1,10 +1,12 @@
 <?php
 
+namespace APP\plugins\generic\plauditPreEndorsement\classes;
+
 class CrossrefClient
 {
     public function doiIsIndexed(string $doi): bool
     {
-        $crossrefApiUrl = "https://api.crossref.org/works/".$doi;
+        $crossrefApiUrl = "https://api.crossref.org/works/$doi";
 
         $headers = get_headers($crossrefApiUrl);
         $statusCode = $this->getStatusCode($headers);

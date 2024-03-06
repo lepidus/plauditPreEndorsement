@@ -1,16 +1,23 @@
 <?php
 
-import('classes.handler.Handler');
-import('plugins.generic.plauditPreEndorsement.PlauditPreEndorsementPlugin');
-import('plugins.generic.plauditPreEndorsement.classes.EndorsementService');
-import('plugins.generic.plauditPreEndorsement.classes.OrcidClient');
+namespace APP\plugins\generic\plauditPreEndorsement\classes;
 
-define('AUTH_SUCCESS', 'success');
-define('AUTH_INVALID_TOKEN', 'invalid_token');
-define('AUTH_ACCESS_DENIED', 'access_denied');
+use APP\handler\Handler;
+use APP\facades\Repo;
+use APP\submission\Submission;
+use PKP\plugins\PluginRegistry;
+use APP\template\TemplateManager;
+use APP\plugins\generic\plauditPreEndorsement\PlauditPreEndorsementPlugin;
+use APP\plugins\generic\plauditPreEndorsement\classes\Endorsement;
+use APP\plugins\generic\plauditPreEndorsement\classes\EndorsementService;
+use APP\plugins\generic\plauditPreEndorsement\classes\OrcidClient;
 
 class PlauditPreEndorsementHandler extends Handler
 {
+    public const AUTH_SUCCESS = 'success';
+    public const AUTH_INVALID_TOKEN = 'invalid_token';
+    public const AUTH_ACCESS_DENIED = 'access_denied';
+
     public function updateEndorser($args, $request)
     {
         $plugin = new PlauditPreEndorsementPlugin();
@@ -18,10 +25,10 @@ class PlauditPreEndorsementHandler extends Handler
         $endorserName = $request->getUserVar('endorserName');
         $endorserEmail = $request->getUserVar('endorserEmail');
 
-        $submission = DAORegistry::getDAO('SubmissionDAO')->getById($submissionId);
+        $submission = Repo::submission()->get($submissionId);
         $publication = $submission->getCurrentPublication();
 
-        $endorsementIsConfirmed = $publication->getData('endorsementStatus') == ENDORSEMENT_STATUS_CONFIRMED;
+        $endorsementIsConfirmed = $publication->getData('endorsementStatus') == Endorsement::STATUS_CONFIRMED;
         if ($endorsementIsConfirmed) {
             return http_response_code(400);
         }
@@ -44,8 +51,7 @@ class PlauditPreEndorsementHandler extends Handler
 
         $publication->setData('endorserName', $endorserName);
         $publication->setData('endorserEmail', $endorserEmail);
-        $publicationDao = DAORegistry::getDAO('PublicationDAO');
-        $publicationDao->updateObject($publication);
+        Repo::publication()->edit($publication, []);
 
         $plugin->sendEmailToEndorser($publication, $endorserChanged);
 
@@ -68,7 +74,7 @@ class PlauditPreEndorsementHandler extends Handler
     public function removeEndorsement($args, $request)
     {
         $submissionId = $request->getUserVar('submissionId');
-        $submission = DAORegistry::getDAO('SubmissionDAO')->getById($submissionId);
+        $submission = Repo::submission()->get($submissionId);
         $publication = $submission->getCurrentPublication();
 
         $endorsementFields = [
@@ -84,8 +90,7 @@ class PlauditPreEndorsementHandler extends Handler
             $publication->unsetData($field);
         }
 
-        $publicationDao = DAORegistry::getDAO('PublicationDAO');
-        $publicationDao->updateObject($publication);
+        Repo::publication()->edit($publication, []);
 
         $plugin = PluginRegistry::getPlugin('generic', 'plauditpreendorsementplugin');
         $plugin->writeOnActivityLog($submission, 'plugins.generic.plauditPreEndorsement.log.endorsementRemoved');
@@ -96,14 +101,14 @@ class PlauditPreEndorsementHandler extends Handler
     public function sendEndorsementManually($args, $request)
     {
         $submissionId = $request->getUserVar('submissionId');
-        $submission = DAORegistry::getDAO('SubmissionDAO')->getById($submissionId);
+        $submission = Repo::submission()->get($submissionId);
         $publication = $submission->getCurrentPublication();
         $plugin = PluginRegistry::getPlugin('generic', 'plauditpreendorsementplugin');
 
         $endorsementStatus = $publication->getData('endorsementStatus');
-        $canSendEndorsementManually = $publication->getData('status') === STATUS_PUBLISHED
+        $canSendEndorsementManually = $publication->getData('status') == Submission::STATUS_PUBLISHED
             && !$plugin->userAccessingIsAuthor($submission)
-            && ($endorsementStatus == ENDORSEMENT_STATUS_CONFIRMED || $endorsementStatus == ENDORSEMENT_STATUS_COULDNT_COMPLETE);
+            && ($endorsementStatus == Endorsement::STATUS_CONFIRMED || $endorsementStatus == Endorsement::STATUS_COULDNT_COMPLETE);
 
         if($canSendEndorsementManually) {
             $endorsementService = new EndorsementService($request->getContext()->getId(), $plugin);
@@ -116,18 +121,17 @@ class PlauditPreEndorsementHandler extends Handler
 
     public function orcidVerify($args, $request)
     {
-        $publicationDao = DAORegistry::getDAO('PublicationDAO');
-        $publication = $publicationDao->getById($request->getUserVar('state'));
-        $submission = DAORegistry::getDAO('SubmissionDAO')->getById($publication->getData('submissionId'));
+        $publication = Repo::publication()->get($request->getUserVar('state'));
+        $submission = Repo::submission()->get($publication->getData('submissionId'));
 
         $plugin = PluginRegistry::getPlugin('generic', 'plauditpreendorsementplugin');
         $contextId = $request->getContext()->getId();
 
         $statusAuth = $this->getStatusAuthentication($publication, $request);
-        if ($statusAuth == AUTH_INVALID_TOKEN) {
+        if ($statusAuth == self::AUTH_INVALID_TOKEN) {
             $this->logMessageAndDisplayTemplate($submission, $request, 'plugins.generic.plauditPreEndorsement.log.invalidToken', ['errorType' => 'invalidToken']);
             return;
-        } elseif ($statusAuth == AUTH_ACCESS_DENIED) {
+        } elseif ($statusAuth == self::AUTH_ACCESS_DENIED) {
             $this->setAccessDeniedEndorsement($publication);
             $this->logMessageAndDisplayTemplate($submission, $request, 'plugins.generic.plauditPreEndorsement.log.orcidAccessDenied', ['errorType' => 'denied']);
             return;
@@ -137,14 +141,14 @@ class PlauditPreEndorsementHandler extends Handler
             $code = $request->getUserVar('code');
             $orcidClient = new OrcidClient($plugin, $contextId);
             $orcid = $orcidClient->requestOrcid($code);
-        } catch (GuzzleHttp\Exception\RequestException  $exception) {
+        } catch (\GuzzleHttp\Exception\RequestException  $exception) {
             $this->logMessageAndDisplayTemplate($submission, $request, 'plugins.generic.plauditPreEndorsement.log.orcidRequestError', ['errorType' => 'failure', 'orcidAPIError' => $exception->getMessage()]);
             return;
         }
 
-        $isSandBox = $plugin->getSetting($contextId, 'orcidAPIPath') == ENDORSEMENT_ORCID_API_URL_MEMBER_SANDBOX ||
-            $plugin->getSetting($contextId, 'orcidAPIPath') == ENDORSEMENT_ORCID_API_URL_PUBLIC_SANDBOX;
-        $orcidUri = ($isSandBox ? ENDORSEMENT_ORCID_URL_SANDBOX : ENDORSEMENT_ORCID_URL) . $orcid;
+        $isSandBox = $plugin->getSetting($contextId, 'orcidAPIPath') == OrcidClient::ORCID_API_URL_MEMBER_SANDBOX ||
+            $plugin->getSetting($contextId, 'orcidAPIPath') == OrcidClient::ORCID_API_URL_PUBLIC_SANDBOX;
+        $orcidUri = ($isSandBox ? OrcidClient::ORCID_URL_SANDBOX : OrcidClient::ORCID_URL) . $orcid;
 
         if (strlen($orcid) > 0) {
             if($this->checkDataIsFromAnyAuthor($publication, 'orcid', $orcidUri)) {
@@ -158,7 +162,7 @@ class PlauditPreEndorsementHandler extends Handler
             $this->setConfirmedEndorsementPublication($publication, $orcidUri);
             $this->logMessageAndDisplayTemplate($submission, $request, 'plugins.generic.plauditPreEndorsement.log.endorsementConfirmed', ['orcid' => $orcidUri]);
 
-            if($publication->getData('status') === STATUS_PUBLISHED) {
+            if($publication->getData('status') == Submission::STATUS_PUBLISHED) {
                 $endorsementService->sendEndorsement($publication);
             }
         }
@@ -180,27 +184,25 @@ class PlauditPreEndorsementHandler extends Handler
     {
         $publication->setData('endorserEmailToken', null);
         $publication->setData('endorserOrcid', $orcidUri);
-        $publication->setData('endorsementStatus', ENDORSEMENT_STATUS_CONFIRMED);
-        $publicationDao = DAORegistry::getDAO('PublicationDAO');
-        $publicationDao->updateObject($publication);
+        $publication->setData('endorsementStatus', Endorsement::STATUS_CONFIRMED);
+        Repo::publication()->edit($publication, []);
     }
 
     private function setAccessDeniedEndorsement($publication)
     {
         $publication->setData('endorserEmailToken', null);
-        $publication->setData('endorsementStatus', ENDORSEMENT_STATUS_DENIED);
-        $publicationDao = DAORegistry::getDAO('PublicationDAO');
-        $publicationDao->updateObject($publication);
+        $publication->setData('endorsementStatus', Endorsement::STATUS_DENIED);
+        Repo::publication()->edit($publication, []);
     }
 
     public function getStatusAuthentication($publication, $request)
     {
         if ($request->getUserVar('token') != $publication->getData('endorserEmailToken')) {
-            return AUTH_INVALID_TOKEN;
+            return self::AUTH_INVALID_TOKEN;
         } elseif ($request->getUserVar('error') == 'access_denied') {
-            return AUTH_ACCESS_DENIED;
+            return self::AUTH_ACCESS_DENIED;
         } else {
-            return AUTH_SUCCESS;
+            return self::AUTH_SUCCESS;
         }
     }
 }

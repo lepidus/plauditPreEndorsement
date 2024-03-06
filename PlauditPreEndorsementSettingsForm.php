@@ -3,7 +3,7 @@
 /**
  * @file PlauditPreEndorsementSettingsForm.inc.php
  *
- * Copyright (c) 2022 Lepidus Tecnologia
+ * Copyright (c) 2022 - 2024 Lepidus Tecnologia
  * Distributed under the GNU GPL v3. For full terms see the file docs/COPYING.
  *
  * @class PlauditPreEndorsementSettingsForm
@@ -12,9 +12,17 @@
  * @brief Form for site admins to modify Plaudit Pre-Endorsement plugin settings
  */
 
+namespace APP\plugins\generic\plauditPreEndorsement;
 
-import('lib.pkp.classes.form.Form');
-import('plugins.generic.plauditPreEndorsement.classes.OrcidCredentialsValidator');
+use PKP\form\Form;
+use APP\template\TemplateManager;
+use APP\core\Application;
+use PKP\config\Config;
+use PKP\form\validation\FormValidator;
+use PKP\form\validation\FormValidatorPost;
+use PKP\form\validation\FormValidatorCSRF;
+use PKP\form\validation\FormValidatorCustom;
+use APP\plugins\generic\plauditPreEndorsement\classes\OrcidCredentialsValidator;
 
 class PlauditPreEndorsementSettingsForm extends Form
 {
@@ -39,7 +47,7 @@ class PlauditPreEndorsementSettingsForm extends Form
         $this->addCheck(new FormValidatorPost($this));
         $this->addCheck(new FormValidatorCSRF($this));
 
-        if (!$this->plugin->orcidIsGloballyConfigured()) {
+        if (!$this->orcidIsGloballyConfigured()) {
             $this->addCheck(new FormValidator($this, 'orcidAPIPath', 'required', 'plugins.generic.plauditPreEndorsement.settings.orcidAPIPathRequired'));
             $this->addCheck(new FormValidatorCustom($this, 'orcidClientId', 'required', 'plugins.generic.plauditPreEndorsement.settings.orcidClientIdError', function ($clientId) {
                 return $this->validator->validateClientId($clientId);
@@ -68,7 +76,7 @@ class PlauditPreEndorsementSettingsForm extends Form
     public function fetch($request, $template = null, $display = false)
     {
         $templateMgr = TemplateManager::getManager($request);
-        $templateMgr->assign('globallyConfigured', $this->plugin->orcidIsGloballyConfigured());
+        $templateMgr->assign('globallyConfigured', $this->orcidIsGloballyConfigured());
         $templateMgr->assign('pluginName', $this->plugin->getName());
         $templateMgr->assign('applicationName', Application::get()->getName());
         return parent::fetch($request, $template, $display);
@@ -105,5 +113,14 @@ class PlauditPreEndorsementSettingsForm extends Form
             $this->plugin->setEnabled(false);
         }
         return $messages;
+    }
+
+    public function orcidIsGloballyConfigured(): bool
+    {
+        $apiUrl = Config::getVar('orcid', 'api_url');
+        $clientId = Config::getVar('orcid', 'client_id');
+        $clientSecret = Config::getVar('orcid', 'client_secret');
+        return isset($apiUrl) && trim($apiUrl) && isset($clientId) && trim($clientId) &&
+            isset($clientSecret) && trim($clientSecret);
     }
 }

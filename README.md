@@ -8,7 +8,7 @@ This plugin allows authors to pre-endorse their manuscripts before the posting t
 
 This plugin is compatible with the following PKP applications:
 
-- OPS 3.3.0-x
+- OPS 3.4.0-x
 
 ## Installation
 
@@ -26,7 +26,7 @@ After taking this configuration process, the plugin is ready for use.
 ## License
 __This plugin is licensed under the GNU General Public License v3.0__
 
-__Copyright (c) 2022 Lepidus Tecnologia__
+__Copyright (c) 2022 - 2024 Lepidus Tecnologia__
 
-__Copyright (c) 2022 SciELO__
+__Copyright (c) 2022 - 2024 SciELO__
   

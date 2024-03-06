@@ -1,8 +1,6 @@
 <?php
 
-import('classes.publication.Publication');
-import('plugins.generic.plauditPreEndorsement.classes.CrossrefClient');
-
+use APP\plugins\generic\plauditPreEndorsement\classes\CrossrefClient;
 use PHPUnit\Framework\TestCase;
 
 final class CrossrefClientTest extends TestCase

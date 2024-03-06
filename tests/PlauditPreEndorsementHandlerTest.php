@@ -1,11 +1,9 @@
 <?php
 
-import('classes.journal.Journal');
-import('classes.publication.Publication');
-import('classes.core.Request');
-import('plugins.generic.plauditPreEndorsement.PlauditPreEndorsementPlugin');
-import('plugins.generic.plauditPreEndorsement.classes.PlauditPreEndorsementHandler');
-
+use APP\publication\Publication;
+use APP\core\Request;
+use APP\plugins\generic\plauditPreEndorsement\classes\Endorsement;
+use APP\plugins\generic\plauditPreEndorsement\classes\PlauditPreEndorsementHandler;
 use PHPUnit\Framework\TestCase;
 
 final class PlauditPreEndorsementHandlerTest extends TestCase
@@ -29,7 +27,7 @@ final class PlauditPreEndorsementHandlerTest extends TestCase
         $this->publication->setData('endorserEmail', $this->endorserEmail);
         $this->publication->setData('endorserName', $this->endorserName);
         $this->publication->setData('endorserEmailToken', $this->endorserEmailToken);
-        $this->publication->setData('endorsementStatus', ENDORSEMENT_STATUS_NOT_CONFIRMED);
+        $this->publication->setData('endorsementStatus', Endorsement::STATUS_NOT_CONFIRMED);
 
         return $this->publication;
     }
@@ -53,19 +51,19 @@ final class PlauditPreEndorsementHandlerTest extends TestCase
     public function testEndorserAuthenticatesCorrectly(): void
     {
         $result = $this->verifyEndorserAuth($this->endorserEmailToken);
-        $this->assertEquals(AUTH_SUCCESS, $result);
+        $this->assertEquals(PlauditPreEndorsementHandler::AUTH_SUCCESS, $result);
     }
 
     public function testEndorserTokenIsDifferent(): void
     {
         $diffToken = md5(microtime() . 'email@email.com');
         $result = $this->verifyEndorserAuth($diffToken);
-        $this->assertEquals(AUTH_INVALID_TOKEN, $result);
+        $this->assertEquals(PlauditPreEndorsementHandler::AUTH_INVALID_TOKEN, $result);
     }
 
     public function testEndorserAutheticationHasAccessDenied(): void
     {
         $result = $this->verifyEndorserAuth($this->endorserEmailToken, 'access_denied');
-        $this->assertEquals(AUTH_ACCESS_DENIED, $result);
+        $this->assertEquals(PlauditPreEndorsementHandler::AUTH_ACCESS_DENIED, $result);
     }
 }

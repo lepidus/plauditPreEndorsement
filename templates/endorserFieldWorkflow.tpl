@@ -1,6 +1,6 @@
 {*
-  * Copyright (c) 2022 Lepidus Tecnologia
-  * Copyright (c) 2022 SciELO
+  * Copyright (c) 2022 - 2024 SciELO
+  * Copyright (c) 2022 - 2024 Lepidus Tecnologia
   * Distributed under the GNU GPL v3. For full terms see LICENSE or https://www.gnu.org/licenses/gpl-3.0.txt
   *
   *}
@@ -72,7 +72,7 @@
 
     async function requestUpdateEndorsement(e){ldelim}
         $.post(
-            "{$updateEndorserUrl}",
+            "{$handlerUrl}/updateEndorser",
             {ldelim}
                 submissionId: {$submissionId},
                 endorserName: $('input[name=endorserNameWorkflow]').val(),
@@ -99,7 +99,7 @@
 
     async function requestSendEndorsementManually(e){ldelim}
         $.post(
-            "{$sendEndorsementManuallyUrl}",
+            "{$handlerUrl}/sendEndorsementManually",
             {ldelim}
                 submissionId: {$submissionId}
             {rdelim},
@@ -117,7 +117,7 @@
 <script>
     async function requestRemoveEndorsement(e){ldelim}
         $.post(
-            "{$removeEndorsementUrl}",
+            "{$handlerUrl}/removeEndorsement",
             {ldelim}
                 submissionId: {$submissionId}
             {rdelim}

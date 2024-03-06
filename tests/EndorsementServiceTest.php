@@ -1,17 +1,22 @@
 <?php
 
-import('classes.publication.Publication');
-import('lib.pkp.tests.DatabaseTestCase');
-import('plugins.generic.plauditPreEndorsement.classes.CrossrefClient');
-import('plugins.generic.plauditPreEndorsement.classes.OrcidClient');
-import('plugins.generic.plauditPreEndorsement.classes.EndorsementService');
-import('plugins.generic.plauditPreEndorsement.PlauditPreEndorsementPlugin');
+use PKP\tests\DatabaseTestCase;
+use APP\submission\Submission;
+use APP\publication\Publication;
+use PKP\doi\Doi;
+use APP\core\Application;
+use APP\facades\Repo;
+use PKP\core\Core;
+use APP\plugins\generic\plauditPreEndorsement\classes\CrossrefClient;
+use APP\plugins\generic\plauditPreEndorsement\classes\OrcidClient;
+use APP\plugins\generic\plauditPreEndorsement\classes\EndorsementService;
+use APP\plugins\generic\plauditPreEndorsement\PlauditPreEndorsementPlugin;
 
 final class EndorsementServiceTest extends DatabaseTestCase
 {
     private $endorsementService;
-    private $contextId = 2;
-    private $submissionId = 1234;
+    private $contextId = 1;
+    private $submissionId;
     private $publication;
     private $plugin;
     private $doi = '10.1234/TestePublication.1234';
@@ -24,24 +29,40 @@ final class EndorsementServiceTest extends DatabaseTestCase
     public function setUp(): void
     {
         parent::setUp();
-        $this->publication = new Publication();
+        $this->publication = $this->createEndorsedPublication();
         $this->plugin = new PlauditPreEndorsementPlugin();
         $this->endorsementService = new EndorsementService($this->contextId, $this->plugin);
     }
 
+    public function tearDown(): void
+    {
+        parent::tearDown();
+        $submission = Repo::submission()->get($this->submissionId);
+        Repo::submission()->delete($submission);
+
+        $pluginSettingsDao = DAORegistry::getDAO('PluginSettingsDAO');
+        $pluginSettingsDao->deleteSetting($this->contextId, $this->plugin->getName(), 'plauditAPISecret');
+    }
+
     protected function getAffectedTables(): array
     {
-        return array('event_log', 'event_log_settings', 'plugin_settings', 'publications', 'publication_settings');
+        return ['event_log', 'event_log_settings'];
     }
 
     private function createEndorsedPublication(): Publication
     {
+        $context = DAORegistry::getDAO('ServerDAO')->getById($this->contextId);
+
+        $submission = new Submission();
+        $submission->setData('contextId', $this->contextId);
+
         $publication = new Publication();
         $publication->setData('endorserName', $this->endorserName);
-        $publication->setData('submissionId', $this->submissionId);
 
-        $publicationId = DAORegistry::getDAO('PublicationDAO')->insertObject($publication);
-        $publication->setData('id', $publicationId);
+        $this->submissionId = Repo::submission()->add($submission, $publication, $context);
+
+        $submission = Repo::submission()->get($this->submissionId);
+        $publication = $submission->getCurrentPublication();
 
         return $publication;
     }
@@ -97,14 +118,15 @@ final class EndorsementServiceTest extends DatabaseTestCase
 
     private function createEventLog(string $date, string $message)
     {
-        $submissionEventLogDao = DAORegistry::getDAO('SubmissionEventLogDAO');
-        $entry = $submissionEventLogDao->newDataObject();
-        $entry->setData('assocId', $this->submissionId);
-        $entry->setData('assocType', ASSOC_TYPE_SUBMISSION);
-        $entry->setData('dateLogged', $date);
-        $entry->setData('message', $message);
+        $eventLog = Repo::eventLog()->newDataObject([
+            'assocType' => Application::ASSOC_TYPE_SUBMISSION,
+            'assocId' => $this->submissionId,
+            'message' => $message,
+            'isTranslated' => false,
+            'dateLogged' => $date,
+        ]);
 
-        $submissionEventLogDao->insertObject($entry);
+        Repo::eventLog()->add($eventLog);
     }
 
     public function testValidateEndorsementSending(): void
@@ -112,7 +134,9 @@ final class EndorsementServiceTest extends DatabaseTestCase
         $validateResult = $this->endorsementService->validateEndorsementSending($this->publication);
         $this->assertEquals('plugins.generic.plauditPreEndorsement.log.failedEndorsementSending.emptyDoi', $validateResult);
 
-        $this->publication->setData('pub-id::doi', $this->doi);
+        $doiObject = new Doi();
+        $doiObject->setData('doi', $this->doi);
+        $this->publication->setData('doiObject', $doiObject);
         $validateResult = $this->endorsementService->validateEndorsementSending($this->publication);
         $this->assertEquals('plugins.generic.plauditPreEndorsement.log.failedEndorsementSending.doiNotIndexed', $validateResult);
 
@@ -128,14 +152,13 @@ final class EndorsementServiceTest extends DatabaseTestCase
 
     public function testUpdateEndorserName(): void
     {
-        $publication = $this->createEndorsedPublication();
         $mockOrcidClient = $this->getMockOrcidClient();
         $this->endorsementService->setOrcidClient($mockOrcidClient);
 
-        $publication = $this->endorsementService->updateEndorserNameFromOrcid($publication, $this->endorserOrcid);
+        $this->publication = $this->endorsementService->updateEndorserNameFromOrcid($this->publication, $this->endorserOrcid);
         $expectedNewName = $this->endorserGivenNameOrcid . ' ' . $this->endorserFamilyNameOrcid;
 
-        $this->assertEquals($expectedNewName, $publication->getData('endorserName'));
+        $this->assertEquals($expectedNewName, $this->publication->getData('endorserName'));
     }
 
     public function testMessageWasAlreadyLoggedToday(): void

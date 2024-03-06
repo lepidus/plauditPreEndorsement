@@ -3,11 +3,17 @@
 <!--
   * emailTemplates.xml
   *
-  * Copyright (c) 2022 Lepidus Tecnologia
+  * Copyright (c) 2022 - 2024 Lepidus Tecnologia
   * Distributed under the GNU GPL v3. For full terms see the file docs/COPYING.
   *
   * Email templates XML file.
     -->
 <emails>
-	<email key="ORCID_REQUEST_ENDORSER_AUTHORIZATION" can_edit="1" can_disable="0" subject="emails.orcidRequestEndorserAuthorization.subject" description="emails.orcidRequestEndorserAuthorization.description" body="emails.orcidRequestEndorserAuthorization.body"/>
+	<email
+    key="ORCID_REQUEST_ENDORSER_AUTHORIZATION"
+    name="emails.orcidRequestEndorserAuthorization.name"
+    description="emails.orcidRequestEndorserAuthorization.description"
+    subject="emails.orcidRequestEndorserAuthorization.subject"
+    body="emails.orcidRequestEndorserAuthorization.body"
+  />
 </emails>

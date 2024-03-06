@@ -1,15 +1,21 @@
 <?php
 
-use GuzzleHttp\Exception\ClientException;
+namespace APP\plugins\generic\plauditPreEndorsement\classes;
 
-import('plugins.generic.plauditPreEndorsement.classes.PlauditClient');
-import('plugins.generic.plauditPreEndorsement.classes.CrossrefClient');
-import('plugins.generic.plauditPreEndorsement.classes.OrcidClient');
+use GuzzleHttp\Exception\ClientException;
+use APP\core\Application;
+use APP\facades\Repo;
+use PKP\core\Core;
+use APP\plugins\generic\plauditPreEndorsement\classes\Endorsement;
+use APP\plugins\generic\plauditPreEndorsement\classes\PlauditClient;
+use APP\plugins\generic\plauditPreEndorsement\classes\CrossrefClient;
+use APP\plugins\generic\plauditPreEndorsement\classes\OrcidClient;
 
 class EndorsementService
 {
     private $plugin;
     private $contextId;
+    private $orcidClient;
     private $crossrefClient;
 
     public function __construct($contextId, $plugin)
@@ -39,7 +45,7 @@ class EndorsementService
         } else {
             $submissionId = $publication->getData('submissionId');
             if(!$needCheckMessageWasLoggedToday or !$this->messageWasAlreadyLoggedToday($submissionId, $validationResult)) {
-                $submission = DAORegistry::getDAO('SubmissionDAO')->getById($submissionId);
+                $submission = Repo::submission()->get($submissionId);
                 $this->plugin->writeOnActivityLog($submission, $validationResult);
             }
         }
@@ -47,7 +53,7 @@ class EndorsementService
 
     public function validateEndorsementSending($publication): string
     {
-        $doi = $publication->getData('pub-id::doi');
+        $doi = $publication->getDoi();
         $secretKey = $this->plugin->getSetting($this->contextId, 'plauditAPISecret');
 
         if(empty($doi)) {
@@ -67,8 +73,8 @@ class EndorsementService
 
     public function sendEndorsementToPlaudit($publication)
     {
-        $submission = DAORegistry::getDAO('SubmissionDAO')->getById($publication->getData('submissionId'));
-        $this->plugin->writeOnActivityLog($submission, 'plugins.generic.plauditPreEndorsement.log.attemptSendingEndorsement', ['doi' => $publication->getData('pub-id::doi'), 'orcid' => $publication->getData('endorserOrcid')]);
+        $submission = Repo::submission()->get($publication->getData('submissionId'));
+        $this->plugin->writeOnActivityLog($submission, 'plugins.generic.plauditPreEndorsement.log.attemptSendingEndorsement', ['doi' => $publication->getDoi(), 'orcid' => $publication->getData('endorserOrcid')]);
 
         $plauditClient = new PlauditClient();
 
@@ -82,12 +88,12 @@ class EndorsementService
             $responseBody = print_r($response->getBody()->getContents(), true);
 
             $this->plugin->writeOnActivityLog($submission, 'plugins.generic.plauditPreEndorsement.log.failedSendingEndorsement', ['code' => $responseCode, 'body' => $responseBody]);
-            $newEndorsementStatus = ENDORSEMENT_STATUS_COULDNT_COMPLETE;
+            $newEndorsementStatus = Endorsement::STATUS_COULDNT_COMPLETE;
         }
 
-        $publication->setData('endorsementStatus', $newEndorsementStatus);
-        $publicationDao = DAORegistry::getDAO('PublicationDAO');
-        $publicationDao->updateObject($publication);
+        Repo::publication()->edit($publication, [
+            'endorsementStatus' => $newEndorsementStatus
+        ]);
     }
 
     public function updateEndorserNameFromOrcid($publication, $orcid)
@@ -97,15 +103,17 @@ class EndorsementService
         $fullName = $this->orcidClient->getFullNameFromRecord($orcidRecord);
 
         $publication->setData('endorserName', $fullName);
-        DAORegistry::getDAO('PublicationDAO')->updateObject($publication);
+        $publicationDao = Repo::publication()->dao;
+        $publicationDao->update($publication);
 
         return $publication;
     }
 
     public function messageWasAlreadyLoggedToday(int $submissionId, string $message): bool
     {
-        $submissionEventLogDao = DAORegistry::getDAO('SubmissionEventLogDAO');
-        $submissionLogEntries = $submissionEventLogDao->getBySubmissionId($submissionId);
+        $submissionLogEntries = Repo::eventLog()->getCollector()
+            ->filterByAssoc(Application::ASSOC_TYPE_SUBMISSION, [$submissionId])
+            ->getMany();
         $today = Core::getCurrentDate();
 
         foreach($submissionLogEntries->toArray() as $logEntry) {

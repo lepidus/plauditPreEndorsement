@@ -1,7 +1,9 @@
 {**
  * templates/orcidVerify.tpl
  *
- * Copyright (c) 2022 Lepidus Tecnologia
+ * Copyright (c) 2022 - 2024 SciELO
+ * Copyright (c) 2022 - 2024 Lepidus Tecnologia
+ *
  * Distributed under the GNU GPL v3. For full terms see the file docs/COPYING.
  *
  * Page template to display ORCID verification success or failure.
@@ -24,10 +26,10 @@
         {else}
             <div class="orcid-failure">
                 {if isset($orcidAPIError)}
-                    {$orcidAPIError}
+                    {$orcidAPIError|escape}
                 {/if}    
                 
-                {translate key="plugins.generic.plauditPreEndorsement.verify.{$errorType}"}
+                {translate key="plugins.generic.plauditPreEndorsement.verify.{$errorType|escape}"}
             </div>
             {translate key="plugins.generic.plauditPreEndorsement.failure.contact"}
         {/if}

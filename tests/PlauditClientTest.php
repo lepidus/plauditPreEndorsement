@@ -1,13 +1,15 @@
 <?php
 
-import('classes.publication.Publication');
-import('plugins.generic.plauditPreEndorsement.classes.PlauditClient');
-import('plugins.generic.plauditPreEndorsement.tests.TestResponse');
-import('plugins.generic.plauditPreEndorsement.PlauditPreEndorsementPlugin');
+namespace APP\plugins\generic\plauditPreEndorsement\tests;
 
+use APP\publication\Publication;
+use PKP\doi\Doi;
+use APP\plugins\generic\plauditPreEndorsement\classes\Endorsement;
+use APP\plugins\generic\plauditPreEndorsement\classes\PlauditClient;
+use APP\plugins\generic\plauditPreEndorsement\tests\TestResponse;
 use PHPUnit\Framework\TestCase;
 
-final class PlauditClientTest extends TestCase
+class PlauditClientTest extends TestCase
 {
     private $publication;
     private $plauditClient;
@@ -18,8 +20,11 @@ final class PlauditClientTest extends TestCase
     public function setUp(): void
     {
         parent::setUp();
+
+        $doiObject = new Doi();
+        $doiObject->setData('doi', $this->doi);
         $this->publication = new Publication();
-        $this->publication->setData('pub-id::doi', $this->doi);
+        $this->publication->setData('doiObject', $doiObject);
         $this->publication->setData('endorserOrcid', $this->orcid);
 
         $this->plauditClient = new PlauditClient();
@@ -43,7 +48,7 @@ final class PlauditClientTest extends TestCase
         $bodyJson = "{\"endorsements\":[{\"doi\":\"$lowerCaseDoi\",\"orcid\":\"$this->orcid\",\"tags\":[]}]}";
         $response = new TestResponse($statusOk, $bodyJson);
 
-        $this->assertEquals(ENDORSEMENT_STATUS_COMPLETED, $this->plauditClient->getEndorsementStatusByResponse($response, $this->publication));
+        $this->assertEquals(Endorsement::STATUS_COMPLETED, $this->plauditClient->getEndorsementStatusByResponse($response, $this->publication));
     }
 
     public function testEndorsementStatusWhenRequestSucceedButDataDiffs(): void
@@ -52,13 +57,13 @@ final class PlauditClientTest extends TestCase
         $bodyJson = "{\"endorsements\":[{\"doi\":\"10.1590/lepiduspreprints.2022\",\"orcid\":\"$this->orcid\",\"tags\":[]}]}";
         $response = new TestResponse($statusOk, $bodyJson);
 
-        $this->assertEquals(ENDORSEMENT_STATUS_COULDNT_COMPLETE, $this->plauditClient->getEndorsementStatusByResponse($response, $this->publication));
+        $this->assertEquals(Endorsement::STATUS_COULDNT_COMPLETE, $this->plauditClient->getEndorsementStatusByResponse($response, $this->publication));
 
         $lowerCaseDoi = strtolower($this->doi);
         $bodyJson = "{\"endorsements\":[{\"doi\":\"$lowerCaseDoi\",\"orcid\":\"0000-0001-5542-1234\",\"tags\":[]}]}";
         $response = new TestResponse($statusOk, $bodyJson);
 
-        $this->assertEquals(ENDORSEMENT_STATUS_COULDNT_COMPLETE, $this->plauditClient->getEndorsementStatusByResponse($response, $this->publication));
+        $this->assertEquals(Endorsement::STATUS_COULDNT_COMPLETE, $this->plauditClient->getEndorsementStatusByResponse($response, $this->publication));
     }
 
     public function testEndorsementStatusWhenRequestFails(): void
@@ -67,6 +72,6 @@ final class PlauditClientTest extends TestCase
         $bodyJson = "";
         $response = new TestResponse($statusBadRequest, $bodyJson);
 
-        $this->assertEquals(ENDORSEMENT_STATUS_COULDNT_COMPLETE, $this->plauditClient->getEndorsementStatusByResponse($response, $this->publication));
+        $this->assertEquals(Endorsement::STATUS_COULDNT_COMPLETE, $this->plauditClient->getEndorsementStatusByResponse($response, $this->publication));
     }
 }
