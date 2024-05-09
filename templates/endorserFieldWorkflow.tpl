@@ -8,131 +8,26 @@
 <link rel="stylesheet" type="text/css" href="/plugins/generic/plauditPreEndorsement/styles/endorserWorkflowStyleSheet.css">
 
 <div class="pkp_form" id="updateEndorserForm">
-    <div class="endorserFieldDiv">
-        <label class="label">{translate key="plugins.generic.plauditPreEndorsement.endorserName"}</label>
-        {if $canEditEndorsement}
-            {fbvElement type="text" name="endorserNameWorkflow" id="endorserNameWorkflow" value=$endorserName|escape maxlength="90" size=$fbvStyles.size.MEDIUM}
-        {else}
-            <span>{$endorserName|escape}</span>
-        {/if}
-    </div>
-
-    <div class="endorserFieldDiv">
-        <label class="label">{translate key="plugins.generic.plauditPreEndorsement.endorserEmail"}</label>
-        {if $canEditEndorsement}
-            {fbvElement type="email" name="endorserEmailWorkflow" id="endorserEmailWorkflow" value=$endorserEmail|escape maxlength="90" size=$fbvStyles.size.MEDIUM}
-        {else}
-            <span>{$endorserEmail|escape}</span>
-        {/if}
-    </div>
-
-    {if $endorserOrcid}
-        <div class="endorserFieldDiv">
-            <label class="label">{translate key="plugins.generic.plauditPreEndorsement.endorserOrcid"}</label>
-            <span class="orcid"><a href="{$endorserOrcid|escape}" target="_blank">{$endorserOrcid|escape}</a></span>
-        </div>
-    {/if}
-
-    {if !is_null($endorsementStatus)}
-        <span>
-            <div id="endorsement{$endorsementStatusSuffix}">{translate key="plugins.generic.plauditPreEndorsement.endorsement{$endorsementStatusSuffix}"}</div>
-        </span>
-    {/if}
-
-    {if isset($endorserEmailCount)}
-        <span>
-            {if $endorserEmailCount == 1}
-                <div id="endorserEmailCount">{translate key="plugins.generic.plauditPreEndorsement.endorserEmailCount.one"}</div>
-            {else}
-                <div id="endorserEmailCount">{translate key="plugins.generic.plauditPreEndorsement.endorserEmailCount.many" numEmails=$endorserEmailCount}</div>
-            {/if}
-        </span>
-    {/if}
-
-    <div class="formButtons">
-        {if $canRemoveEndorsement}
-            <button id="removeEndorsementSubmit" type="button" class="pkp_button submitFormButton">{translate key="plugins.generic.plauditPreEndorsement.removeEndorsement"}</button>
-        {/if}
-        
-        {if $canEditEndorsement}
-            <button id="updateEndorserSubmit" type="button" class="pkp_button submitFormButton">{translate key="common.save"}</button>
-        {/if}
-
-        {if $canSendEndorsementManually}
-            <button id="sendEndorsementManuallySubmit" type="button" class="pkp_button submitFormButton">{translate key="plugins.generic.plauditPreEndorsement.sendEndorsementToPlaudit"}</button>
-        {/if}
-    </div>
+    <list-panel v-bind="components.endorsers" @set="set">
+        <pkp-header slot="header">
+            <h2>
+                {{ components.endorsers.title }}
+            </h2>
+            <template slot="actions">
+                <pkp-button @click="$modal.show('template')">
+                    {translate key="common.add"}
+                </pkp-button>
+            </template>
+        </pkp-header>
+    </list-panel>
+    <modal
+        :close-label="__('common.close')"
+        name="template"
+        :title="'{translate key="manager.emails.addEmail"}'"
+    >
+        <pkp-form
+            v-bind="components.endorsers.form"
+            @set="set"
+        ></pkp-form>
+    </modal>
 </div>
-
-{if $canEditEndorsement}
-<script>
-    function updateEndorsementSuccess(){ldelim}
-        alert("{translate key="form.saved"}");
-    {rdelim}
-
-    async function requestUpdateEndorsement(e){ldelim}
-        $.post(
-            "{$handlerUrl}/updateEndorser",
-            {ldelim}
-                submissionId: {$submissionId},
-                endorserName: $('input[name=endorserNameWorkflow]').val(),
-                endorserEmail: $('input[name=endorserEmailWorkflow]').val()
-            {rdelim}
-        )
-        .done(updateEndorsementSuccess)
-        .fail(function(xhr, status, error){ldelim}
-            alert(xhr.responseJSON['errorMessage']);
-        {rdelim});
-    {rdelim}
-
-    $(function(){ldelim}
-        $('#updateEndorserSubmit').click(requestUpdateEndorsement);
-    {rdelim});
-</script>
-{/if}
-
-{if $canSendEndorsementManually}
-<script>
-    function sendEndorsementManuallySuccess(){ldelim}
-        alert("{translate key="form.saved"}");
-    {rdelim}
-
-    async function requestSendEndorsementManually(e){ldelim}
-        $.post(
-            "{$handlerUrl}/sendEndorsementManually",
-            {ldelim}
-                submissionId: {$submissionId}
-            {rdelim},
-            sendEndorsementManuallySuccess()
-        );
-    {rdelim}
-
-    $(function(){ldelim}
-        $('#sendEndorsementManuallySubmit').click(requestSendEndorsementManually);
-    {rdelim});
-</script>
-{/if}
-
-{if $canRemoveEndorsement}
-<script>
-    async function requestRemoveEndorsement(e){ldelim}
-        $.post(
-            "{$handlerUrl}/removeEndorsement",
-            {ldelim}
-                submissionId: {$submissionId}
-            {rdelim}
-        );
-    {rdelim}
-
-    function confirmEndorsementRemoval(){ldelim}
-        let removalConfirmed = confirm("{translate key="plugins.generic.plauditPreEndorsement.removalConfirmationMessage"}");
-        if(removalConfirmed) {ldelim}
-            requestRemoveEndorsement();
-        {rdelim}
-    {rdelim}
-    
-    $(function(){ldelim}
-        $('#removeEndorsementSubmit').click(confirmEndorsementRemoval);
-    {rdelim});
-</script>
-{/if}

@@ -33,14 +33,14 @@ class PlauditPreEndorsementHandler extends Handler
             return http_response_code(400);
         }
 
-        if(!$plugin->inputIsEmail($endorserEmail)) {
+        if (!$plugin->inputIsEmail($endorserEmail)) {
             http_response_code(400);
             header('Content-Type: application/json');
             echo json_encode(['errorMessage' => __('plugins.generic.plauditPreEndorsement.endorsementEmailInvalid')]);
             return;
         }
 
-        if($this->checkDataIsFromAnyAuthor($publication, 'email', $endorserEmail)) {
+        if ($this->checkDataIsFromAnyAuthor($publication, 'email', $endorserEmail)) {
             http_response_code(400);
             header('Content-Type: application/json');
             echo json_encode(['errorMessage' => __('plugins.generic.plauditPreEndorsement.endorsementFromAuthor')]);
@@ -62,8 +62,8 @@ class PlauditPreEndorsementHandler extends Handler
     {
         $authors = $publication->getData('authors');
 
-        foreach($authors as $author) {
-            if($author->getData($dataName) == $dataValue) {
+        foreach ($authors as $author) {
+            if ($author->getData($dataName) == $dataValue) {
                 return true;
             }
         }
@@ -86,7 +86,7 @@ class PlauditPreEndorsementHandler extends Handler
             'endorserEmailCount'
         ];
 
-        foreach($endorsementFields as $field) {
+        foreach ($endorsementFields as $field) {
             $publication->unsetData($field);
         }
 
@@ -110,7 +110,7 @@ class PlauditPreEndorsementHandler extends Handler
             && !$plugin->userAccessingIsAuthor($submission)
             && ($endorsementStatus == Endorsement::STATUS_CONFIRMED || $endorsementStatus == Endorsement::STATUS_COULDNT_COMPLETE);
 
-        if($canSendEndorsementManually) {
+        if ($canSendEndorsementManually) {
             $endorsementService = new EndorsementService($request->getContext()->getId(), $plugin);
             $endorsementService->sendEndorsement($publication);
             return http_response_code(200);
@@ -151,7 +151,7 @@ class PlauditPreEndorsementHandler extends Handler
         $orcidUri = ($isSandBox ? OrcidClient::ORCID_URL_SANDBOX : OrcidClient::ORCID_URL) . $orcid;
 
         if (strlen($orcid) > 0) {
-            if($this->checkDataIsFromAnyAuthor($publication, 'orcid', $orcidUri)) {
+            if ($this->checkDataIsFromAnyAuthor($publication, 'orcid', $orcidUri)) {
                 $this->logMessageAndDisplayTemplate($submission, $request, 'plugins.generic.plauditPreEndorsement.log.endorserOrcidFromAuthor', ['errorType' => 'orcidFromAuthor']);
                 return;
             }
@@ -162,7 +162,7 @@ class PlauditPreEndorsementHandler extends Handler
             $this->setConfirmedEndorsementPublication($publication, $orcidUri);
             $this->logMessageAndDisplayTemplate($submission, $request, 'plugins.generic.plauditPreEndorsement.log.endorsementConfirmed', ['orcid' => $orcidUri]);
 
-            if($publication->getData('status') == Submission::STATUS_PUBLISHED) {
+            if ($publication->getData('status') == Submission::STATUS_PUBLISHED) {
                 $endorsementService->sendEndorsement($publication);
             }
         }

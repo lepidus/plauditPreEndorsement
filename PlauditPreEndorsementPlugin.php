@@ -34,6 +34,7 @@ use APP\plugins\generic\plauditPreEndorsement\classes\components\forms\Endorseme
 use APP\plugins\generic\plauditPreEndorsement\PlauditPreEndorsementSettingsForm;
 use APP\plugins\generic\plauditPreEndorsement\classes\mail\mailables\OrcidRequestEndorserAuthorization;
 use APP\plugins\generic\plauditPreEndorsement\classes\observers\listeners\SendEmailToEndorser;
+use APP\plugins\generic\plauditPreEndorsement\classes\components\listPanel\EndorsersListPanel;
 
 class PlauditPreEndorsementPlugin extends GenericPlugin
 {
@@ -51,6 +52,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
             Event::subscribe(new SendEmailToEndorser());
 
             Hook::add('TemplateManager::display', [$this, 'modifySubmissionSteps']);
+            Hook::add('TemplateManager::display', [$this, 'addEndorsersListPanel']);
             Hook::add('Schema::get::publication', [$this, 'addOurFieldsToPublicationSchema']);
             Hook::add('Submission::validateSubmit', [$this, 'validateEndorsement']);
             Hook::add('Template::SubmissionWizard::Section::Review', [$this, 'modifyReviewSections']);
@@ -165,6 +167,30 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
         return false;
     }
 
+    public function addEndorsersListPanel($hookName, $params)
+    {
+        $templateMgr = $params[0];
+        $request = Application::get()->getRequest();
+
+        $submission = $request
+            ->getRouter()
+            ->getHandler()
+            ->getAuthorizedContextObject(Application::ASSOC_TYPE_SUBMISSION);
+
+        $listPanel = new EndorsersListPanel(
+            'contributors',
+            'Endorsers',
+            $submission,
+            [['title' => 'Yves']]
+        );
+
+        $components = $templateMgr->getState('components');
+        $components['endorsers'] = $listPanel->getConfig();
+        $templateMgr->setState(['components' => $components]);
+
+        return false;
+    }
+
     public function validateEndorsement($hookName, $params)
     {
         $errors = &$params[0];
@@ -177,7 +203,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
                 $errors['endorsement']  = [__("plugins.generic.plauditPreEndorsement.endorsementEmailInvalid")];
             } else {
                 foreach ($publication->getData('authors') as $author) {
-                    if($author->getData('email') == $endorserEmail) {
+                    if ($author->getData('email') == $endorserEmail) {
                         $errors['endorsement'] = [__("plugins.generic.plauditPreEndorsement.endorsementFromAuthor")];
                     }
                 }
@@ -252,7 +278,6 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
             && !$this->userAccessingIsAuthor($submission)
             && ($endorsementStatus == Endorsement::STATUS_CONFIRMED || $endorsementStatus == Endorsement::STATUS_COULDNT_COMPLETE);
         $canRemoveEndorsement = !is_null($endorsementStatus) && !$this->userAccessingIsAuthor($submission);
-
         $smarty->assign([
             'submissionId' => $submission->getId(),
             'endorserName' => $publication->getData('endorserName'),
@@ -306,7 +331,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
 
             Mail::send($email);
 
-            if(is_null($publication->getData('endorserEmailCount')) || $endorserChanged) {
+            if (is_null($publication->getData('endorserEmailCount')) || $endorserChanged) {
                 $endorserEmailCount = 0;
             } else {
                 $endorserEmailCount = $publication->getData('endorserEmailCount');

@@ -40,11 +40,11 @@ class EndorsementService
     {
         $validationResult = $this->validateEndorsementSending($publication);
 
-        if($validationResult == 'ok') {
+        if ($validationResult == 'ok') {
             $this->sendEndorsementToPlaudit($publication);
         } else {
             $submissionId = $publication->getData('submissionId');
-            if(!$needCheckMessageWasLoggedToday or !$this->messageWasAlreadyLoggedToday($submissionId, $validationResult)) {
+            if (!$needCheckMessageWasLoggedToday or !$this->messageWasAlreadyLoggedToday($submissionId, $validationResult)) {
                 $submission = Repo::submission()->get($submissionId);
                 $this->plugin->writeOnActivityLog($submission, $validationResult);
             }
@@ -56,15 +56,15 @@ class EndorsementService
         $doi = $publication->getDoi();
         $secretKey = $this->plugin->getSetting($this->contextId, 'plauditAPISecret');
 
-        if(empty($doi)) {
+        if (empty($doi)) {
             return 'plugins.generic.plauditPreEndorsement.log.failedEndorsementSending.emptyDoi';
         }
 
-        if(!$this->crossrefClient->doiIsIndexed($doi)) {
+        if (!$this->crossrefClient->doiIsIndexed($doi)) {
             return 'plugins.generic.plauditPreEndorsement.log.failedEndorsementSending.doiNotIndexed';
         }
 
-        if(empty($secretKey)) {
+        if (empty($secretKey)) {
             return 'plugins.generic.plauditPreEndorsement.log.failedEndorsementSending.secretKey';
         }
 
