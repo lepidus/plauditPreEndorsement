@@ -27,4 +27,9 @@ class Endorser
     {
         return $this->email;
     }
+
+    public function setEmail(string $email)
+    {
+        $this->email = $email;
+    }
 }

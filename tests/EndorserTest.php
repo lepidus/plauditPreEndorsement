@@ -26,4 +26,12 @@ class EndorserTest extends TestCase
         $endorser = new Endorser("DummyEndorser", "dummy@mailinator.com");
         $this->assertEquals($endorser->getEmail(), "dummy@mailinator.com");
     }
+
+    public function testChangeEndorserEmail()
+    {
+        $endorser = new Endorser("DummyEndorser", "dummy@mailinator.com");
+        $this->assertEquals($endorser->getEmail(), "dummy@mailinator.com");
+        $endorser->setEmail("dummydeleon1983@mailinator.com");
+        $this->assertEquals($endorser->getEmail(), "dummydeleon1983@mailinator.com");
+    }
 }
