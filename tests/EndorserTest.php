@@ -12,4 +12,12 @@ class EndorserTest extends TestCase
         $endorser = new Endorser("DummyEndorser");
         $this->assertEquals($endorser->getName(), "DummyEndorser");
     }
+
+    public function testChangeEndorserName()
+    {
+        $endorser = new Endorser("DummyEndorser");
+        $this->assertEquals($endorser->getName(), "DummyEndorser");
+        $endorser->setName("Dummy Hugo De León");
+        $this->assertEquals($endorser->getName(), "Dummy Hugo De León");
+    }
 }
