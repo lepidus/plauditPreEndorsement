@@ -35,6 +35,7 @@ use APP\plugins\generic\plauditPreEndorsement\PlauditPreEndorsementSettingsForm;
 use APP\plugins\generic\plauditPreEndorsement\classes\mail\mailables\OrcidRequestEndorserAuthorization;
 use APP\plugins\generic\plauditPreEndorsement\classes\observers\listeners\SendEmailToEndorser;
 use APP\plugins\generic\plauditPreEndorsement\classes\components\listPanel\EndorsersListPanel;
+use APP\plugins\generic\plauditPreEndorsement\classes\Endorser;
 
 class PlauditPreEndorsementPlugin extends GenericPlugin
 {
@@ -171,18 +172,32 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
     {
         $templateMgr = $params[0];
         $request = Application::get()->getRequest();
+        $listPanel = null;
 
         $submission = $request
             ->getRouter()
             ->getHandler()
             ->getAuthorizedContextObject(Application::ASSOC_TYPE_SUBMISSION);
         if ($submission) {
-            $listPanel = new EndorsersListPanel(
-                'contributors',
-                'Endorsers',
-                $submission,
-                [['title' => 'Yves']]
-            );
+            $publication = $submission->getCurrentPublication();
+            if ($publication->getData('endorserName') && $publication->getData('endorserEmail')) {
+                $endorser = new Endorser(
+                    $publication->getData('endorserName'),
+                    $publication->getData('endorserEmail')
+                );
+                $listPanel = new EndorsersListPanel(
+                    'contributors',
+                    'Endorsers',
+                    $submission,
+                    [['title' => $endorser->getName(), 'subtitle' => $endorser->getEmail()]]
+                );
+            } else {
+                $listPanel = new EndorsersListPanel(
+                    'contributors',
+                    'Endorsers',
+                    $submission
+                );
+            }
 
             $components = $templateMgr->getState('components');
             $components['endorsers'] = $listPanel->getConfig();
