@@ -176,17 +176,18 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
             ->getRouter()
             ->getHandler()
             ->getAuthorizedContextObject(Application::ASSOC_TYPE_SUBMISSION);
+        if ($submission) {
+            $listPanel = new EndorsersListPanel(
+                'contributors',
+                'Endorsers',
+                $submission,
+                [['title' => 'Yves']]
+            );
 
-        $listPanel = new EndorsersListPanel(
-            'contributors',
-            'Endorsers',
-            $submission,
-            [['title' => 'Yves']]
-        );
-
-        $components = $templateMgr->getState('components');
-        $components['endorsers'] = $listPanel->getConfig();
-        $templateMgr->setState(['components' => $components]);
+            $components = $templateMgr->getState('components');
+            $components['endorsers'] = $listPanel->getConfig();
+            $templateMgr->setState(['components' => $components]);
+        }
 
         return false;
     }
