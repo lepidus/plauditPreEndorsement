@@ -19,6 +19,15 @@
                 </pkp-button>
             </template>
         </pkp-header>
+        <template v-slot:item-actions="{ldelim}item{rdelim}">
+			<pkp-button @click="$modal.show('template')">
+				<span aria-hidden="true">{translate key='common.edit'}</span>
+				<span class="-screenReader">{{ __('common.editItem', {ldelim}name: item.name{rdelim}) }}</span>
+			</pkp-button>
+            <pkp-button @click="openModal(item.title)" :is-warnable="true">
+                {translate key='common.delete'}
+            </pkp-button>
+		</template>
     </list-panel>
     <modal
         :close-label="__('common.close')"
