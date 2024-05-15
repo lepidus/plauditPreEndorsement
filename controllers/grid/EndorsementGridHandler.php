@@ -13,6 +13,7 @@ use PKP\linkAction\request\AjaxModal;
 use PKP\security\authorization\SubmissionAccessPolicy;
 use PKP\security\Role;
 use APP\plugins\generic\plauditPreEndorsement\controllers\grid\form\EndorsementForm;
+use APP\facades\Repo;
 
 class EndorsementGridHandler extends GridHandler
 {
@@ -52,7 +53,7 @@ class EndorsementGridHandler extends GridHandler
         $publication = $submission->getCurrentPublication();
 
         $this->setTitle('plugins.generic.plauditPreEndorsement.endorsement');
-        $this->setEmptyRowText('plugins.generic.funding.noneCreated');
+        $this->setEmptyRowText('common.none');
 
         $gridData = $publication->getData('endorsers');
 
@@ -121,7 +122,7 @@ class EndorsementGridHandler extends GridHandler
         if ($endorserForm->validate()) {
             $endorserForm->execute();
             $json = DAO::getDataChangedEvent($submissionId);
-            $json->setGlobalEvent('plugin:funding:added', ['contextId' => $contextId]);
+            $json->setGlobalEvent('plugin:plauditPreEndorsement:endorsementAdded', ['submissionId' => $submissionId]);
             return $json;
         } else {
             $json = new JSONMessage(true, $endorserForm->fetch($request));
@@ -129,9 +130,32 @@ class EndorsementGridHandler extends GridHandler
         }
     }
 
+    public function deleteEndorser($args, $request)
+    {
+        $context = $request->getContext();
+        $submission = $this->getSubmission();
+        $submissionId = $submission->getId();
+        $rowId = $request->getUserVar('rowId');
+        $element = $request->getUserVar('element');
+        $endorserName = $element[0];
+        $endorserEmail = $element[1];
+        $publication = $submission->getCurrentPublication();
+        $endorsers = $publication->getData('endorsers');
+        unset($endorsers[$rowId]);
+        Repo::publication()->edit($publication, ['endorsers' => $endorsers]);
+        $json = DAO::getDataChangedEvent($submissionId);
+        $json->setGlobalEvent('plugin:plauditPreEndorsement:endorsementRemoved', ['submissionId' => $submissionId]);
+        return $json;
+    }
+
     public function getJSHandler()
     {
         return '$.pkp.plugins.generic.plauditPreEndorsement.EndorsementGridHandler';
+    }
+
+    protected function getRowInstance()
+    {
+        return new EndorsementGridRow();
     }
 }
 
