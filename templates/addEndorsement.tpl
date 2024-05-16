@@ -10,10 +10,10 @@
     <form class="pkp_form" id="endorsementForm" method="post" action="{$actionUrl}">
         {csrf}
         {include file="controllers/notification/inPlaceNotification.tpl" notificationId="OASwitchboardSettingsFormNotification"}
-
+        <input type="hidden" name="rowId" value="{$rowId|escape}" />
         {fbvFormArea id="endorsementForm"}
             {fbvFormSection label="plugins.generic.plauditPreEndorsement.endorserName" required=true}
-                {fbvElement type="text" id="endorserName" value=$name|escape size=$fbvStyles.size.MEDIUM}
+                {fbvElement type="text" id="endorserName" value=$endorserName|escape size=$fbvStyles.size.MEDIUM}
             {/fbvFormSection}
 
             {fbvFormSection label="plugins.generic.plauditPreEndorsement.endorserEmail" required=true}
