@@ -53,7 +53,6 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
             Event::subscribe(new SendEmailToEndorser());
 
             Hook::add('TemplateManager::display', [$this, 'modifySubmissionSteps']);
-            Hook::add('TemplateManager::display', [$this, 'addEndorsersListPanel']);
             Hook::add('Schema::get::publication', [$this, 'addOurFieldsToPublicationSchema']);
             Hook::add('Submission::validateSubmit', [$this, 'validateEndorsement']);
             Hook::add('Template::SubmissionWizard::Section::Review', [$this, 'modifyReviewSections']);
@@ -61,6 +60,16 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
             Hook::add('Template::Workflow::Publication', [$this, 'addEndorserFieldsToWorkflow']);
             Hook::add('LoadHandler', [$this, 'setupPreEndorsementHandler']);
             Hook::add('AcronPlugin::parseCronTab', [$this, 'addEndorsementTasksToCrontab']);
+            Hook::add('LoadComponentHandler', [$this, 'setupGridHandler']);
+
+            $templateMgr = TemplateManager::getManager();
+            $request = Application::get()->getRequest();
+
+            $templateMgr->addJavaScript(
+                'EndorsementGridHandler',
+                $request->getBaseUrl() . '/' . $this->getPluginPath() . '/js/EndorsementGridHandler.js',
+                array('contexts' => 'backend')
+            );
         }
 
         return $success;
@@ -140,11 +149,6 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
         $publication = $submission->getCurrentPublication();
         $publicationApiUrl = $request->getDispatcher()->url(
             $request,
-            Application::ROUTE_API,
-            $request->getContext()->getPath(),
-            'submissions/' . $submission->getId() . '/publications/' . $publication->getId()
-        );
-        $endorsementForm = new EndorsementForm(
             $publicationApiUrl,
             $publication,
         );
@@ -181,15 +185,11 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
         if ($submission) {
             $publication = $submission->getCurrentPublication();
             if ($publication->getData('endorserName') && $publication->getData('endorserEmail')) {
-                $endorser = new Endorser(
-                    $publication->getData('endorserName'),
-                    $publication->getData('endorserEmail')
-                );
                 $listPanel = new EndorsersListPanel(
                     'contributors',
                     'Endorsers',
                     $submission,
-                    [['title' => $endorser->getName(), 'subtitle' => $endorser->getEmail()]]
+                    $publication->getData('endorsers')
                 );
             } else {
                 $listPanel = new EndorsersListPanel(
@@ -259,6 +259,23 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
                 'validation' => ['nullable'],
             ];
         }
+
+        $schema->properties->endorsers = (object) [
+            'type' => 'array',
+            'apiSummary' => true,
+            'validation' => ['nullable'],
+            'items' => (object) [
+                'type' => 'object',
+                'properties' => (object) [
+                    'name' => (object) [
+                        'type' => 'string'
+                    ],
+                    'email' => (object) [
+                        'type' => 'string'
+                    ],
+                ]
+            ]
+        ];
 
         return false;
     }
@@ -430,5 +447,15 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
         }
 
         return $currentUserAssignedRoles[0] == Role::ROLE_ID_AUTHOR;
+    }
+
+    public function setupGridHandler($hookName, $params)
+    {
+        $component = & $params[0];
+        if ($component == 'plugins.generic.plauditPreEndorsement.controllers.grid.EndorsementGridHandler') {
+            define('PLAUDIT_PRE_ENDORSEMENT_PLUGIN_NAME', $this->getName());
+            return true;
+        }
+        return false;
     }
 }
