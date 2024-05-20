@@ -12,7 +12,7 @@
 {else}
 	{assign var=cellId value=""}
 {/if}
-<span {if $cellId}id="{$cellId|escape}" {/if}class="pkpBadge pkpBadge--isSuccess">
+<span {if $cellId}id="{$cellId|escape}" {/if}class="{$badgeClass}">
 	{include file="controllers/grid/gridCellContents.tpl"}
 </span>
 

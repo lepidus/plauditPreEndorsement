@@ -64,14 +64,14 @@ class EndorsementForm extends Form
             $endorsers[$rowId] = [
                 'name' => $this->getData('endorserName'),
                 'email' => $this->getData('endorserEmail'),
-                'endorsementStatus' => 1
+                'endorsementStatus' => 0
             ];
             Repo::publication()->edit($publication, ['endorsers' => $endorsers]);
         } else {
             $endorser = [
                 'name' => $this->getData('endorserName'),
                 'email' => $this->getData('endorserEmail'),
-                'endorsementStatus' => 1
+                'endorsementStatus' => 0
             ];
             $endorsers[] = $endorser;
             Repo::publication()->edit($publication, ['endorsers' => $endorsers]);
