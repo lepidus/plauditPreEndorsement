@@ -32,6 +32,9 @@ msgstr "Endorser's email address"
 msgid "plugins.generic.plauditPreEndorsement.endorserOrcid"
 msgstr "Endorser's ORCID"
 
+msgid "plugins.generic.plauditPreEndorsement.endorsementStatus"
+msgstr "Status"
+
 msgid "plugins.generic.plauditPreEndorsement.endorsementConfirmed"
 msgstr "The endorsement has been confirmed by the endorser"
 

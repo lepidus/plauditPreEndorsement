@@ -14,6 +14,8 @@ class EndorsementGridCellProvider extends GridCellProvider
                 return array('label' => $element['name']);
             case 'endorserEmail':
                 return array('label' => $element['email']);
+            case 'endorsementStatus':
+                return array('label' => $element['endorsementStatus']);
         }
     }
 }

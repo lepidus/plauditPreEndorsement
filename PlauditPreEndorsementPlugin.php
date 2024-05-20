@@ -34,7 +34,6 @@ use APP\plugins\generic\plauditPreEndorsement\classes\components\forms\Endorseme
 use APP\plugins\generic\plauditPreEndorsement\PlauditPreEndorsementSettingsForm;
 use APP\plugins\generic\plauditPreEndorsement\classes\mail\mailables\OrcidRequestEndorserAuthorization;
 use APP\plugins\generic\plauditPreEndorsement\classes\observers\listeners\SendEmailToEndorser;
-use APP\plugins\generic\plauditPreEndorsement\classes\components\listPanel\EndorsersListPanel;
 use APP\plugins\generic\plauditPreEndorsement\classes\Endorser;
 
 class PlauditPreEndorsementPlugin extends GenericPlugin
@@ -172,41 +171,6 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
         return false;
     }
 
-    public function addEndorsersListPanel($hookName, $params)
-    {
-        $templateMgr = $params[0];
-        $request = Application::get()->getRequest();
-        $listPanel = null;
-
-        $submission = $request
-            ->getRouter()
-            ->getHandler()
-            ->getAuthorizedContextObject(Application::ASSOC_TYPE_SUBMISSION);
-        if ($submission) {
-            $publication = $submission->getCurrentPublication();
-            if ($publication->getData('endorserName') && $publication->getData('endorserEmail')) {
-                $listPanel = new EndorsersListPanel(
-                    'contributors',
-                    'Endorsers',
-                    $submission,
-                    $publication->getData('endorsers')
-                );
-            } else {
-                $listPanel = new EndorsersListPanel(
-                    'contributors',
-                    'Endorsers',
-                    $submission
-                );
-            }
-
-            $components = $templateMgr->getState('components');
-            $components['endorsers'] = $listPanel->getConfig();
-            $templateMgr->setState(['components' => $components]);
-        }
-
-        return false;
-    }
-
     public function validateEndorsement($hookName, $params)
     {
         $errors = &$params[0];
@@ -272,6 +236,18 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
                     ],
                     'email' => (object) [
                         'type' => 'string'
+                    ],
+                    'endorsementStatus' => (object) [
+                        'type' => 'integer'
+                    ],
+                    'endorserOrcid' => (object) [
+                        'type' => 'string'
+                    ],
+                    'endorserEmailToken' => (object) [
+                        'type' => 'string'
+                    ],
+                    'endorserEmailCount' => (object) [
+                        'type' => 'integer'
                     ],
                 ]
             ]

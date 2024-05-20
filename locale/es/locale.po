@@ -32,6 +32,9 @@ msgstr "Dirección de correo electrónico del/a endosador/a"
 msgid "plugins.generic.plauditPreEndorsement.endorserOrcid"
 msgstr "ORCID del/a endosador/a"
 
+msgid "plugins.generic.plauditPreEndorsement.endorsementStatus"
+msgstr "Estado"
+
 msgid "plugins.generic.plauditPreEndorsement.endorsementConfirmed"
 msgstr "El endoso fue confirmado por el/la endosador/a"
 
