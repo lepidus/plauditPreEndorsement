@@ -18,7 +18,7 @@ use PKP\plugins\PluginRegistry;
 
 class EndorsementGridHandler extends GridHandler
 {
-    public static $plugin;
+    public $plugin;
 
     public function __construct()
     {

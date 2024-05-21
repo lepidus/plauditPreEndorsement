@@ -39,7 +39,7 @@ class EndorsementGridCellProvider extends GridCellProvider
     private function getEndorsementStatusBadge(int $endorsementStatus): string
     {
         $mapStatusToSuffix = [
-            Endorsement::STATUS_NOT_CONFIRMED => 'pkpBadge pkpBadge--dot',
+            Endorsement::STATUS_NOT_CONFIRMED => 'endorsementStatusCustomBadge',
             Endorsement::STATUS_CONFIRMED => 'pkpBadge pkpBadge--isPrimary',
             Endorsement::STATUS_DENIED => 'pkpBadge pkpBadge--isWarnable',
             Endorsement::STATUS_COMPLETED => 'pkpBadge pkpBadge--isSuccess',
