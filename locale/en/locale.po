@@ -36,19 +36,19 @@ msgid "plugins.generic.plauditPreEndorsement.endorsementStatus"
 msgstr "Status"
 
 msgid "plugins.generic.plauditPreEndorsement.endorsementConfirmed"
-msgstr "The endorsement has been confirmed by the endorser"
+msgstr "Confirmed by endorser"
 
 msgid "plugins.generic.plauditPreEndorsement.endorsementNotConfirmed"
-msgstr "The endorsement has not yet been confirmed by the endorser"
+msgstr "Awaiting confirmation"
 
 msgid "plugins.generic.plauditPreEndorsement.endorsementDenied"
-msgstr "The endorser denied access to his/her ORCID registry"
+msgstr "Access to ORCID denied"
 
 msgid "plugins.generic.plauditPreEndorsement.endorsementCouldntComplete"
-msgstr "The submission of the endorsement to Plaudit could not be completed"
+msgstr "Error sending to Plaudit"
 
 msgid "plugins.generic.plauditPreEndorsement.endorsementCompleted"
-msgstr "The endorsement was successfully sent to Plaudit"
+msgstr "Sent to Plaudit"
 
 msgid "plugins.generic.plauditPreEndorsement.endorserEmailCount.one"
 msgstr "1 endorsement confirmation e-mail has been sent to the endorser"

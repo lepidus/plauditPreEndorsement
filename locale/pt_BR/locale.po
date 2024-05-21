@@ -36,19 +36,19 @@ msgid "plugins.generic.plauditPreEndorsement.endorsementStatus"
 msgstr "Situação"
 
 msgid "plugins.generic.plauditPreEndorsement.endorsementConfirmed"
-msgstr "O endosso foi confirmado pelo(a) endossador(a)"
+msgstr "Confirmado pelo(a) endossador(a)"
 
 msgid "plugins.generic.plauditPreEndorsement.endorsementNotConfirmed"
-msgstr "O endosso ainda não foi confirmado pelo(a) endossador(a)"
+msgstr "Aguardando confirmação"
 
 msgid "plugins.generic.plauditPreEndorsement.endorsementDenied"
-msgstr "O(A) endossador(a) negou acesso ao seu registro ORCID"
+msgstr "Acesso ao ORCID negado"
 
 msgid "plugins.generic.plauditPreEndorsement.endorsementCouldntComplete"
-msgstr "O envio do endosso à Plaudit não pôde ser completado"
+msgstr "Erro no envio à Plaudit"
 
 msgid "plugins.generic.plauditPreEndorsement.endorsementCompleted"
-msgstr "O endosso foi enviado com sucesso à Plaudit"
+msgstr "Enviado à Plaudit"
 
 msgid "plugins.generic.plauditPreEndorsement.endorserEmailCount.one"
 msgstr "Foi enviado 1 e-mail de confirmação do endosso para o(a) endossador(a)"

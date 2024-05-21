@@ -32,7 +32,7 @@ class EndorsementGridHandler extends GridHandler
 
     public static function setPlugin($plugin)
     {
-        self::$plugin = $plugin;
+        $this->plugin = $plugin;
     }
 
     public function getSubmission()

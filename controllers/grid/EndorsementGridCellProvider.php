@@ -26,11 +26,11 @@ class EndorsementGridCellProvider extends GridCellProvider
     private function getEndorsementStatusSuffix(int $endorsementStatus): string
     {
         $mapStatusToSuffix = [
-            Endorsement::STATUS_NOT_CONFIRMED => 'NotConfirmed',
-            Endorsement::STATUS_CONFIRMED => 'Confirmed',
-            Endorsement::STATUS_DENIED => 'Denied',
-            Endorsement::STATUS_COMPLETED => 'Completed',
-            Endorsement::STATUS_COULDNT_COMPLETE => 'CouldntComplete'
+            Endorsement::STATUS_NOT_CONFIRMED => __('plugins.generic.plauditPreEndorsement.endorsementNotConfirmed'),
+            Endorsement::STATUS_CONFIRMED => __('plugins.generic.plauditPreEndorsement.endorsementConfirmed'),
+            Endorsement::STATUS_DENIED => __('plugins.generic.plauditPreEndorsement.endorsementDenied'),
+            Endorsement::STATUS_COMPLETED => __('plugins.generic.plauditPreEndorsement.endorsementCompleted'),
+            Endorsement::STATUS_COULDNT_COMPLETE => __('plugins.generic.plauditPreEndorsement.endorsementCouldntComplete')
         ];
 
         return $mapStatusToSuffix[$endorsementStatus] ?? "";
