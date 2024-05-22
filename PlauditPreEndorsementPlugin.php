@@ -276,6 +276,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
 
         $submission = $smarty->getTemplateVars('submission');
         $publication = $submission->getCurrentPublication();
+        $endorsers = $publication->getData('endorsers');
 
         $request = Application::get()->getRequest();
         $handlerUrl = $request->getDispatcher()->url($request, Application::ROUTE_PAGE, null, self::HANDLER_PAGE);
@@ -301,7 +302,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
             'handlerUrl' => $handlerUrl,
         ]);
 
-        $tabBadge = (is_null($endorsementStatus) ? 'badge="0"' : 'badge="1"');
+        $tabBadge = (empty($endorsers) ? 'badge="0"' : 'badge=' . count($endorsers));
         $output .= sprintf(
             '<tab id="plauditPreEndorsement" %s label="%s">%s</tab>',
             $tabBadge,
