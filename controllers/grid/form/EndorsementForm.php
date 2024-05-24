@@ -61,11 +61,8 @@ class EndorsementForm extends Form
         $endorsers = $publication->getData('endorsers') ?? array();
 
         if (isset($rowId) && is_numeric($rowId)) {
-            $endorsers[$rowId] = [
-                'name' => $this->getData('endorserName'),
-                'email' => $this->getData('endorserEmail'),
-                'endorsementStatus' => 0
-            ];
+            $endorsers[$rowId]['name'] = $this->getData('endorserName');
+            $endorsers[$rowId]['email'] = $this->getData('endorserEmail');
             Repo::publication()->edit($publication, ['endorsers' => $endorsers]);
         } else {
             $endorser = [
