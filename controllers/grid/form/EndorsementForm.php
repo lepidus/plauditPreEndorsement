@@ -16,18 +16,18 @@ class EndorsementForm extends Form
     public $contextId;
     public $submissionId;
     private $request;
+    private $plugin;
 
-    public function __construct($contextId, $submissionId, $request = null)
+    public function __construct($contextId, $submissionId, $request = null, $plugin = null)
     {
-        $plugin = PluginRegistry::getPlugin('generic', 'plauditpreendorsementplugin');
-        parent::__construct($plugin->getTemplateResource('addEndorsement.tpl'));
-
         $this->contextId = $contextId;
         $this->submissionId = $submissionId;
         $this->request = $request ?? null;
+        $this->plugin = $plugin;
 
         $this->addCheck(new FormValidatorPost($this));
         $this->addCheck(new FormValidatorCSRF($this));
+        parent::__construct($plugin->getTemplateResource('addEndorsement.tpl'));
     }
 
     public function initData()
@@ -71,10 +71,9 @@ class EndorsementForm extends Form
             $endorser = [
                 'name' => $this->getData('endorserName'),
                 'email' => $this->getData('endorserEmail'),
-                'endorsementStatus' => 0
+                'endorserEmailCount' => null
             ];
-            $endorsers[] = $endorser;
-            Repo::publication()->edit($publication, ['endorsers' => $endorsers]);
+            $this->plugin->sendEmailToEndorser($publication, $endorser);
         }
     }
 }

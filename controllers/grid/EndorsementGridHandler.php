@@ -114,7 +114,7 @@ class EndorsementGridHandler extends GridHandler
 
         $this->setupTemplate($request);
 
-        $endorserForm = new EndorsementForm($context->getId(), $submissionId, $request);
+        $endorserForm = new EndorsementForm($context->getId(), $submissionId, $request, $this->plugin);
         $endorserForm->initData();
         $json = new JSONMessage(true, $endorserForm->fetch($request));
         return $json->getString();
@@ -128,7 +128,7 @@ class EndorsementGridHandler extends GridHandler
 
         $this->setupTemplate($request);
 
-        $endorserForm = new EndorsementForm($context->getId(), $submissionId, $request);
+        $endorserForm = new EndorsementForm($context->getId(), $submissionId, $request, $this->plugin);
         $endorserForm->readInputData();
         if ($endorserForm->validate()) {
             $endorserForm->execute();

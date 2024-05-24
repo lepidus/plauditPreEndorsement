@@ -311,12 +311,12 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
         );
     }
 
-    public function sendEmailToEndorser($publication, $endorserChanged = false)
+    public function sendEmailToEndorser($publication, $endorser, $endorserChanged = false)
     {
         $request = Application::get()->getRequest();
         $context = $request->getContext();
-        $endorserName = $publication->getData('endorserName');
-        $endorserEmail = $publication->getData('endorserEmail');
+        $endorserName = $endorser['name'];
+        $endorserEmail = $endorser['email'];
 
         if (!is_null($context) && !empty($endorserEmail)) {
             $submission = Repo::submission()->get($publication->getData('submissionId'));
@@ -341,16 +341,19 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
 
             Mail::send($email);
 
-            if (is_null($publication->getData('endorserEmailCount')) || $endorserChanged) {
+            if (is_null($endorser['endorserEmailCount']) || $endorserChanged) {
                 $endorserEmailCount = 0;
             } else {
-                $endorserEmailCount = $publication->getData('endorserEmailCount');
+                $endorserEmailCount = $endorser->getData('endorserEmailCount');
             }
 
-            $publication->setData('endorserEmailToken', $endorserEmailToken);
-            $publication->setData('endorsementStatus', Endorsement::STATUS_NOT_CONFIRMED);
-            $publication->setData('endorserEmailCount', $endorserEmailCount + 1);
-            Repo::publication()->edit($publication, []);
+            $endorser['endorserEmailToken'] = $endorserEmailToken;
+            $endorser['endorsementStatus'] = Endorsement::STATUS_NOT_CONFIRMED;
+            $endorser['endorserEmailCount'] = $endorserEmailCount + 1;
+
+            $endorsers = $publication->getData('endorsers') ?? array();
+            $endorsers[] = $endorser;
+            Repo::publication()->edit($publication, ['endorsers' => $endorsers]);
 
             $this->writeOnActivityLog($submission, 'plugins.generic.plauditPreEndorsement.log.sentEmailEndorser', ['endorserName' => $endorserName, 'endorserEmail' => $endorserEmail]);
         }
