@@ -327,7 +327,14 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
 
             $endorserEmailToken = md5(microtime() . $endorserEmail);
             $orcidClient = new OrcidClient($this, $context->getId());
-            $oauthUrl = $orcidClient->buildOAuthUrl(['token' => $endorserEmailToken, 'state' => $publication->getId()]);
+            $oauthUrl = $orcidClient->buildOAuthUrl(
+                [
+                    'token' => $endorserEmailToken,
+                    'state' => $publication->getId(),
+                    'name' => $endorserName,
+                    'email' => $endorserEmail
+                ]
+            );
             $emailParams = [
                 'orcidOauthUrl' => $oauthUrl,
                 'endorserName' => htmlspecialchars($endorserName),
