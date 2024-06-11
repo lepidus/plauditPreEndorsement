@@ -126,7 +126,7 @@ class PlauditPreEndorsementHandler extends Handler
         $endorsers = $publication->getData('endorsers');
         $index = $this->filterByNameAndEmail($endorsers, $request->getUserVar('name'), $request->getUserVar('email'));
 
-        $endorser = $endorsers[$index[0]];
+        $endorser = $endorsers[$index];
         $plugin = PluginRegistry::getPlugin('generic', 'plauditpreendorsementplugin');
         $contextId = $request->getContext()->getId();
 
@@ -162,7 +162,7 @@ class PlauditPreEndorsementHandler extends Handler
             $endorsementService = new EndorsementService($contextId, $plugin);
             $endorsementService->updateEndorserNameFromOrcid($publication, $orcid);
 
-            $this->setConfirmedEndorsementPublication($publication, $index[0], $orcidUri);
+            $this->setConfirmedEndorsementPublication($publication, $index, $orcidUri);
             $this->logMessageAndDisplayTemplate($submission, $request, 'plugins.generic.plauditPreEndorsement.log.endorsementConfirmed', ['orcid' => $orcidUri]);
 
             if ($publication->getData('status') == Submission::STATUS_PUBLISHED) {
@@ -215,6 +215,6 @@ class PlauditPreEndorsementHandler extends Handler
         return array_keys(array_filter($endorsers, function ($endorser) use ($name, $email) {
             return isset($endorser['name']) && isset($endorser['email']) &&
                    $endorser['name'] == $name && $endorser['email'] == $email;
-        }));
+        }))[0];
     }
 }
