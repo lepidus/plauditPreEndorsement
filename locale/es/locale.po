@@ -32,20 +32,23 @@ msgstr "Dirección de correo electrónico del/a endosador/a"
 msgid "plugins.generic.plauditPreEndorsement.endorserOrcid"
 msgstr "ORCID del/a endosador/a"
 
+msgid "plugins.generic.plauditPreEndorsement.endorsementStatus"
+msgstr "Estado"
+
 msgid "plugins.generic.plauditPreEndorsement.endorsementConfirmed"
-msgstr "El endoso fue confirmado por el/la endosador/a"
+msgstr "Confirmado por el endosante"
 
 msgid "plugins.generic.plauditPreEndorsement.endorsementNotConfirmed"
-msgstr "El endoso aún no fue confirmado por el/la endosador/a"
+msgstr "Esperando confirmación"
 
 msgid "plugins.generic.plauditPreEndorsement.endorsementDenied"
-msgstr "El/La endosador/a ha denegado el acceso a su registro ORCID"
+msgstr "Acceso a ORCID denegado"
 
 msgid "plugins.generic.plauditPreEndorsement.endorsementCouldntComplete"
-msgstr "No se pudo completar el envío del endoso a Plaudit"
+msgstr "Error al enviar a Plaudit"
 
 msgid "plugins.generic.plauditPreEndorsement.endorsementCompleted"
-msgstr "El endoso se ha enviado correctamente a Plaudit"
+msgstr "Enviado a Plaudit"
 
 msgid "plugins.generic.plauditPreEndorsement.endorserEmailCount.one"
 msgstr "Se ha enviado 1 correo electrónico de confirmación de endoso al endosante"

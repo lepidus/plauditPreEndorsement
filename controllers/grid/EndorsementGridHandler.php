@@ -14,10 +14,11 @@ use PKP\security\authorization\SubmissionAccessPolicy;
 use PKP\security\Role;
 use APP\plugins\generic\plauditPreEndorsement\controllers\grid\form\EndorsementForm;
 use APP\facades\Repo;
+use PKP\plugins\PluginRegistry;
 
 class EndorsementGridHandler extends GridHandler
 {
-    public static $plugin;
+    public $plugin;
 
     public function __construct()
     {
@@ -26,11 +27,12 @@ class EndorsementGridHandler extends GridHandler
             array(Role::ROLE_ID_MANAGER, Role::ROLE_ID_SUB_EDITOR, Role::ROLE_ID_ASSISTANT, Role::ROLE_ID_AUTHOR),
             array('fetchGrid', 'fetchRow', 'addEndorser', 'editEndorser', 'updateEndorser', 'deleteEndorser')
         );
+        $this->plugin = PluginRegistry::getPlugin('generic', PLAUDIT_PRE_ENDORSEMENT_PLUGIN_NAME);
     }
 
     public static function setPlugin($plugin)
     {
-        self::$plugin = $plugin;
+        $this->plugin = $plugin;
     }
 
     public function getSubmission()
@@ -79,13 +81,22 @@ class EndorsementGridHandler extends GridHandler
             'plugins.generic.plauditPreEndorsement.endorserName',
             null,
             'controllers/grid/gridCell.tpl',
-            $cellProvider
+            $cellProvider,
+            ['maxLength' => 40]
         ));
         $this->addColumn(new GridColumn(
             'endorserEmail',
             'plugins.generic.plauditPreEndorsement.endorserEmail',
             null,
             'controllers/grid/gridCell.tpl',
+            $cellProvider,
+            ['maxLength' => 40]
+        ));
+        $this->addColumn(new GridColumn(
+            'endorsementStatus',
+            'plugins.generic.plauditPreEndorsement.endorsementStatus',
+            null,
+            $this->plugin->getTemplateResource('statusGridCell.tpl'),
             $cellProvider
         ));
     }
@@ -103,7 +114,7 @@ class EndorsementGridHandler extends GridHandler
 
         $this->setupTemplate($request);
 
-        $endorserForm = new EndorsementForm($context->getId(), $submissionId, $request);
+        $endorserForm = new EndorsementForm($context->getId(), $submissionId, $request, $this->plugin);
         $endorserForm->initData();
         $json = new JSONMessage(true, $endorserForm->fetch($request));
         return $json->getString();
@@ -117,7 +128,7 @@ class EndorsementGridHandler extends GridHandler
 
         $this->setupTemplate($request);
 
-        $endorserForm = new EndorsementForm($context->getId(), $submissionId, $request);
+        $endorserForm = new EndorsementForm($context->getId(), $submissionId, $request, $this->plugin);
         $endorserForm->readInputData();
         if ($endorserForm->validate()) {
             $endorserForm->execute();

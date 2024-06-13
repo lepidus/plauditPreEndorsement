@@ -34,7 +34,6 @@ use APP\plugins\generic\plauditPreEndorsement\classes\components\forms\Endorseme
 use APP\plugins\generic\plauditPreEndorsement\PlauditPreEndorsementSettingsForm;
 use APP\plugins\generic\plauditPreEndorsement\classes\mail\mailables\OrcidRequestEndorserAuthorization;
 use APP\plugins\generic\plauditPreEndorsement\classes\observers\listeners\SendEmailToEndorser;
-use APP\plugins\generic\plauditPreEndorsement\classes\components\listPanel\EndorsersListPanel;
 use APP\plugins\generic\plauditPreEndorsement\classes\Endorser;
 
 class PlauditPreEndorsementPlugin extends GenericPlugin
@@ -172,41 +171,6 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
         return false;
     }
 
-    public function addEndorsersListPanel($hookName, $params)
-    {
-        $templateMgr = $params[0];
-        $request = Application::get()->getRequest();
-        $listPanel = null;
-
-        $submission = $request
-            ->getRouter()
-            ->getHandler()
-            ->getAuthorizedContextObject(Application::ASSOC_TYPE_SUBMISSION);
-        if ($submission) {
-            $publication = $submission->getCurrentPublication();
-            if ($publication->getData('endorserName') && $publication->getData('endorserEmail')) {
-                $listPanel = new EndorsersListPanel(
-                    'contributors',
-                    'Endorsers',
-                    $submission,
-                    $publication->getData('endorsers')
-                );
-            } else {
-                $listPanel = new EndorsersListPanel(
-                    'contributors',
-                    'Endorsers',
-                    $submission
-                );
-            }
-
-            $components = $templateMgr->getState('components');
-            $components['endorsers'] = $listPanel->getConfig();
-            $templateMgr->setState(['components' => $components]);
-        }
-
-        return false;
-    }
-
     public function validateEndorsement($hookName, $params)
     {
         $errors = &$params[0];
@@ -273,6 +237,18 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
                     'email' => (object) [
                         'type' => 'string'
                     ],
+                    'endorsementStatus' => (object) [
+                        'type' => 'integer'
+                    ],
+                    'endorserOrcid' => (object) [
+                        'type' => 'string'
+                    ],
+                    'endorserEmailToken' => (object) [
+                        'type' => 'string'
+                    ],
+                    'endorserEmailCount' => (object) [
+                        'type' => 'integer'
+                    ],
                 ]
             ]
         ];
@@ -300,6 +276,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
 
         $submission = $smarty->getTemplateVars('submission');
         $publication = $submission->getCurrentPublication();
+        $endorsers = $publication->getData('endorsers');
 
         $request = Application::get()->getRequest();
         $handlerUrl = $request->getDispatcher()->url($request, Application::ROUTE_PAGE, null, self::HANDLER_PAGE);
@@ -325,7 +302,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
             'handlerUrl' => $handlerUrl,
         ]);
 
-        $tabBadge = (is_null($endorsementStatus) ? 'badge="0"' : 'badge="1"');
+        $tabBadge = (empty($endorsers) ? 'badge="0"' : 'badge=' . count($endorsers));
         $output .= sprintf(
             '<tab id="plauditPreEndorsement" %s label="%s">%s</tab>',
             $tabBadge,
@@ -334,12 +311,12 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
         );
     }
 
-    public function sendEmailToEndorser($publication, $endorserChanged = false)
+    public function sendEmailToEndorser($publication, $endorser, $endorserChanged = false)
     {
         $request = Application::get()->getRequest();
         $context = $request->getContext();
-        $endorserName = $publication->getData('endorserName');
-        $endorserEmail = $publication->getData('endorserEmail');
+        $endorserName = $endorser['name'];
+        $endorserEmail = $endorser['email'];
 
         if (!is_null($context) && !empty($endorserEmail)) {
             $submission = Repo::submission()->get($publication->getData('submissionId'));
@@ -350,7 +327,14 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
 
             $endorserEmailToken = md5(microtime() . $endorserEmail);
             $orcidClient = new OrcidClient($this, $context->getId());
-            $oauthUrl = $orcidClient->buildOAuthUrl(['token' => $endorserEmailToken, 'state' => $publication->getId()]);
+            $oauthUrl = $orcidClient->buildOAuthUrl(
+                [
+                    'token' => $endorserEmailToken,
+                    'state' => $publication->getId(),
+                    'name' => $endorserName,
+                    'email' => $endorserEmail
+                ]
+            );
             $emailParams = [
                 'orcidOauthUrl' => $oauthUrl,
                 'endorserName' => htmlspecialchars($endorserName),
@@ -364,16 +348,19 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
 
             Mail::send($email);
 
-            if (is_null($publication->getData('endorserEmailCount')) || $endorserChanged) {
+            if (is_null($endorser['endorserEmailCount']) || $endorserChanged) {
                 $endorserEmailCount = 0;
             } else {
-                $endorserEmailCount = $publication->getData('endorserEmailCount');
+                $endorserEmailCount = $endorser->getData('endorserEmailCount');
             }
 
-            $publication->setData('endorserEmailToken', $endorserEmailToken);
-            $publication->setData('endorsementStatus', Endorsement::STATUS_NOT_CONFIRMED);
-            $publication->setData('endorserEmailCount', $endorserEmailCount + 1);
-            Repo::publication()->edit($publication, []);
+            $endorser['endorserEmailToken'] = $endorserEmailToken;
+            $endorser['endorsementStatus'] = Endorsement::STATUS_NOT_CONFIRMED;
+            $endorser['endorserEmailCount'] = $endorserEmailCount + 1;
+
+            $endorsers = $publication->getData('endorsers') ?? array();
+            $endorsers[] = $endorser;
+            Repo::publication()->edit($publication, ['endorsers' => $endorsers]);
 
             $this->writeOnActivityLog($submission, 'plugins.generic.plauditPreEndorsement.log.sentEmailEndorser', ['endorserName' => $endorserName, 'endorserEmail' => $endorserEmail]);
         }
