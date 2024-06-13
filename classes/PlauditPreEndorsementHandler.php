@@ -124,9 +124,9 @@ class PlauditPreEndorsementHandler extends Handler
         $publication = Repo::publication()->get($request->getUserVar('state'));
         $submission = Repo::submission()->get($publication->getData('submissionId'));
         $endorsers = $publication->getData('endorsers');
-        $index = $this->filterByNameAndEmail($endorsers, $request->getUserVar('name'), $request->getUserVar('email'));
+        $endorserIndex = $this->filterByNameAndEmail($endorsers, $request->getUserVar('name'), $request->getUserVar('email'));
 
-        $endorser = $endorsers[$index];
+        $endorser = $endorsers[$endorserIndex];
         $plugin = PluginRegistry::getPlugin('generic', 'plauditpreendorsementplugin');
         $contextId = $request->getContext()->getId();
 
@@ -135,7 +135,7 @@ class PlauditPreEndorsementHandler extends Handler
             $this->logMessageAndDisplayTemplate($submission, $request, 'plugins.generic.plauditPreEndorsement.log.invalidToken', ['errorType' => 'invalidToken']);
             return;
         } elseif ($statusAuth == self::AUTH_ACCESS_DENIED) {
-            $this->setAccessDeniedEndorsement($publication);
+            $this->setAccessDeniedEndorsement($publication, $endorserIndex);
             $this->logMessageAndDisplayTemplate($submission, $request, 'plugins.generic.plauditPreEndorsement.log.orcidAccessDenied', ['errorType' => 'denied']);
             return;
         }
@@ -162,7 +162,7 @@ class PlauditPreEndorsementHandler extends Handler
             $endorsementService = new EndorsementService($contextId, $plugin);
             $endorsementService->updateEndorserNameFromOrcid($publication, $orcid);
 
-            $this->setConfirmedEndorsementPublication($publication, $index, $orcidUri);
+            $this->setConfirmedEndorsementPublication($publication, $endorserIndex, $orcidUri);
             $this->logMessageAndDisplayTemplate($submission, $request, 'plugins.generic.plauditPreEndorsement.log.endorsementConfirmed', ['orcid' => $orcidUri]);
 
             if ($publication->getData('status') == Submission::STATUS_PUBLISHED) {
@@ -192,11 +192,12 @@ class PlauditPreEndorsementHandler extends Handler
         Repo::publication()->edit($publication, ['endorsers' => $endorsers]);
     }
 
-    private function setAccessDeniedEndorsement($publication)
+    private function setAccessDeniedEndorsement($publication, $index)
     {
-        $publication->setData('endorserEmailToken', null);
-        $publication->setData('endorsementStatus', Endorsement::STATUS_DENIED);
-        Repo::publication()->edit($publication, []);
+        $endorsers = $publication->getData('endorsers');
+        $endorsers[$index]['endorserEmailToken'] = null;
+        $endorsers[$index]['endorsementStatus'] = Endorsement::STATUS_DENIED;
+        Repo::publication()->edit($publication, ['endorsers' => $endorsers]);
     }
 
     public function getStatusAuthentication($endorser, $request)
