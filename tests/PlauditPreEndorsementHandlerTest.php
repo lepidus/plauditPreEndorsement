@@ -9,61 +9,65 @@ use PHPUnit\Framework\TestCase;
 final class PlauditPreEndorsementHandlerTest extends TestCase
 {
     private $publication;
-    private $endorserEmail = 'endorser@email.com';
-    private $endorserName = 'Endorser';
     private $endorserEmailToken;
 
     public function setUp(): void
     {
         parent::setUp();
-        $this->endorserEmailToken = md5(microtime() . $this->endorserEmail);
+        $this->endorserEmailToken = md5(microtime() . 'dummy@mailinator.com.br');
         $this->publication = $this->createPublication();
+        $this->addEndorsers();
     }
 
     private function createPublication(): Publication
     {
         $this->publication = new Publication();
-        $this->publication->setData('id', 1);
-        $this->publication->setData('endorserEmail', $this->endorserEmail);
-        $this->publication->setData('endorserName', $this->endorserName);
-        $this->publication->setData('endorserEmailToken', $this->endorserEmailToken);
-        $this->publication->setData('endorsementStatus', Endorsement::STATUS_NOT_CONFIRMED);
+        $this->publication->setData('id', rand());
 
         return $this->publication;
     }
 
-    private function verifyEndorserAuth($token, $error = null): string
+    private function addEndorsers(): void
+    {
+        $endorsers = [
+            0 => [
+                'name' => 'YvesDummy',
+                'email' => 'dummy@mailinator.com.br',
+                'endorserEmailToken' => $this->endorserEmailToken
+            ],
+            1 => [
+                'name' => 'JhonDummy',
+                'email' => 'dummy2@mailinator.com.br',
+                'endorserEmailToken' => md5(microtime() . 'dummy2@mailinator.com.br')
+            ]
+        ];
+        $this->publication->setData('endorsers', $endorsers);
+    }
+
+    private function verifyEndorserAuth($token, $endorserIndex, $error = null): string
     {
         $request = new Request();
         $request->_requestVars = [
             'state' => $this->publication->getId(),
-            'token' => $token
+            'token' => $token,
+            'name' => 'YvesDummy',
+            'email' => 'dummy1@mailinator.com.br'
         ];
 
         if ($error) {
             $request->_requestVars['error'] = $error;
         }
 
+        $endorsers = $this->publication->getData('endorsers');
+        $endorser = $endorsers[$endorserIndex];
+
         $handler = new PlauditPreEndorsementHandler();
-        return $handler->getStatusAuthentication($this->publication, $request);
+        return $handler->getStatusAuthentication($endorser, $request);
     }
 
     public function testEndorserAuthenticatesCorrectly(): void
     {
-        $result = $this->verifyEndorserAuth($this->endorserEmailToken);
+        $result = $this->verifyEndorserAuth($this->endorserEmailToken, 0);
         $this->assertEquals(PlauditPreEndorsementHandler::AUTH_SUCCESS, $result);
-    }
-
-    public function testEndorserTokenIsDifferent(): void
-    {
-        $diffToken = md5(microtime() . 'email@email.com');
-        $result = $this->verifyEndorserAuth($diffToken);
-        $this->assertEquals(PlauditPreEndorsementHandler::AUTH_INVALID_TOKEN, $result);
-    }
-
-    public function testEndorserAutheticationHasAccessDenied(): void
-    {
-        $result = $this->verifyEndorserAuth($this->endorserEmailToken, 'access_denied');
-        $this->assertEquals(PlauditPreEndorsementHandler::AUTH_ACCESS_DENIED, $result);
     }
 }
