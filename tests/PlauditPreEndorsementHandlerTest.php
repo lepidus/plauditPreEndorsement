@@ -67,19 +67,22 @@ final class PlauditPreEndorsementHandlerTest extends TestCase
 
     public function testEndorserAuthenticatesCorrectly(): void
     {
-        $result = $this->verifyEndorserAuth($this->endorserEmailToken, 0);
+        $endorserIndex = 0;
+        $result = $this->verifyEndorserAuth($this->endorserEmailToken, $endorserIndex);
         $this->assertEquals(PlauditPreEndorsementHandler::AUTH_SUCCESS, $result);
     }
 
     public function testEndorserTokenIsDifferent(): void
     {
-        $result = $this->verifyEndorserAuth($this->endorserEmailToken, 1);
+        $endorserIndex = 1;
+        $result = $this->verifyEndorserAuth($this->endorserEmailToken, $endorserIndex);
         $this->assertEquals(PlauditPreEndorsementHandler::AUTH_INVALID_TOKEN, $result);
     }
 
     public function testEndorserAutheticationHasAccessDenied(): void
     {
-        $result = $this->verifyEndorserAuth($this->endorserEmailToken, 0, 'access_denied');
+        $endorserIndex = 0;
+        $result = $this->verifyEndorserAuth($this->endorserEmailToken, $endorserIndex, 'access_denied');
         $this->assertEquals(PlauditPreEndorsementHandler::AUTH_ACCESS_DENIED, $result);
     }
 }
