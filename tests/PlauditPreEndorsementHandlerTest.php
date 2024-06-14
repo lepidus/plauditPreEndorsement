@@ -70,4 +70,10 @@ final class PlauditPreEndorsementHandlerTest extends TestCase
         $result = $this->verifyEndorserAuth($this->endorserEmailToken, 0);
         $this->assertEquals(PlauditPreEndorsementHandler::AUTH_SUCCESS, $result);
     }
+
+    public function testEndorserTokenIsDifferent(): void
+    {
+        $result = $this->verifyEndorserAuth($this->endorserEmailToken, 1);
+        $this->assertEquals(PlauditPreEndorsementHandler::AUTH_INVALID_TOKEN, $result);
+    }
 }
