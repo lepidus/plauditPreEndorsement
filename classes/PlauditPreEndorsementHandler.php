@@ -124,7 +124,7 @@ class PlauditPreEndorsementHandler extends Handler
         $publication = Repo::publication()->get($request->getUserVar('state'));
         $submission = Repo::submission()->get($publication->getData('submissionId'));
         $endorsers = $publication->getData('endorsers');
-        $endorserIndex = $this->filterByNameAndEmail($endorsers, $request->getUserVar('name'), $request->getUserVar('email'));
+        $endorserIndex = $this->retrieveEndorserIndexByNameAndEmail($endorsers, $request->getUserVar('name'), $request->getUserVar('email'));
 
         $endorser = $endorsers[$endorserIndex];
         $plugin = PluginRegistry::getPlugin('generic', 'plauditpreendorsementplugin');
@@ -211,7 +211,7 @@ class PlauditPreEndorsementHandler extends Handler
         }
     }
 
-    private function filterByNameAndEmail(array $endorsers, string $name, string $email)
+    private function retrieveEndorserIndexByNameAndEmail(array $endorsers, string $name, string $email)
     {
         return array_keys(array_filter($endorsers, function ($endorser) use ($name, $email) {
             return isset($endorser['name']) && isset($endorser['email']) &&
