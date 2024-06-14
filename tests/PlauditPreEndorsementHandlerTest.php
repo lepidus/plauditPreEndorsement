@@ -76,4 +76,10 @@ final class PlauditPreEndorsementHandlerTest extends TestCase
         $result = $this->verifyEndorserAuth($this->endorserEmailToken, 1);
         $this->assertEquals(PlauditPreEndorsementHandler::AUTH_INVALID_TOKEN, $result);
     }
+
+    public function testEndorserAutheticationHasAccessDenied(): void
+    {
+        $result = $this->verifyEndorserAuth($this->endorserEmailToken, 0, 'access_denied');
+        $this->assertEquals(PlauditPreEndorsementHandler::AUTH_ACCESS_DENIED, $result);
+    }
 }
