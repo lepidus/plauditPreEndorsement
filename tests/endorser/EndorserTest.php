@@ -8,6 +8,14 @@ use APP\plugins\generic\plauditPreEndorsement\classes\Endorsement;
 
 class EndorserTest extends TestCase
 {
+    public function testEndorserPublicationIdRetrieval()
+    {
+        $endorser = new Endorser();
+        $publicationId = rand();
+        $endorser->setPublicationId($publicationId);
+        $this->assertEquals($endorser->getPublicationId(), $publicationId);
+    }
+
     public function testEndorserNameRetrieval()
     {
         $endorser = new Endorser();

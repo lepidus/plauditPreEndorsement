@@ -4,6 +4,21 @@ namespace APP\plugins\generic\plauditPreEndorsement\classes\endorser;
 
 class Endorser extends \PKP\core\DataObject
 {
+    public function getId(): int
+    {
+        return $this->getData("id");
+    }
+
+    public function getPublicationId(): int
+    {
+        return $this->getData("publicationId");
+    }
+
+    public function setPublicationId(int $publicationId)
+    {
+        $this->setData("publicationId", $publicationId);
+    }
+
     public function getName(): string
     {
         return $this->getData("name");
@@ -24,12 +39,12 @@ class Endorser extends \PKP\core\DataObject
         $this->setData("email", $email);
     }
 
-    public function getStatus(): string
+    public function getStatus(): int
     {
         return $this->getData("status");
     }
 
-    public function setStatus(string $status)
+    public function setStatus(int $status)
     {
         $this->setData("status", $status);
     }
@@ -54,12 +69,12 @@ class Endorser extends \PKP\core\DataObject
         $this->setData("emailToken", $emailToken);
     }
 
-    public function getEmailCount(): string
+    public function getEmailCount(): int
     {
         return $this->getData("emailCount");
     }
 
-    public function setEmailCount(string $emailCount)
+    public function setEmailCount(int $emailCount)
     {
         $this->setData("emailCount", $emailCount);
     }
