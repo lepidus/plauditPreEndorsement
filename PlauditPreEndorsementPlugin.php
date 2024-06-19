@@ -36,6 +36,8 @@ use APP\plugins\generic\plauditPreEndorsement\classes\mail\mailables\OrcidReques
 use APP\plugins\generic\plauditPreEndorsement\classes\observers\listeners\SendEmailToEndorser;
 use APP\plugins\generic\plauditPreEndorsement\classes\Endorser;
 use APP\plugins\generic\plauditPreEndorsement\classes\SchemaBuilder;
+use APP\plugins\generic\plauditPreEndorsement\classes\SchemaMigration;
+use Illuminate\Database\Migrations\Migration;
 
 class PlauditPreEndorsementPlugin extends GenericPlugin
 {
@@ -211,6 +213,12 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
         $schema = SchemaBuilder::get('endorser');
         return true;
     }
+
+    public function getInstallMigration(): Migration
+    {
+        return new SchemaMigration();
+    }
+
 
     private function getEndorsementStatusSuffix($endorsementStatus): string
     {
