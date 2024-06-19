@@ -44,4 +44,12 @@ class EndorserTest extends TestCase
         $endorser->setEmailToken($dummyEmailToken);
         $this->assertEquals($endorser->getEmailToken(), $dummyEmailToken);
     }
+
+    public function testEndorserEmailCountRetrieval()
+    {
+        $endorser = new Endorser();
+        $emailCount = 2;
+        $endorser->setEmailCount($emailCount);
+        $this->assertEquals($endorser->getEmailCount(), $emailCount);
+    }
 }

@@ -53,4 +53,14 @@ class Endorser extends \PKP\core\DataObject
     {
         $this->setData("emailToken", $emailToken);
     }
+
+    public function getEmailCount(): string
+    {
+        return $this->getData("emailCount");
+    }
+
+    public function setEmailCount(string $emailCount)
+    {
+        $this->setData("emailCount", $emailCount);
+    }
 }
