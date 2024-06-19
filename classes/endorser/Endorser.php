@@ -23,4 +23,14 @@ class Endorser extends \PKP\core\DataObject
     {
         $this->setData("email", $email);
     }
+
+    public function getStatus(): string
+    {
+        return $this->getData("status");
+    }
+
+    public function setStatus(string $status)
+    {
+        $this->setData("status", $status);
+    }
 }
