@@ -36,4 +36,12 @@ class EndorserTest extends TestCase
         $endorser->setOrcid($dummyOrcid);
         $this->assertEquals($endorser->getOrcid(), $dummyOrcid);
     }
+
+    public function testEndorserEmailTokenRetrieval()
+    {
+        $endorser = new Endorser();
+        $dummyEmailToken = "066235YTVa78273grv76ha8%¨$#@aiusd";
+        $endorser->setEmailToken($dummyEmailToken);
+        $this->assertEquals($endorser->getEmailToken(), $dummyEmailToken);
+    }
 }
