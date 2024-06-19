@@ -35,6 +35,7 @@ use APP\plugins\generic\plauditPreEndorsement\PlauditPreEndorsementSettingsForm;
 use APP\plugins\generic\plauditPreEndorsement\classes\mail\mailables\OrcidRequestEndorserAuthorization;
 use APP\plugins\generic\plauditPreEndorsement\classes\observers\listeners\SendEmailToEndorser;
 use APP\plugins\generic\plauditPreEndorsement\classes\Endorser;
+use APP\plugins\generic\plauditPreEndorsement\classes\SchemaBuilder;
 
 class PlauditPreEndorsementPlugin extends GenericPlugin
 {
@@ -52,7 +53,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
             Event::subscribe(new SendEmailToEndorser());
 
             Hook::add('TemplateManager::display', [$this, 'modifySubmissionSteps']);
-            Hook::add('Schema::get::publication', [$this, 'addOurFieldsToPublicationSchema']);
+            Hook::add('Schema::get::endorser', [$this, 'addEndorserSchema']);
             Hook::add('Submission::validateSubmit', [$this, 'validateEndorsement']);
             Hook::add('Template::SubmissionWizard::Section::Review', [$this, 'modifyReviewSections']);
 
@@ -204,56 +205,11 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
         }
     }
 
-    public function addOurFieldsToPublicationSchema($hookName, $params)
+    public function addEndorserSchema(string $hookName, array $params): bool
     {
         $schema = &$params[0];
-        $ourFields = [
-            'endorserName' => 'string',
-            'endorserEmail' => 'string',
-            'endorsementStatus' => 'integer',
-            'endorserOrcid' => 'string',
-            'endorserEmailToken' => 'string',
-            'endorserEmailCount' => 'integer',
-        ];
-
-        foreach ($ourFields as $name => $type) {
-            $schema->properties->{$name} = (object) [
-                'type' => $type,
-                'apiSummary' => true,
-                'validation' => ['nullable'],
-            ];
-        }
-
-        $schema->properties->endorsers = (object) [
-            'type' => 'array',
-            'apiSummary' => true,
-            'validation' => ['nullable'],
-            'items' => (object) [
-                'type' => 'object',
-                'properties' => (object) [
-                    'name' => (object) [
-                        'type' => 'string'
-                    ],
-                    'email' => (object) [
-                        'type' => 'string'
-                    ],
-                    'endorsementStatus' => (object) [
-                        'type' => 'integer'
-                    ],
-                    'endorserOrcid' => (object) [
-                        'type' => 'string'
-                    ],
-                    'endorserEmailToken' => (object) [
-                        'type' => 'string'
-                    ],
-                    'endorserEmailCount' => (object) [
-                        'type' => 'integer'
-                    ],
-                ]
-            ]
-        ];
-
-        return false;
+        $schema = SchemaBuilder::get('endorser');
+        return true;
     }
 
     private function getEndorsementStatusSuffix($endorsementStatus): string

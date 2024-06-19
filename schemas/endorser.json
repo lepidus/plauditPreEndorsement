@@ -1,0 +1,35 @@
+{
+    "title": "Endorser",
+    "description": "An endorser of a publication to be sent to Plaudit.",
+    "properties": {
+      "id": {
+        "type": "integer",
+        "readOnly": true
+      },
+      "contextId": {
+        "type": "integer"
+      },
+      "publicationId": {
+        "type": "string",
+        "multilingual": true
+      }, 
+      "name": {
+        "type": "string"
+      },
+      "email": {
+        "type": "string"
+      },
+      "status": {
+        "type": "integer"
+      },
+      "orcid": {
+        "type": "string"
+      },
+      "emailToken": {
+        "type": "string"
+      },
+      "emailCount": {
+        "type": "integer"
+      }
+    }
+}
