@@ -19,46 +19,46 @@ class EndorserTest extends TestCase
     public function testEndorserPublicationIdRetrieval()
     {
         $publicationId = rand();
-        $endorser->setPublicationId($publicationId);
-        $this->assertEquals($endorser->getPublicationId(), $publicationId);
+        $this->endorser->setPublicationId($publicationId);
+        $this->assertEquals($this->endorser->getPublicationId(), $publicationId);
     }
 
     public function testEndorserNameRetrieval()
     {
-        $endorser->setName("DummyEndorser");
-        $this->assertEquals($endorser->getName(), "DummyEndorser");
+        $this->endorser->setName("DummyEndorser");
+        $this->assertEquals($this->endorser->getName(), "DummyEndorser");
     }
 
     public function testEndorserEmailRetrieval()
     {
-        $endorser->setEmail("DummyEndorser@mailinator.com.br");
-        $this->assertEquals($endorser->getEmail(), "DummyEndorser@mailinator.com.br");
+        $this->endorser->setEmail("DummyEndorser@mailinator.com.br");
+        $this->assertEquals($this->endorser->getEmail(), "DummyEndorser@mailinator.com.br");
     }
 
     public function testEndorserStatusRetrieval()
     {
-        $endorser->setStatus(Endorsement::STATUS_COMPLETED);
-        $this->assertEquals($endorser->getStatus(), Endorsement::STATUS_COMPLETED);
+        $this->endorser->setStatus(Endorsement::STATUS_COMPLETED);
+        $this->assertEquals($this->endorser->getStatus(), Endorsement::STATUS_COMPLETED);
     }
 
     public function testEndorserOrcidRetrieval()
     {
         $dummyOrcid = "0009-0009-190X-Y612";
-        $endorser->setOrcid($dummyOrcid);
-        $this->assertEquals($endorser->getOrcid(), $dummyOrcid);
+        $this->endorser->setOrcid($dummyOrcid);
+        $this->assertEquals($this->endorser->getOrcid(), $dummyOrcid);
     }
 
     public function testEndorserEmailTokenRetrieval()
     {
         $dummyEmailToken = "066235YTVa78273grv76ha8%¨$#@aiusd";
-        $endorser->setEmailToken($dummyEmailToken);
-        $this->assertEquals($endorser->getEmailToken(), $dummyEmailToken);
+        $this->endorser->setEmailToken($dummyEmailToken);
+        $this->assertEquals($this->endorser->getEmailToken(), $dummyEmailToken);
     }
 
     public function testEndorserEmailCountRetrieval()
     {
         $emailCount = 2;
-        $endorser->setEmailCount($emailCount);
-        $this->assertEquals($endorser->getEmailCount(), $emailCount);
+        $this->endorser->setEmailCount($emailCount);
+        $this->assertEquals($this->endorser->getEmailCount(), $emailCount);
     }
 }
