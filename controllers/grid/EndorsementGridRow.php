@@ -35,7 +35,7 @@ class EndorsementGridRow extends GridRow
                         null,
                         'editEndorser',
                         null,
-                        array('submissionId' => $submissionId, 'rowId' => $rowId, 'element' => $element)
+                        array('submissionId' => $submissionId, 'rowId' => $rowId)
                     ),
                     __('grid.action.edit'),
                     'modal_edit',
@@ -58,7 +58,7 @@ class EndorsementGridRow extends GridRow
                         null,
                         'deleteEndorser',
                         null,
-                        array('submissionId' => $submissionId, 'rowId' => $rowId, 'element' => $element)
+                        array('submissionId' => $submissionId, 'rowId' => $rowId)
                     ),
                     'modal_delete'
                 ),

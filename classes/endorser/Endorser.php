@@ -49,7 +49,7 @@ class Endorser extends \PKP\core\DataObject
         $this->setData("email", $email);
     }
 
-    public function getStatus(): int
+    public function getStatus(): ?int
     {
         return $this->getData("status");
     }

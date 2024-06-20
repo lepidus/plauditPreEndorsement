@@ -12,13 +12,14 @@ class EndorsementGridCellProvider extends GridCellProvider
         $element = $row->getData();
         switch ($column->getId()) {
             case 'endorserName':
-                return array('label' => $element['name']);
+                return array('label' => $element->getName());
             case 'endorserEmail':
-                return array('label' => $element['email']);
+                return array('label' => $element->getEmail());
             case 'endorsementStatus':
                 return array(
-                    'label' => $this->getEndorsementStatusSuffix($element['endorsementStatus']),
-                    'badgeClass' => $this->getEndorsementStatusBadge($element['endorsementStatus'])
+                    'label' => $element->getStatus(),
+                    // 'label' => $this->getEndorsementStatusSuffix($element->getStatus()),
+                    // 'badgeClass' => $this->getEndorsementStatusBadge($element->getStatus())
                 );
         }
     }
