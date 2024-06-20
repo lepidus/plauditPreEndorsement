@@ -16,7 +16,13 @@ class DAO extends EntityDAO
     public $primaryTableColumns = [
         'id' => 'endorser_id',
         'contextId' => 'context_id',
-        'publicationId' => 'publication_id'
+        'publicationId' => 'publication_id',
+        'name' => 'name',
+        'email' => 'email',
+        'status' => 'status',
+        'orcid' => 'orcid',
+        'emailToken' => 'email_token',
+        'emailCount' => 'email_count'
     ];
 
     public function getParentColumn(): string
