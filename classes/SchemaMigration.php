@@ -16,10 +16,10 @@ class SchemaMigration extends Migration
             $table->bigInteger('publication_id');
             $table->string('name');
             $table->string('email');
-            $table->integer('status');
-            $table->string('orcid');
-            $table->string('emailToken');
-            $table->integer('emailCount');
+            $table->integer('status')->nullable();
+            $table->string('orcid')->nullable();
+            $table->string('email_token')->nullable();
+            $table->integer('email_count')->default(0);
 
             $table->foreign('context_id')
                 ->references('server_id')
