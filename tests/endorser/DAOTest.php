@@ -40,16 +40,10 @@ class DAOTest extends DatabaseTestCase
 
     public function testCreateEndorser(): void
     {
-        $endorserDataObject = $this->createEndorserDataObject($this->contextId, $this->publicationId);
-        $insertedEndorserId = $this->endorserDAO->insert($endorserDataObject);
-
-        $fetchedEndorser = $this->endorserDAO->get(
-            $insertedEndorserId,
-            $this->contextId
-        );
+        $fetchedEndorser = $this->retrieveEndorser();
 
         self::assertEquals([
-            'id' => $insertedEndorserId,
+            'id' => $fetchedEndorser->getId(),
             'contextId' => $this->contextId,
             'name' => 'DummyEndorser',
             'email' => "DummyEndorser@mailinator.com.br",
@@ -63,38 +57,39 @@ class DAOTest extends DatabaseTestCase
 
     public function testDeleteEndorser(): void
     {
-        $endorserDataObject = $this->createEndorserDataObject($this->contextId, $this->publicationId);
-        $insertedEndorserId = $this->endorserDAO->insert($endorserDataObject);
-
-        $fetchedEndorser = $this->endorserDAO->get(
-            $insertedEndorserId,
-            $this->contextId
-        );
+        $fetchedEndorser = $this->retrieveEndorser();
 
         $this->endorserDAO->delete($fetchedEndorser);
-        self::assertFalse($this->endorserDAO->exists($insertedEndorserId, $this->contextId));
+        self::assertFalse($this->endorserDAO->exists($fetchedEndorser->getId(), $this->contextId));
     }
 
     public function testEditEdorser(): void
     {
-        $endorserDataObject = $this->createEndorserDataObject($this->contextId, $this->publicationId);
-        $insertedEndorserId = $this->endorserDAO->insert($endorserDataObject);
-
-        $fetchedEndorser = $this->endorserDAO->get(
-            $insertedEndorserId,
-            $this->contextId
-        );
+        $fetchedEndorser = $this->retrieveEndorser();
 
         $updatedName = "Updated name";
         $fetchedEndorser->setName($updatedName);
 
         $this->endorserDAO->update($fetchedEndorser);
 
-        $fetchedEndorser = $this->endorserDAO->get(
+        $fetchedEndorser = $this->retrieveEndorser($fetchedEndorser->getId());
+
+        self::assertEquals($fetchedEndorser->getName(), $updatedName);
+    }
+
+    private function retrieveEndorser($endorserId = null)
+    {
+        $insertedEndorserId = isset($endorserId) ? $endorserId : $this->createEndorser();
+
+        return $this->endorserDAO->get(
             $insertedEndorserId,
             $this->contextId
         );
+    }
 
-        self::assertEquals($fetchedEndorser->getName(), $updatedName);
+    private function createEndorser()
+    {
+        $endorserDataObject = $this->createEndorserDataObject($this->contextId, $this->publicationId);
+        return $this->endorserDAO->insert($endorserDataObject);
     }
 }
