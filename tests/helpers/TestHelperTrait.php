@@ -30,15 +30,16 @@ trait TestHelperTrait
         return $server->getId();
     }
 
-    private function createPublicationMock()
+    private function createPublicationMock($mockPublicationId = null)
     {
+        $publicationId = isset($mockPublicationId) ? $mockPublicationId : 1;
         $publication = $this->getMockBuilder(Publication::class)
             ->onlyMethods(['getId'])
             ->getMock();
 
         $publication->expects($this->any())
             ->method('getId')
-            ->will($this->returnValue(1));
+            ->will($this->returnValue($publicationId));
 
         return $publication->getId();
     }
