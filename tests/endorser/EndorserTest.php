@@ -1,6 +1,6 @@
 <?php
 
-namespace APP\plugins\generic\plauditPreEndorsement\tests;
+namespace APP\plugins\generic\plauditPreEndorsement\tests\endorser;
 
 use PHPUnit\Framework\TestCase;
 use APP\plugins\generic\plauditPreEndorsement\classes\endorser\Endorser;

@@ -7,7 +7,7 @@ class SchemaBuilder
     public static function get($schemaName)
     {
         $schemaFile = sprintf(
-            '%s/plugins/generic/demographicData/schemas/%s.json',
+            '%s/plugins/generic/plauditPreEndorsement/schemas/%s.json',
             BASE_SYS_DIR,
             $schemaName
         );
