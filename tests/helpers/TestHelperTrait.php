@@ -3,8 +3,10 @@
 namespace APP\plugins\generic\plauditPreEndorsement\tests\helpers;
 
 use APP\server\Server;
+use APP\publication\Publication;
 use PKP\user\User;
 use PKP\plugins\Hook;
+use APP\plugins\generic\plauditPreEndorsement\classes\endorser\Endorser;
 
 trait TestHelperTrait
 {
@@ -26,6 +28,19 @@ trait TestHelperTrait
         $server->setId(1);
 
         return $server->getId();
+    }
+
+    private function createPublicationMock()
+    {
+        $publication = $this->getMockBuilder(Publication::class)
+            ->onlyMethods(['getId'])
+            ->getMock();
+
+        $publication->expects($this->any())
+            ->method('getId')
+            ->will($this->returnValue(1));
+
+        return $publication->getId();
     }
 
     private function addSchemaFile(string $schemaName): void
@@ -54,5 +69,16 @@ trait TestHelperTrait
                 return true;
             }
         );
+    }
+
+    private function createEndorserDataObject($contextId, $publicationId)
+    {
+        $endorser = $this->endorserDAO->newDataObject();
+        $endorser->setContextId($contextId);
+        $endorser->setPublicationId($publicationId);
+        $endorser->setName("DummyEndorser");
+        $endorser->setEmail("DummyEndorser@mailinator.com.br");
+
+        return $endorser;
     }
 }

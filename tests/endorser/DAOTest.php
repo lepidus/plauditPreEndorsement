@@ -13,6 +13,7 @@ class DAOTest extends DatabaseTestCase
 
     private $contextId;
     private $endorserDAO;
+    private $publicationId;
 
     protected function getAffectedTables(): array
     {
@@ -27,6 +28,7 @@ class DAOTest extends DatabaseTestCase
         parent::setUp();
         $this->endorserDAO = app(DAO::class);
         $this->contextId = $this->createServerMock();
+        $this->publicationId = $this->createPublicationMock();
         $this->addSchemaFile('endorser');
     }
 
@@ -34,5 +36,28 @@ class DAOTest extends DatabaseTestCase
     {
         $endorser = $this->endorserDAO->newDataObject();
         self::assertInstanceOf(Endorser::class, $endorser);
+    }
+
+    public function testCreateEndorser(): void
+    {
+        $endorserDataObject = $this->createEndorserDataObject($this->contextId, $this->publicationId);
+        $insertedEndorserId = $this->endorserDAO->insert($endorserDataObject);
+
+        $fetchedEndorser = $this->endorserDAO->get(
+            $insertedEndorserId,
+            $this->contextId
+        );
+
+        self::assertEquals([
+            'id' => $insertedEndorserId,
+            'contextId' => $this->contextId,
+            'name' => 'DummyEndorser',
+            'email' => "DummyEndorser@mailinator.com.br",
+            'publicationId' => $this->publicationId,
+            'status' => null,
+            'orcid' => null,
+            'emailToken' => null,
+            'emailCount' => 0
+        ], $fetchedEndorser->_data);
     }
 }
