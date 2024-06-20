@@ -16,6 +16,13 @@ class EndorserTest extends TestCase
         $this->endorser = new Endorser();
     }
 
+    public function testEndorserContextIdRetrieval()
+    {
+        $contextId = rand();
+        $this->endorser->setContextId($contextId);
+        $this->assertEquals($this->endorser->getContextId(), $contextId);
+    }
+
     public function testEndorserPublicationIdRetrieval()
     {
         $publicationId = rand();

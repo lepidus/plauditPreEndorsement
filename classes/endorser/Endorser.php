@@ -9,6 +9,16 @@ class Endorser extends \PKP\core\DataObject
         return $this->getData("id");
     }
 
+    public function getContextId(): int
+    {
+        return $this->getData("contextId");
+    }
+
+    public function setContextId(int $contextId)
+    {
+        $this->setData("contextId", $contextId);
+    }
+
     public function getPublicationId(): int
     {
         return $this->getData("publicationId");
