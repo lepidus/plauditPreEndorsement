@@ -60,4 +60,41 @@ class DAOTest extends DatabaseTestCase
             'emailCount' => 0
         ], $fetchedEndorser->_data);
     }
+
+    public function testDeleteEndorser(): void
+    {
+        $endorserDataObject = $this->createEndorserDataObject($this->contextId, $this->publicationId);
+        $insertedEndorserId = $this->endorserDAO->insert($endorserDataObject);
+
+        $fetchedEndorser = $this->endorserDAO->get(
+            $insertedEndorserId,
+            $this->contextId
+        );
+
+        $this->endorserDAO->delete($fetchedEndorser);
+        self::assertFalse($this->endorserDAO->exists($insertedEndorserId, $this->contextId));
+    }
+
+    public function testEditEdorser(): void
+    {
+        $endorserDataObject = $this->createEndorserDataObject($this->contextId, $this->publicationId);
+        $insertedEndorserId = $this->endorserDAO->insert($endorserDataObject);
+
+        $fetchedEndorser = $this->endorserDAO->get(
+            $insertedEndorserId,
+            $this->contextId
+        );
+
+        $updatedName = "Updated name";
+        $fetchedEndorser->setName($updatedName);
+
+        $this->endorserDAO->update($fetchedEndorser);
+
+        $fetchedEndorser = $this->endorserDAO->get(
+            $insertedEndorserId,
+            $this->contextId
+        );
+
+        self::assertEquals($fetchedEndorser->getName(), $updatedName);
+    }
 }
