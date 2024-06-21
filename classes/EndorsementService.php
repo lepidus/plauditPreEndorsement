@@ -125,9 +125,9 @@ class EndorsementService
             ->getMany();
         $today = Core::getCurrentDate();
 
-        foreach($submissionLogEntries->toArray() as $logEntry) {
+        foreach ($submissionLogEntries->toArray() as $logEntry) {
             $entryWasLoggedToday = $this->datesAreOnSameDay($logEntry->getDateLogged(), $today);
-            if($entryWasLoggedToday and $logEntry->getMessage() == $message) {
+            if ($entryWasLoggedToday and $logEntry->getMessage() == $message) {
                 return true;
             }
         }
