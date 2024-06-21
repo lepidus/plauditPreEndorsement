@@ -11,6 +11,7 @@ use APP\plugins\generic\plauditPreEndorsement\PlauditPreEndorsementPlugin;
 use APP\plugins\generic\plauditPreEndorsement\classes\Endorsement;
 use APP\plugins\generic\plauditPreEndorsement\classes\EndorsementService;
 use APP\plugins\generic\plauditPreEndorsement\classes\OrcidClient;
+use APP\plugins\generic\plauditPreEndorsement\classes\endorser\Repository as EndorserRepository;
 
 class PlauditPreEndorsementHandler extends Handler
 {
@@ -123,10 +124,9 @@ class PlauditPreEndorsementHandler extends Handler
     {
         $publication = Repo::publication()->get($request->getUserVar('state'));
         $submission = Repo::submission()->get($publication->getData('submissionId'));
-        $endorsers = $publication->getData('endorsers');
-        $endorserIndex = $this->retrieveEndorserIndexByNameAndEmail($endorsers, $request->getUserVar('name'), $request->getUserVar('email'));
+        $endorserRepository = app(EndorserRepository::class);
+        $endorser = $endorserRepository->get($request->getUserVar('endorserId'));
 
-        $endorser = $endorsers[$endorserIndex];
         $plugin = PluginRegistry::getPlugin('generic', 'plauditpreendorsementplugin');
         $contextId = $request->getContext()->getId();
 
@@ -135,7 +135,7 @@ class PlauditPreEndorsementHandler extends Handler
             $this->logMessageAndDisplayTemplate($submission, $request, 'plugins.generic.plauditPreEndorsement.log.invalidToken', ['errorType' => 'invalidToken']);
             return;
         } elseif ($statusAuth == self::AUTH_ACCESS_DENIED) {
-            $this->setAccessDeniedEndorsement($publication, $endorserIndex);
+            $this->setAccessDeniedEndorsement($endorser);
             $this->logMessageAndDisplayTemplate($submission, $request, 'plugins.generic.plauditPreEndorsement.log.orcidAccessDenied', ['errorType' => 'denied']);
             return;
         }
@@ -162,7 +162,7 @@ class PlauditPreEndorsementHandler extends Handler
             $endorsementService = new EndorsementService($contextId, $plugin);
             $endorsementService->updateEndorserNameFromOrcid($publication, $orcid);
 
-            $this->setConfirmedEndorsementPublication($publication, $endorserIndex, $orcidUri);
+            $this->setConfirmedEndorsementPublication($endorser, $orcidUri);
             $this->logMessageAndDisplayTemplate($submission, $request, 'plugins.generic.plauditPreEndorsement.log.endorsementConfirmed', ['orcid' => $orcidUri]);
 
             if ($publication->getData('status') == Submission::STATUS_PUBLISHED) {
@@ -183,39 +183,31 @@ class PlauditPreEndorsementHandler extends Handler
         $templateMgr->display($templatePath);
     }
 
-    private function setConfirmedEndorsementPublication($publication, $index, $orcidUri)
+    private function setConfirmedEndorsementPublication($endorser, $orcidUri)
     {
-        $endorsers = $publication->getData('endorsers');
-        $endorsers[$index]['endorserEmailToken'] = null;
-        $endorsers[$index]['endorserOrcid'] = $orcidUri;
-        $endorsers[$index]['endorsementStatus'] = Endorsement::STATUS_CONFIRMED;
-        Repo::publication()->edit($publication, ['endorsers' => $endorsers]);
+        $endorser->setEmailToken(null);
+        $endorser->setOrcid($orcidUri);
+        $endorser->setStatus(Endorsement::STATUS_CONFIRMED);
+        $endorserRepository = app(EndorserRepository::class);
+        $endorserRepository->edit($endorser, []);
     }
 
-    private function setAccessDeniedEndorsement($publication, $index)
+    private function setAccessDeniedEndorsement($endorser)
     {
-        $endorsers = $publication->getData('endorsers');
-        $endorsers[$index]['endorserEmailToken'] = null;
-        $endorsers[$index]['endorsementStatus'] = Endorsement::STATUS_DENIED;
-        Repo::publication()->edit($publication, ['endorsers' => $endorsers]);
+        $endorser->setEmailToken(null);
+        $endorser->setStatus(Endorsement::STATUS_DENIED);
+        $endorserRepository = app(EndorserRepository::class);
+        $endorserRepository->edit($endorser, []);
     }
 
     public function getStatusAuthentication($endorser, $request)
     {
-        if ($request->getUserVar('token') != $endorser['endorserEmailToken']) {
+        if ($request->getUserVar('token') != $endorser->getEmailToken()) {
             return self::AUTH_INVALID_TOKEN;
         } elseif ($request->getUserVar('error') == 'access_denied') {
             return self::AUTH_ACCESS_DENIED;
         } else {
             return self::AUTH_SUCCESS;
         }
-    }
-
-    private function retrieveEndorserIndexByNameAndEmail(array $endorsers, string $name, string $email)
-    {
-        return array_keys(array_filter($endorsers, function ($endorser) use ($name, $email) {
-            return isset($endorser['name']) && isset($endorser['email']) &&
-                   $endorser['name'] == $name && $endorser['email'] == $email;
-        }))[0];
     }
 }

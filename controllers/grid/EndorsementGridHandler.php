@@ -15,10 +15,12 @@ use PKP\security\Role;
 use APP\plugins\generic\plauditPreEndorsement\controllers\grid\form\EndorsementForm;
 use APP\facades\Repo;
 use PKP\plugins\PluginRegistry;
+use APP\plugins\generic\plauditPreEndorsement\classes\endorser\Repository as EndorserRepository;
 
 class EndorsementGridHandler extends GridHandler
 {
     public $plugin;
+    private $endorserRepository;
 
     public function __construct()
     {
@@ -28,6 +30,7 @@ class EndorsementGridHandler extends GridHandler
             array('fetchGrid', 'fetchRow', 'addEndorser', 'editEndorser', 'updateEndorser', 'deleteEndorser')
         );
         $this->plugin = PluginRegistry::getPlugin('generic', PLAUDIT_PRE_ENDORSEMENT_PLUGIN_NAME);
+        $this->endorserRepository = app(EndorserRepository::class);
     }
 
     public static function setPlugin($plugin)
@@ -56,10 +59,6 @@ class EndorsementGridHandler extends GridHandler
 
         $this->setTitle('plugins.generic.plauditPreEndorsement.endorsement');
         $this->setEmptyRowText('common.none');
-
-        $gridData = $publication->getData('endorsers');
-
-        $this->setGridDataElements($gridData);
 
         $router = $request->getRouter();
         $this->addAction(
@@ -99,6 +98,18 @@ class EndorsementGridHandler extends GridHandler
             $this->plugin->getTemplateResource('statusGridCell.tpl'),
             $cellProvider
         ));
+    }
+
+    protected function loadData($request, $filter)
+    {
+        $submission = $this->getSubmission();
+        $submissionId = $submission->getId();
+        $publication = $submission->getCurrentPublication();
+        $endorsers = $this->endorserRepository->getCollector()
+            ->filterByContextIds([$request->getContext()->getId()])
+            ->filterByPublicationIds([$publication->getId()])
+            ->getMany();
+        return $endorsers->toArray();
     }
 
     public function addEndorser($args, $request)
@@ -147,13 +158,8 @@ class EndorsementGridHandler extends GridHandler
         $submission = $this->getSubmission();
         $submissionId = $submission->getId();
         $rowId = $request->getUserVar('rowId');
-        $element = $request->getUserVar('element');
-        $endorserName = $element[0];
-        $endorserEmail = $element[1];
-        $publication = $submission->getCurrentPublication();
-        $endorsers = $publication->getData('endorsers');
-        unset($endorsers[$rowId]);
-        Repo::publication()->edit($publication, ['endorsers' => $endorsers]);
+        $endorser = $this->endorserRepository->get((int)$rowId, $context->getId());
+        $this->endorserRepository->delete($endorser);
         $json = DAO::getDataChangedEvent($submissionId);
         $json->setGlobalEvent('plugin:plauditPreEndorsement:endorsementRemoved', ['submissionId' => $submissionId]);
         return $json;
