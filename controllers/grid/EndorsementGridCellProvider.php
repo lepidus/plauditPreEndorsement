@@ -17,14 +17,13 @@ class EndorsementGridCellProvider extends GridCellProvider
                 return array('label' => $element->getEmail());
             case 'endorsementStatus':
                 return array(
-                    'label' => $element->getStatus(),
-                    // 'label' => $this->getEndorsementStatusSuffix($element->getStatus()),
-                    // 'badgeClass' => $this->getEndorsementStatusBadge($element->getStatus())
+                    'label' => $this->getEndorsementStatusSuffix($element->getStatus()),
+                    'badgeClass' => $this->getEndorsementStatusBadge($element->getStatus())
                 );
         }
     }
 
-    private function getEndorsementStatusSuffix(int $endorsementStatus): string
+    private function getEndorsementStatusSuffix(?int $endorsementStatus): string
     {
         $mapStatusToSuffix = [
             Endorsement::STATUS_NOT_CONFIRMED => __('plugins.generic.plauditPreEndorsement.endorsementNotConfirmed'),
@@ -37,7 +36,7 @@ class EndorsementGridCellProvider extends GridCellProvider
         return $mapStatusToSuffix[$endorsementStatus] ?? "";
     }
 
-    private function getEndorsementStatusBadge(int $endorsementStatus): string
+    private function getEndorsementStatusBadge(?int $endorsementStatus): string
     {
         $mapStatusToSuffix = [
             Endorsement::STATUS_NOT_CONFIRMED => 'endorsementStatusCustomBadge',
