@@ -39,7 +39,7 @@ class EndorsementService
 
     public function sendEndorsement($endorser, $needCheckMessageWasLoggedToday = false)
     {
-        $publication = Repo::publication->get($endorser->getPublicationId());
+        $publication = Repo::publication()->get($endorser->getPublicationId());
         $validationResult = $this->validateEndorsementSending($publication);
 
         if ($validationResult == 'ok') {
