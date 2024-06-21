@@ -76,7 +76,14 @@ class EndorsementService
     public function sendEndorsementToPlaudit($endorser, $publication)
     {
         $submission = Repo::submission()->get($publication->getData('submissionId'));
-        $this->plugin->writeOnActivityLog($submission, 'plugins.generic.plauditPreEndorsement.log.attemptSendingEndorsement', ['doi' => $publication->getDoi(), 'orcid' => $endorser->getOrcid()]);
+        $this->plugin->writeOnActivityLog(
+            $submission,
+            'plugins.generic.plauditPreEndorsement.log.attemptSendingEndorsement',
+            [
+                'doi' => $publication->getDoi(),
+                'orcid' => $endorser->getOrcid()
+            ]
+        );
 
         $plauditClient = new PlauditClient();
 
