@@ -79,7 +79,7 @@ class Endorser extends \PKP\core\DataObject
         $this->setData("emailToken", $emailToken);
     }
 
-    public function getEmailCount(): int
+    public function getEmailCount(): ?int
     {
         return $this->getData("emailCount");
     }

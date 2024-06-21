@@ -79,7 +79,7 @@ class EndorsementForm extends Form
             ];
             $endorser = $this->endorserRepository->newDataObject($params);
             $this->endorserRepository->add($endorser);
-            // $this->plugin->sendEmailToEndorser($publication, $endorser);
+            $this->plugin->sendEmailToEndorser($publication, $endorser);
         }
     }
 }
