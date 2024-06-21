@@ -10,6 +10,7 @@ use APP\plugins\generic\plauditPreEndorsement\classes\Endorsement;
 use APP\plugins\generic\plauditPreEndorsement\classes\PlauditClient;
 use APP\plugins\generic\plauditPreEndorsement\classes\CrossrefClient;
 use APP\plugins\generic\plauditPreEndorsement\classes\OrcidClient;
+use APP\plugins\generic\plauditPreEndorsement\classes\endorser\Repository as EndorserRepository;
 
 class EndorsementService
 {
@@ -36,12 +37,13 @@ class EndorsementService
         $this->orcidClient = $orcidClient;
     }
 
-    public function sendEndorsement($publication, $needCheckMessageWasLoggedToday = false)
+    public function sendEndorsement($endorser, $needCheckMessageWasLoggedToday = false)
     {
+        $publication = Repo::publication()->get($endorser->getPublicationId());
         $validationResult = $this->validateEndorsementSending($publication);
 
         if ($validationResult == 'ok') {
-            $this->sendEndorsementToPlaudit($publication);
+            $this->sendEndorsementToPlaudit($endorser, $publication);
         } else {
             $submissionId = $publication->getData('submissionId');
             if (!$needCheckMessageWasLoggedToday or !$this->messageWasAlreadyLoggedToday($submissionId, $validationResult)) {
@@ -71,17 +73,24 @@ class EndorsementService
         return 'ok';
     }
 
-    public function sendEndorsementToPlaudit($publication)
+    public function sendEndorsementToPlaudit($endorser, $publication)
     {
         $submission = Repo::submission()->get($publication->getData('submissionId'));
-        $this->plugin->writeOnActivityLog($submission, 'plugins.generic.plauditPreEndorsement.log.attemptSendingEndorsement', ['doi' => $publication->getDoi(), 'orcid' => $publication->getData('endorserOrcid')]);
+        $this->plugin->writeOnActivityLog(
+            $submission,
+            'plugins.generic.plauditPreEndorsement.log.attemptSendingEndorsement',
+            [
+                'doi' => $publication->getDoi(),
+                'orcid' => $endorser->getOrcid()
+            ]
+        );
 
         $plauditClient = new PlauditClient();
 
         try {
             $secretKey = $this->plugin->getSetting($this->contextId, 'plauditAPISecret');
-            $response = $plauditClient->requestEndorsementCreation($publication, $secretKey);
-            $newEndorsementStatus = $plauditClient->getEndorsementStatusByResponse($response, $publication);
+            $response = $plauditClient->requestEndorsementCreation($endorser, $publication, $secretKey);
+            $newEndorsementStatus = $plauditClient->getEndorsementStatusByResponse($response, $publication, $endorser);
         } catch (ClientException $exception) {
             $response = $exception->getResponse();
             $responseCode = $response->getStatusCode();
@@ -91,9 +100,9 @@ class EndorsementService
             $newEndorsementStatus = Endorsement::STATUS_COULDNT_COMPLETE;
         }
 
-        Repo::publication()->edit($publication, [
-            'endorsementStatus' => $newEndorsementStatus
-        ]);
+        $endorser->setStatus($newEndorsementStatus);
+        $endorserRepository = app(EndorserRepository::class);
+        $endorserRepository->edit($endorser, []);
     }
 
     public function updateEndorserNameFromOrcid($publication, $orcid)
@@ -116,9 +125,9 @@ class EndorsementService
             ->getMany();
         $today = Core::getCurrentDate();
 
-        foreach($submissionLogEntries->toArray() as $logEntry) {
+        foreach ($submissionLogEntries->toArray() as $logEntry) {
             $entryWasLoggedToday = $this->datesAreOnSameDay($logEntry->getDateLogged(), $today);
-            if($entryWasLoggedToday and $logEntry->getMessage() == $message) {
+            if ($entryWasLoggedToday and $logEntry->getMessage() == $message) {
                 return true;
             }
         }

@@ -6,6 +6,7 @@ use APP\plugins\generic\plauditPreEndorsement\classes\endorser\Endorser;
 use APP\plugins\generic\plauditPreEndorsement\classes\endorser\Repository;
 use PKP\tests\DatabaseTestCase;
 use APP\plugins\generic\plauditPreEndorsement\tests\helpers\TestHelperTrait;
+use APP\plugins\generic\plauditPreEndorsement\classes\Endorsement;
 
 class RepositoryTest extends DatabaseTestCase
 {
@@ -102,4 +103,33 @@ class RepositoryTest extends DatabaseTestCase
         self::assertFalse(in_array($endorser, $endorsers->all()));
     }
 
+    public function testCollectorFilterByContextAndStatus(): void
+    {
+        $repository = app(Repository::class);
+        $this->params['status'] = Endorsement::STATUS_CONFIRMED;
+        $endorser = $repository->newDataObject($this->params);
+
+        $repository->add($endorser);
+
+        $endorsers = $repository->getCollector()
+            ->filterByContextIds([$this->contextId])
+            ->filterByStatus([Endorsement::STATUS_CONFIRMED])
+            ->getMany();
+        self::assertTrue(in_array($endorser, $endorsers->all()));
+    }
+
+    public function testEmptyCollectorFilterByContextAndStatus(): void
+    {
+        $repository = app(Repository::class);
+        $this->params['status'] = Endorsement::STATUS_CONFIRMED;
+        $endorser = $repository->newDataObject($this->params);
+
+        $repository->add($endorser);
+
+        $endorsers = $repository->getCollector()
+            ->filterByContextIds([$this->contextId])
+            ->filterByStatus([Endorsement::STATUS_NOT_CONFIRMED])
+            ->getMany();
+        self::assertFalse(in_array($endorser, $endorsers->all()));
+    }
 }

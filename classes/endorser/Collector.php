@@ -12,6 +12,7 @@ class Collector implements CollectorInterface
     public DAO $dao;
     public ?array $contextIds = null;
     public ?array $publicationIds = null;
+    public ?array $status = null;
 
     public function __construct(DAO $dao)
     {
@@ -30,6 +31,12 @@ class Collector implements CollectorInterface
         return $this;
     }
 
+    public function filterByStatus(?array $status): Collector
+    {
+        $this->status = $status;
+        return $this;
+    }
+
     public function getQueryBuilder(): Builder
     {
         $queryBuilder = DB::table($this->dao->table . ' as endorsers')
@@ -41,6 +48,10 @@ class Collector implements CollectorInterface
 
         if (isset($this->publicationIds)) {
             $queryBuilder->whereIn('endorsers.publication_id', $this->publicationIds);
+        }
+
+        if (isset($this->status)) {
+            $queryBuilder->whereIn('endorsers.status', $this->status);
         }
 
         return $queryBuilder;
