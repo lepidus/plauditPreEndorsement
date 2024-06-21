@@ -69,12 +69,12 @@ class Endorser extends \PKP\core\DataObject
         $this->setData("orcid", $orcid);
     }
 
-    public function getEmailToken(): string
+    public function getEmailToken(): ?string
     {
         return $this->getData("emailToken");
     }
 
-    public function setEmailToken(string $emailToken)
+    public function setEmailToken(?string $emailToken)
     {
         $this->setData("emailToken", $emailToken);
     }

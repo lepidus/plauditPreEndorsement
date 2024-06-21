@@ -295,8 +295,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
                 [
                     'token' => $endorserEmailToken,
                     'state' => $publication->getId(),
-                    'name' => $endorserName,
-                    'email' => $endorserEmail
+                    'endorserId' => $endorser->getId()
                 ]
             );
             $emailParams = [
