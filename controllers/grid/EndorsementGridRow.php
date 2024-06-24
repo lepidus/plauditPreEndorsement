@@ -6,18 +6,27 @@ use PKP\controllers\grid\GridRow;
 use PKP\linkAction\LinkAction;
 use PKP\linkAction\request\AjaxModal;
 use PKP\linkAction\request\RemoteActionConfirmationModal;
+use APP\plugins\generic\plauditPreEndorsement\classes\Endorsement;
+use PKP\plugins\PluginRegistry;
+use APP\facades\Repo;
+use APP\submission\Submission;
 
 class EndorsementGridRow extends GridRow
 {
+    public $plugin;
+
     public function __construct()
     {
         parent::__construct();
+        $this->plugin = PluginRegistry::getPlugin('generic', PLAUDIT_PRE_ENDORSEMENT_PLUGIN_NAME);
     }
 
     public function initialize($request, $template = null)
     {
         parent::initialize($request, $template);
         $submissionId = $request->getUserVar('submissionId');
+        $submission = Repo::submission()->get($submissionId);
+        $publication = $submission->getCurrentPublication();
 
         $router = $request->getRouter();
 
@@ -25,27 +34,36 @@ class EndorsementGridRow extends GridRow
 
         $rowId = $this->getId();
 
-        $this->addAction(
-            new LinkAction(
-                'sendEndorsementManually',
-                new RemoteActionConfirmationModal(
-                    $request->getSession(),
-                    __('plugins.generic.plauditPreEndorsement.sendEndorsementToPlauditConfirmationMessage'),
-                    __('plugins.generic.plauditPreEndorsement.sendEndorsementToPlaudit'),
-                    $router->url(
-                        $request,
-                        null,
-                        null,
-                        'sendEndorsementManually',
-                        null,
-                        array('submissionId' => $submissionId, 'rowId' => $rowId)
+        $canSendEndorsementManually = $publication->getData('status') == Submission::STATUS_PUBLISHED
+            && !$this->plugin->userAccessingIsAuthor($submission)
+            && (
+                $element->getStatus() == Endorsement::STATUS_CONFIRMED ||
+                $element->getStatus() == Endorsement::STATUS_COULDNT_COMPLETE
+            );
+
+        if ($canSendEndorsementManually) {
+            $this->addAction(
+                new LinkAction(
+                    'sendEndorsementManually',
+                    new RemoteActionConfirmationModal(
+                        $request->getSession(),
+                        __('plugins.generic.plauditPreEndorsement.sendEndorsementToPlauditConfirmationMessage'),
+                        __('plugins.generic.plauditPreEndorsement.sendEndorsementToPlaudit'),
+                        $router->url(
+                            $request,
+                            null,
+                            null,
+                            'sendEndorsementManually',
+                            null,
+                            array('submissionId' => $submissionId, 'rowId' => $rowId)
+                        ),
+                        'modal_delete'
                     ),
-                    'modal_delete'
-                ),
-                __('plugins.generic.plauditPreEndorsement.sendEndorsementToPlaudit'),
-                'sendToPlaudit'
-            )
-        );
+                    __('plugins.generic.plauditPreEndorsement.sendEndorsementToPlaudit'),
+                    'sendToPlaudit'
+                )
+            );
+        }
 
         $this->addAction(
             new LinkAction(

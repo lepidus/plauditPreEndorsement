@@ -16,6 +16,8 @@ use APP\plugins\generic\plauditPreEndorsement\controllers\grid\form\EndorsementF
 use APP\facades\Repo;
 use PKP\plugins\PluginRegistry;
 use APP\plugins\generic\plauditPreEndorsement\classes\endorser\Repository as EndorserRepository;
+use APP\plugins\generic\plauditPreEndorsement\classes\EndorsementService;
+use GuzzleHttp\Exception\ClientException;
 
 class EndorsementGridHandler extends GridHandler
 {
@@ -119,6 +121,12 @@ class EndorsementGridHandler extends GridHandler
 
     public function sendEndorsementManually($args, $request)
     {
+        $contextId = $request->getContext()->getId();
+        $rowId = $request->getUserVar('rowId');
+        $endorser = $this->endorserRepository->get((int)$rowId, $contextId);
+
+        $endorsementService = new EndorsementService($contextId, $this->plugin);
+        $endorsementService->sendEndorsement($endorser);
         $json = new JSONMessage(true);
         return $json->getString();
     }
