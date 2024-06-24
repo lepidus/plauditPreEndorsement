@@ -27,7 +27,7 @@ class EndorsementGridHandler extends GridHandler
         parent::__construct();
         $this->addRoleAssignment(
             array(Role::ROLE_ID_MANAGER, Role::ROLE_ID_SUB_EDITOR, Role::ROLE_ID_ASSISTANT, Role::ROLE_ID_AUTHOR),
-            array('fetchGrid', 'fetchRow', 'addEndorser', 'editEndorser', 'updateEndorser', 'deleteEndorser')
+            array('fetchGrid', 'fetchRow', 'addEndorser', 'editEndorser', 'updateEndorser', 'deleteEndorser', 'sendEndorsementManually')
         );
         $this->plugin = PluginRegistry::getPlugin('generic', PLAUDIT_PRE_ENDORSEMENT_PLUGIN_NAME);
         $this->endorserRepository = app(EndorserRepository::class);
@@ -115,6 +115,12 @@ class EndorsementGridHandler extends GridHandler
     public function addEndorser($args, $request)
     {
         return $this->editEndorser($args, $request);
+    }
+
+    public function sendEndorsementManually($args, $request)
+    {
+        $json = new JSONMessage(true);
+        return $json->getString();
     }
 
     public function editEndorser($args, $request)

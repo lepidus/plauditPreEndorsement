@@ -62,6 +62,9 @@ msgstr "Aprobación previa"
 msgid "plugins.generic.plauditPreEndorsement.sendEndorsementToPlaudit"
 msgstr "Enviar endoso a Plaudit"
 
+msgid "plugins.generic.plauditPreEndorsement.sendEndorsementToPlauditConfirmationMessage"
+msgstr "¿Desea enviar el endoso de este envío a Plaudit?"
+
 msgid "plugins.generic.plauditPreEndorsement.removeEndorsement"
 msgstr "Eliminar endoso"
 

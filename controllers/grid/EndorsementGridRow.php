@@ -27,6 +27,28 @@ class EndorsementGridRow extends GridRow
 
         $this->addAction(
             new LinkAction(
+                'sendEndorsementManually',
+                new RemoteActionConfirmationModal(
+                    $request->getSession(),
+                    __('plugins.generic.plauditPreEndorsement.sendEndorsementToPlauditConfirmationMessage'),
+                    __('plugins.generic.plauditPreEndorsement.sendEndorsementToPlaudit'),
+                    $router->url(
+                        $request,
+                        null,
+                        null,
+                        'sendEndorsementManually',
+                        null,
+                        array('submissionId' => $submissionId, 'rowId' => $rowId)
+                    ),
+                    'modal_delete'
+                ),
+                __('plugins.generic.plauditPreEndorsement.sendEndorsementToPlaudit'),
+                'sendToPlaudit'
+            )
+        );
+
+        $this->addAction(
+            new LinkAction(
                 'editEndorserItem',
                 new AjaxModal(
                     $router->url(
