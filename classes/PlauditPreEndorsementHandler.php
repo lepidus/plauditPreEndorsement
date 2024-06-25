@@ -99,27 +99,6 @@ class PlauditPreEndorsementHandler extends Handler
         return http_response_code(200);
     }
 
-    public function sendEndorsementManually($args, $request)
-    {
-        $submissionId = $request->getUserVar('submissionId');
-        $submission = Repo::submission()->get($submissionId);
-        $publication = $submission->getCurrentPublication();
-        $plugin = PluginRegistry::getPlugin('generic', 'plauditpreendorsementplugin');
-
-        $endorsementStatus = $publication->getData('endorsementStatus');
-        $canSendEndorsementManually = $publication->getData('status') == Submission::STATUS_PUBLISHED
-            && !$plugin->userAccessingIsAuthor($submission)
-            && ($endorsementStatus == Endorsement::STATUS_CONFIRMED || $endorsementStatus == Endorsement::STATUS_COULDNT_COMPLETE);
-
-        if ($canSendEndorsementManually) {
-            $endorsementService = new EndorsementService($request->getContext()->getId(), $plugin);
-            $endorsementService->sendEndorsement($publication);
-            return http_response_code(200);
-        }
-
-        return http_response_code(400);
-    }
-
     public function orcidVerify($args, $request)
     {
         $publication = Repo::publication()->get($request->getUserVar('state'));
@@ -160,7 +139,7 @@ class PlauditPreEndorsementHandler extends Handler
             }
 
             $endorsementService = new EndorsementService($contextId, $plugin);
-            $endorsementService->updateEndorserNameFromOrcid($publication, $orcid);
+            $endorsementService->updateEndorserNameFromOrcid($endorser, $orcid);
 
             $this->setConfirmedEndorsementPublication($endorser, $orcidUri);
             $this->logMessageAndDisplayTemplate($submission, $request, 'plugins.generic.plauditPreEndorsement.log.endorsementConfirmed', ['orcid' => $orcidUri]);

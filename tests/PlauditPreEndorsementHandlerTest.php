@@ -12,6 +12,7 @@ final class PlauditPreEndorsementHandlerTest extends TestCase
     private $publication;
     private $firstEndorser;
     private $secondEndorser;
+    private $endorserEmailToken;
 
     public function setUp(): void
     {
