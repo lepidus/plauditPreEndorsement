@@ -139,7 +139,7 @@ class PlauditPreEndorsementHandler extends Handler
             }
 
             $endorsementService = new EndorsementService($contextId, $plugin);
-            $endorsementService->updateEndorserNameFromOrcid($publication, $orcid);
+            $endorsementService->updateEndorserNameFromOrcid($endorser, $orcid);
 
             $this->setConfirmedEndorsementPublication($endorser, $orcidUri);
             $this->logMessageAndDisplayTemplate($submission, $request, 'plugins.generic.plauditPreEndorsement.log.endorsementConfirmed', ['orcid' => $orcidUri]);

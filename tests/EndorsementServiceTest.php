@@ -11,9 +11,13 @@ use APP\plugins\generic\plauditPreEndorsement\classes\CrossrefClient;
 use APP\plugins\generic\plauditPreEndorsement\classes\OrcidClient;
 use APP\plugins\generic\plauditPreEndorsement\classes\EndorsementService;
 use APP\plugins\generic\plauditPreEndorsement\PlauditPreEndorsementPlugin;
+use APP\plugins\generic\plauditPreEndorsement\classes\endorser\Repository as EndorserRepository;
+use APP\plugins\generic\plauditPreEndorsement\tests\helpers\TestHelperTrait;
 
 final class EndorsementServiceTest extends DatabaseTestCase
 {
+    use TestHelperTrait;
+
     private $endorsementService;
     private $contextId = 1;
     private $submissionId;
@@ -25,13 +29,16 @@ final class EndorsementServiceTest extends DatabaseTestCase
     private $endorserOrcid = '0010-1010-1101-0001';
     private $endorserGivenNameOrcid = 'Caio';
     private $endorserFamilyNameOrcid = 'dos Anjos';
+    private $endorserId;
 
     public function setUp(): void
     {
         parent::setUp();
-        $this->publication = $this->createEndorsedPublication();
+        $this->addSchemaFile('endorser');
+        $this->publication = $this->createPublication();
         $this->plugin = new PlauditPreEndorsementPlugin();
         $this->endorsementService = new EndorsementService($this->contextId, $this->plugin);
+        $this->endorserId = $this->createEndorser();
     }
 
     public function tearDown(): void
@@ -46,10 +53,23 @@ final class EndorsementServiceTest extends DatabaseTestCase
 
     protected function getAffectedTables(): array
     {
-        return ['event_log', 'event_log_settings'];
+        return ['event_log', 'event_log_settings', 'endorsers'];
     }
 
-    private function createEndorsedPublication(): Publication
+    private function createEndorser()
+    {
+        $endorserRepository = app(EndorserRepository::class);
+        $params = [
+            'publicationId' => $this->publication->getId(),
+            'contextId' => $this->contextId,
+            'name' => 'Dummy',
+            'email' => 'dummy@mailinator.com.br'
+        ];
+        $endorser = $endorserRepository->newDataObject($params);
+        return $endorserRepository->add($endorser);
+    }
+
+    private function createPublication(): Publication
     {
         $context = DAORegistry::getDAO('ServerDAO')->getById($this->contextId);
 
@@ -57,7 +77,6 @@ final class EndorsementServiceTest extends DatabaseTestCase
         $submission->setData('contextId', $this->contextId);
 
         $publication = new Publication();
-        $publication->setData('endorserName', $this->endorserName);
 
         $this->submissionId = Repo::submission()->add($submission, $publication, $context);
 
@@ -152,13 +171,15 @@ final class EndorsementServiceTest extends DatabaseTestCase
 
     public function testUpdateEndorserName(): void
     {
+        $endorserRepository = app(EndorserRepository::class);
+        $endorser = $endorserRepository->get($this->endorserId);
         $mockOrcidClient = $this->getMockOrcidClient();
         $this->endorsementService->setOrcidClient($mockOrcidClient);
 
-        $this->publication = $this->endorsementService->updateEndorserNameFromOrcid($this->publication, $this->endorserOrcid);
+        $newEndorser = $this->endorsementService->updateEndorserNameFromOrcid($endorser, $this->endorserOrcid);
         $expectedNewName = $this->endorserGivenNameOrcid . ' ' . $this->endorserFamilyNameOrcid;
 
-        $this->assertEquals($expectedNewName, $this->publication->getData('endorserName'));
+        $this->assertEquals($expectedNewName, $newEndorser->getName());
     }
 
     public function testMessageWasAlreadyLoggedToday(): void

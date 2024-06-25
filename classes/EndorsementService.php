@@ -105,17 +105,17 @@ class EndorsementService
         $endorserRepository->edit($endorser, []);
     }
 
-    public function updateEndorserNameFromOrcid($publication, $orcid)
+    public function updateEndorserNameFromOrcid($endorser, $orcid)
     {
         $accessToken = $this->orcidClient->getReadPublicAccessToken();
         $orcidRecord = $this->orcidClient->getOrcidRecord($orcid, $accessToken);
         $fullName = $this->orcidClient->getFullNameFromRecord($orcidRecord);
 
-        $publication->setData('endorserName', $fullName);
-        $publicationDao = Repo::publication()->dao;
-        $publicationDao->update($publication);
+        $endorser->setName($fullName);
 
-        return $publication;
+        $endorserRepository = app(EndorserRepository::class);
+        $endorserRepository->edit($endorser, []);
+        return $endorser;
     }
 
     public function messageWasAlreadyLoggedToday(int $submissionId, string $message): bool
