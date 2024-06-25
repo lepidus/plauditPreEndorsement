@@ -18,6 +18,7 @@ use PKP\plugins\PluginRegistry;
 use APP\plugins\generic\plauditPreEndorsement\classes\endorser\Repository as EndorserRepository;
 use APP\plugins\generic\plauditPreEndorsement\classes\EndorsementService;
 use GuzzleHttp\Exception\ClientException;
+use APP\notification\NotificationManager;
 
 class EndorsementGridHandler extends GridHandler
 {
@@ -124,9 +125,18 @@ class EndorsementGridHandler extends GridHandler
         $contextId = $request->getContext()->getId();
         $rowId = $request->getUserVar('rowId');
         $endorser = $this->endorserRepository->get((int)$rowId, $contextId);
+        $user = $request->getUser();
 
         $endorsementService = new EndorsementService($contextId, $this->plugin);
         $endorsementService->sendEndorsement($endorser);
+
+        $notificationManager = new NotificationManager();
+        $notificationManager->createTrivialNotification(
+            $user->getId(),
+            NOTIFICATION_TYPE_SUCCESS,
+            array('contents' => __('plugins.generic.plauditPreEndorsement.sendEndorsementToPlauditNotification'))
+        );
+
         $json = new JSONMessage(true);
         return $json->getString();
     }

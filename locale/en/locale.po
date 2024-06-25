@@ -50,6 +50,9 @@ msgstr "Error sending to Plaudit"
 msgid "plugins.generic.plauditPreEndorsement.endorsementCompleted"
 msgstr "Sent to Plaudit"
 
+msgid "plugins.generic.plauditPreEndorsement.sendEndorsementToPlauditNotification"
+msgstr "Attempt to send endorsement to Plaudit completed. You can check the endorser's status or view the Activity Log for more details."
+
 msgid "plugins.generic.plauditPreEndorsement.sendEndorsementToPlauditConfirmationMessage"
 msgstr "Do you want to send the endorsement of this submission to Plaudit?"
 

@@ -62,6 +62,9 @@ msgstr "Aprobación previa"
 msgid "plugins.generic.plauditPreEndorsement.sendEndorsementToPlaudit"
 msgstr "Enviar endoso a Plaudit"
 
+msgid "plugins.generic.plauditPreEndorsement.sendEndorsementToPlauditNotification"
+msgstr "Intento de envío del endoso a Plaudit completado. Puede verificar el estado del endosador o ver el Registro de actividad para más detalles."
+
 msgid "plugins.generic.plauditPreEndorsement.sendEndorsementToPlauditConfirmationMessage"
 msgstr "¿Desea enviar el endoso de este envío a Plaudit?"
 
