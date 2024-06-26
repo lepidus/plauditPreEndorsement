@@ -12,7 +12,7 @@ class EndorsementGridCellProvider extends GridCellProvider
         $element = $row->getData();
         switch ($column->getId()) {
             case 'endorserName':
-                return array('label' => $element->getName());
+                return array('label' => $element->getName(), 'orcid' => $element->getOrcid());
             case 'endorserEmail':
                 return array('label' => $element->getEmail());
             case 'endorsementStatus':

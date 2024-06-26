@@ -12,6 +12,14 @@
 {else}
 	{assign var=cellId value=""}
 {/if}
-<span {if $cellId}id="{$cellId|escape}" {/if}class="{$badgeClass}">
+<span {if $cellId}id="{$cellId|escape}" {/if}class="gridCellContainer">
 	{include file="controllers/grid/gridCellContents.tpl"}
 </span>
+
+{if $orcid}
+    <span class="orcid">
+    <a href="{$orcid|escape}" target="_blank" title="{$orcid|escape}">
+        <img src="https://orcid.org/sites/default/files/images/orcid_16x16.png" alt="ORCID iD">
+    </a>
+    </span>
+{/if}

@@ -82,7 +82,7 @@ class EndorsementGridHandler extends GridHandler
             'endorserName',
             'plugins.generic.plauditPreEndorsement.endorserName',
             null,
-            'controllers/grid/gridCell.tpl',
+            $this->plugin->getTemplateResource('nameGridCell.tpl'),
             $cellProvider,
             ['maxLength' => 40]
         ));

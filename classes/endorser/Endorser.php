@@ -59,7 +59,7 @@ class Endorser extends \PKP\core\DataObject
         $this->setData("status", $status);
     }
 
-    public function getOrcid(): string
+    public function getOrcid(): ?string
     {
         return $this->getData("orcid");
     }
