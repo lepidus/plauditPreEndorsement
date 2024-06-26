@@ -82,7 +82,7 @@ class EndorsementGridHandler extends GridHandler
             'endorserName',
             'plugins.generic.plauditPreEndorsement.endorserName',
             null,
-            $this->plugin->getTemplateResource('nameGridCell.tpl'),
+            $this->plugin->getTemplateResource('gridCells/endorserName.tpl'),
             $cellProvider,
             ['maxLength' => 40]
         ));
@@ -98,7 +98,7 @@ class EndorsementGridHandler extends GridHandler
             'endorsementStatus',
             'plugins.generic.plauditPreEndorsement.endorsementStatus',
             null,
-            $this->plugin->getTemplateResource('statusGridCell.tpl'),
+            $this->plugin->getTemplateResource('gridCells/endorsementStatus.tpl'),
             $cellProvider
         ));
     }
