@@ -72,33 +72,6 @@ class PlauditPreEndorsementHandler extends Handler
         return false;
     }
 
-    public function removeEndorsement($args, $request)
-    {
-        $submissionId = $request->getUserVar('submissionId');
-        $submission = Repo::submission()->get($submissionId);
-        $publication = $submission->getCurrentPublication();
-
-        $endorsementFields = [
-            'endorserName',
-            'endorserEmail',
-            'endorsementStatus',
-            'endorserOrcid',
-            'endorserEmailToken',
-            'endorserEmailCount'
-        ];
-
-        foreach ($endorsementFields as $field) {
-            $publication->unsetData($field);
-        }
-
-        Repo::publication()->edit($publication, []);
-
-        $plugin = PluginRegistry::getPlugin('generic', 'plauditpreendorsementplugin');
-        $plugin->writeOnActivityLog($submission, 'plugins.generic.plauditPreEndorsement.log.endorsementRemoved');
-
-        return http_response_code(200);
-    }
-
     public function orcidVerify($args, $request)
     {
         $publication = Repo::publication()->get($request->getUserVar('state'));
