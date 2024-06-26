@@ -187,4 +187,4 @@ msgid "plugins.generic.plauditPreEndorsement.log.attemptSendingEndorsement"
 msgstr "Attempt to send endorsement to Plaudit with DOI {$doi} and ORCID {$orcid}"
 
 msgid "plugins.generic.plauditPreEndorsement.log.endorsementRemoved"
-msgstr "The submission endorsement has been removed"
+msgstr "A submission endorsement has been removed: {$endorserName} ({$endorserEmail})"

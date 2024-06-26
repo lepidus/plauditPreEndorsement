@@ -187,4 +187,4 @@ msgid "plugins.generic.plauditPreEndorsement.log.attemptSendingEndorsement"
 msgstr "Intento de enviar endoso a Plaudit con DOI {$doi} y ORCID {$orcid}"
 
 msgid "plugins.generic.plauditPreEndorsement.log.endorsementRemoved"
-msgstr "Se ha eliminado lo endoso del envío"
+msgstr "Se ha eliminado un endoso del envío: {$endorserName} ({$endorserEmail})"
