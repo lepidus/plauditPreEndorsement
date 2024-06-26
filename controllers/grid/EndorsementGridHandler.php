@@ -184,6 +184,11 @@ class EndorsementGridHandler extends GridHandler
         $rowId = $request->getUserVar('rowId');
         $endorser = $this->endorserRepository->get((int)$rowId, $context->getId());
         $this->endorserRepository->delete($endorser);
+        $this->plugin->writeOnActivityLog(
+            $submission,
+            'plugins.generic.plauditPreEndorsement.log.endorsementRemoved',
+            ['endorserName' => $endorser->getName(), 'endorserEmail' => $endorser->getEmail()]
+        );
         $json = DAO::getDataChangedEvent($submissionId);
         $json->setGlobalEvent('plugin:plauditPreEndorsement:endorsementRemoved', ['submissionId' => $submissionId]);
         return $json;
