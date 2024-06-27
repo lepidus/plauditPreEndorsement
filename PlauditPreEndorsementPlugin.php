@@ -240,33 +240,15 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
 
         $submission = $smarty->getTemplateVars('submission');
         $publication = $submission->getCurrentPublication();
-        $endorsers = $publication->getData('endorsers');
-
         $request = Application::get()->getRequest();
-        $handlerUrl = $request->getDispatcher()->url($request, Application::ROUTE_PAGE, null, self::HANDLER_PAGE);
 
-        $endorsementStatus = $publication->getData('endorsementStatus');
-        $endorsementStatusSuffix = $this->getEndorsementStatusSuffix($endorsementStatus);
-        $canEditEndorsement = (is_null($endorsementStatus) || $endorsementStatus == Endorsement::STATUS_NOT_CONFIRMED || $endorsementStatus == Endorsement::STATUS_DENIED);
-        $canSendEndorsementManually = $publication->getData('status') == STATUS_PUBLISHED
-            && !$this->userAccessingIsAuthor($submission)
-            && ($endorsementStatus == Endorsement::STATUS_CONFIRMED || $endorsementStatus == Endorsement::STATUS_COULDNT_COMPLETE);
-        $canRemoveEndorsement = !is_null($endorsementStatus) && !$this->userAccessingIsAuthor($submission);
-        $smarty->assign([
-            'submissionId' => $submission->getId(),
-            'endorserName' => $publication->getData('endorserName'),
-            'endorserEmail' => $publication->getData('endorserEmail'),
-            'endorserOrcid' => $publication->getData('endorserOrcid'),
-            'endorserEmailCount' => $publication->getData('endorserEmailCount'),
-            'endorsementStatus' => $endorsementStatus,
-            'endorsementStatusSuffix' => $endorsementStatusSuffix,
-            'canEditEndorsement' => $canEditEndorsement,
-            'canRemoveEndorsement' => $canRemoveEndorsement,
-            'canSendEndorsementManually' => $canSendEndorsementManually,
-            'handlerUrl' => $handlerUrl,
-        ]);
+        $endorserRepository = app(EndorserRepository::class);
+        $countEndorsers = $endorserRepository->getCollector()
+            ->filterByContextIds([$request->getContext()->getId()])
+            ->filterByPublicationIds([$publication->getId()])
+            ->getCount();
 
-        $tabBadge = (empty($endorsers) ? 'badge="0"' : 'badge=' . count($endorsers));
+        $tabBadge = (empty($countEndorsers) ? 'badge="0"' : 'badge=' . $countEndorsers);
         $output .= sprintf(
             '<tab id="plauditPreEndorsement" %s label="%s">%s</tab>',
             $tabBadge,
