@@ -54,10 +54,11 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
         if ($success && $this->getEnabled($mainContextId)) {
             Event::subscribe(new SendEmailToEndorser());
 
-            Hook::add('TemplateManager::display', [$this, 'modifySubmissionSteps']);
+            Hook::add('TemplateManager::display', [$this, 'addToSubmissionWizardSteps']);
+            Hook::add('Template::SubmissionWizard::Section', array($this, 'addToSubmissionWizardTemplate'));
+            Hook::add('Template::SubmissionWizard::Section::Review', [$this, 'addToReviewSubmissionWizardTemplate']);
             Hook::add('Schema::get::endorser', [$this, 'addEndorserSchema']);
             Hook::add('Submission::validateSubmit', [$this, 'validateEndorsement']);
-            Hook::add('Template::SubmissionWizard::Section::Review', [$this, 'modifyReviewSections']);
 
             Hook::add('Template::Workflow::Publication', [$this, 'addEndorserFieldsToWorkflow']);
             Hook::add('LoadHandler', [$this, 'setupPreEndorsementHandler']);
@@ -129,14 +130,16 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
         return filter_var($input, FILTER_VALIDATE_EMAIL);
     }
 
-    public function modifySubmissionSteps($hookName, $params)
+    public function addToSubmissionWizardSteps($hookName, $params)
     {
         $request = Application::get()->getRequest();
-        $context = $request->getContext();
-        $templateMgr = $params[0];
 
-        if ($request->getRequestedPage() != 'submission' || $request->getRequestedOp() == 'saved') {
-            return false;
+        if ($request->getRequestedPage() !== 'submission') {
+            return;
+        }
+
+        if ($request->getRequestedOp() === 'saved') {
+            return;
         }
 
         $submission = $request
@@ -145,31 +148,53 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
             ->getAuthorizedContextObject(Application::ASSOC_TYPE_SUBMISSION);
 
         if (!$submission || !$submission->getData('submissionProgress')) {
-            return false;
+            return;
         }
 
-        $publication = $submission->getCurrentPublication();
-        $publicationApiUrl = $request->getDispatcher()->url(
-            $request,
-            $publicationApiUrl,
-            $publication,
-        );
+        $templateMgr = $params[0];
 
         $steps = $templateMgr->getState('steps');
-        $steps = array_map(function ($step) use ($endorsementForm) {
-            if ($step['id'] == 'details') {
+        $steps = array_map(function ($step) {
+            if ($step['id'] === 'details') {
                 $step['sections'][] = [
-                    'id' => 'endorsement',
+                    'id' => 'plauditPreEndorsement',
                     'name' => __('plugins.generic.plauditPreEndorsement.endorsement'),
                     'description' => __('plugins.generic.plauditPreEndorsement.endorsement.description'),
-                    'type' => SubmissionHandler::SECTION_TYPE_FORM,
-                    'form' => $endorsementForm->getConfig(),
+                    'type' => SubmissionHandler::SECTION_TYPE_TEMPLATE,
                 ];
             }
             return $step;
         }, $steps);
 
-        $templateMgr->setState(['steps' => $steps]);
+        $templateMgr->setState([
+            'steps' => $steps,
+        ]);
+
+        return false;
+    }
+
+    public function addToSubmissionWizardTemplate($hookName, $params)
+    {
+        $smarty = $params[1];
+        $output = & $params[2];
+
+        $output .= sprintf(
+            '<template v-else-if="section.id === \'plauditPreEndorsement\'">%s</template>',
+            $smarty->fetch($this->getTemplateResource('endorsementComponent.tpl'))
+        );
+
+        return false;
+    }
+
+    public function addToReviewSubmissionWizardTemplate($hookName, $params)
+    {
+        $step = $params[0]['step'];
+        $templateMgr = $params[1];
+        $output = &$params[2];
+
+        if ($step == 'details') {
+            $output .= $templateMgr->fetch($this->getTemplateResource('endorsementComponent.tpl'));
+        }
 
         return false;
     }
@@ -194,17 +219,6 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
         }
 
         return false;
-    }
-
-    public function modifyReviewSections($hookName, $params)
-    {
-        $step = $params[0]['step'];
-        $templateMgr = $params[1];
-        $output = &$params[2];
-
-        if ($step == 'details') {
-            $output .= $templateMgr->fetch($this->getTemplateResource('reviewEndorsement.tpl'));
-        }
     }
 
     public function addEndorserSchema(string $hookName, array $params): bool
@@ -253,7 +267,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
             '<tab id="plauditPreEndorsement" %s label="%s">%s</tab>',
             $tabBadge,
             __('plugins.generic.plauditPreEndorsement.preEndorsement'),
-            $smarty->fetch($this->getTemplateResource('endorserFieldWorkflow.tpl'))
+            $smarty->fetch($this->getTemplateResource('endorsementComponent.tpl'))
         );
     }
 
