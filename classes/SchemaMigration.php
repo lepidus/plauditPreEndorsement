@@ -51,28 +51,30 @@ class SchemaMigration extends Migration
             ])
             ->get();
 
-        $endorsements = [];
-        foreach ($publicationSettings as $setting) {
-            $publicationId = $setting->publication_id;
-            $endorsements[$publicationId][$setting->setting_name] = $setting->setting_value;
-        }
+        if (!empty($publicationSettings)) {
+            $deprecatedEndorsements = [];
+            foreach ($publicationSettings as $setting) {
+                $publicationId = $setting->publication_id;
+                $deprecatedEndorsements[$publicationId][$setting->setting_name] = $setting->setting_value;
+            }
 
-        foreach ($endorsements as $publicationId => $data) {
-            $submissionId = DB::table('publications')
-                ->where('publication_id', $publicationId)
-                ->value('submission_id');
-            $contextId = DB::table('submissions')->where('submission_id', $submissionId)->value('context_id');
+            foreach ($deprecatedEndorsements as $publicationId => $data) {
+                $submissionId = DB::table('publications')
+                    ->where('publication_id', $publicationId)
+                    ->value('submission_id');
+                $contextId = DB::table('submissions')->where('submission_id', $submissionId)->value('context_id');
 
-            DB::table('endorsers')->insert([
-                'context_id' => $contextId,
-                'publication_id' => $publicationId,
-                'name' => $data['endorserName'] ?? '',
-                'email' => $data['endorserEmail'] ?? '',
-                'status' => $data['endorsementStatus'] ?? null,
-                'orcid' => $data['endorserOrcid'] ?? '',
-                'email_token' => $data['endorserEmailToken'] ?? '',
-                'email_count' => $data['endorserEmailCount'] ?? 0,
-            ]);
+                DB::table('endorsers')->insert([
+                    'context_id' => $contextId,
+                    'publication_id' => $publicationId,
+                    'name' => $data['endorserName'] ?? '',
+                    'email' => $data['endorserEmail'] ?? '',
+                    'status' => $data['endorsementStatus'] ?? null,
+                    'orcid' => $data['endorserOrcid'] ?? '',
+                    'email_token' => $data['endorserEmailToken'] ?? '',
+                    'email_count' => $data['endorserEmailCount'] ?? 0,
+                ]);
+            }
         }
     }
 
