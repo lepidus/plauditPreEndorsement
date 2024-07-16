@@ -74,6 +74,17 @@ class SchemaMigration extends Migration
                     'email_token' => $data['endorserEmailToken'] ?? '',
                     'email_count' => $data['endorserEmailCount'] ?? 0,
                 ]);
+
+                DB::table('publication_settings')
+                    ->whereIn('setting_name', [
+                        'endorserName',
+                        'endorserEmail',
+                        'endorsementStatus',
+                        'endorserOrcid',
+                        'endorserEmailToken',
+                        'endorserEmailCount'
+                    ])
+                    ->delete();
             }
         }
     }
