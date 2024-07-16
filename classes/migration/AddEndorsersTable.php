@@ -4,9 +4,9 @@ namespace APP\plugins\generic\plauditPreEndorsement\classes\migration;
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use PKP\install\DowngradeNotSupportedException;
+use APP\plugins\generic\plauditPreEndorsement\classes\migration\upgrade\MoveDeprecatedEndorsementsToEndorsersTable;
 
 class AddEndorsersTable extends Migration
 {
@@ -40,53 +40,8 @@ class AddEndorsersTable extends Migration
             });
         }
 
-        $publicationSettings = DB::table('publication_settings')
-            ->whereIn('setting_name', [
-                'endorserName',
-                'endorserEmail',
-                'endorsementStatus',
-                'endorserOrcid',
-                'endorserEmailToken',
-                'endorserEmailCount'
-            ])
-            ->get();
-
-        if (!empty($publicationSettings)) {
-            $deprecatedEndorsements = [];
-            foreach ($publicationSettings as $setting) {
-                $publicationId = $setting->publication_id;
-                $deprecatedEndorsements[$publicationId][$setting->setting_name] = $setting->setting_value;
-            }
-
-            foreach ($deprecatedEndorsements as $publicationId => $data) {
-                $submissionId = DB::table('publications')
-                    ->where('publication_id', $publicationId)
-                    ->value('submission_id');
-                $contextId = DB::table('submissions')->where('submission_id', $submissionId)->value('context_id');
-
-                DB::table('endorsers')->insert([
-                    'context_id' => $contextId,
-                    'publication_id' => $publicationId,
-                    'name' => $data['endorserName'] ?? '',
-                    'email' => $data['endorserEmail'] ?? '',
-                    'status' => $data['endorsementStatus'] ?? null,
-                    'orcid' => $data['endorserOrcid'] ?? '',
-                    'email_token' => $data['endorserEmailToken'] ?? '',
-                    'email_count' => $data['endorserEmailCount'] ?? 0,
-                ]);
-
-                DB::table('publication_settings')
-                    ->whereIn('setting_name', [
-                        'endorserName',
-                        'endorserEmail',
-                        'endorsementStatus',
-                        'endorserOrcid',
-                        'endorserEmailToken',
-                        'endorserEmailCount'
-                    ])
-                    ->delete();
-            }
-        }
+        $upgradeMigration = new MoveDeprecatedEndorsementsToEndorsersTable();
+        $upgradeMigration->up();
     }
 
     public function down(): void
