@@ -53,17 +53,19 @@ class SchemaMigration extends Migration
 
         $endorsements = [];
         foreach ($publicationSettings as $setting) {
-            $endorsements[$setting->publication_id][$setting->setting_name] = $setting->setting_value;
+            $publicationId = $setting->publication_id;
+            $endorsements[$publicationId][$setting->setting_name] = $setting->setting_value;
         }
 
-        foreach ($endorsements as $publication_id => $data) {
-            $context_id = DB::table('publications')
-                ->where('publication_id', $publication_id)
-                ->value('context_id');
+        foreach ($endorsements as $publicationId => $data) {
+            $submissionId = DB::table('publications')
+                ->where('publication_id', $publicationId)
+                ->value('submission_id');
+            $contextId = DB::table('submissions')->where('submission_id', $submissionId)->value('context_id');
 
             DB::table('endorsers')->insert([
-                'context_id' => $context_id,
-                'publication_id' => $publication_id,
+                'context_id' => $contextId,
+                'publication_id' => $publicationId,
                 'name' => $data['endorserName'] ?? '',
                 'email' => $data['endorserEmail'] ?? '',
                 'status' => $data['endorsementStatus'] ?? null,
