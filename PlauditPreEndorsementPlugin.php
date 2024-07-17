@@ -35,7 +35,7 @@ use APP\plugins\generic\plauditPreEndorsement\PlauditPreEndorsementSettingsForm;
 use APP\plugins\generic\plauditPreEndorsement\classes\mail\mailables\OrcidRequestEndorserAuthorization;
 use APP\plugins\generic\plauditPreEndorsement\classes\observers\listeners\SendEmailToEndorser;
 use APP\plugins\generic\plauditPreEndorsement\classes\SchemaBuilder;
-use APP\plugins\generic\plauditPreEndorsement\classes\SchemaMigration;
+use APP\plugins\generic\plauditPreEndorsement\classes\migration\AddEndorsersTable;
 use Illuminate\Database\Migrations\Migration;
 use APP\plugins\generic\plauditPreEndorsement\classes\endorser\Repository as EndorserRepository;
 
@@ -230,7 +230,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
 
     public function getInstallMigration(): Migration
     {
-        return new SchemaMigration();
+        return new AddEndorsersTable();
     }
 
 
