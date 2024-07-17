@@ -2,7 +2,7 @@
 
 namespace APP\plugins\generic\plauditPreEndorsement\classes;
 
-class Endorsement
+class EndorsementStatus
 {
     public const STATUS_NOT_CONFIRMED = 0;
     public const STATUS_CONFIRMED = 1;

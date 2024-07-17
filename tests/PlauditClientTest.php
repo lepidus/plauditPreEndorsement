@@ -4,7 +4,7 @@ namespace APP\plugins\generic\plauditPreEndorsement\tests;
 
 use APP\publication\Publication;
 use PKP\doi\Doi;
-use APP\plugins\generic\plauditPreEndorsement\classes\Endorsement;
+use APP\plugins\generic\plauditPreEndorsement\classes\EndorsementStatus;
 use APP\plugins\generic\plauditPreEndorsement\classes\PlauditClient;
 use APP\plugins\generic\plauditPreEndorsement\tests\TestResponse;
 use APP\plugins\generic\plauditPreEndorsement\classes\endorser\Repository as EndorserRepository;

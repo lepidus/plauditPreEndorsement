@@ -3,7 +3,7 @@
 namespace APP\plugins\generic\plauditPreEndorsement\classes;
 
 use APP\core\Application;
-use APP\plugins\generic\plauditPreEndorsement\classes\Endorsement;
+use APP\plugins\generic\plauditPreEndorsement\classes\EndorsementStatus;
 
 class PlauditClient
 {

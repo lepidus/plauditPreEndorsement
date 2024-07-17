@@ -8,7 +8,7 @@ use APP\submission\Submission;
 use PKP\plugins\PluginRegistry;
 use APP\template\TemplateManager;
 use APP\plugins\generic\plauditPreEndorsement\PlauditPreEndorsementPlugin;
-use APP\plugins\generic\plauditPreEndorsement\classes\Endorsement;
+use APP\plugins\generic\plauditPreEndorsement\classes\EndorsementStatus;
 use APP\plugins\generic\plauditPreEndorsement\classes\EndorsementService;
 use APP\plugins\generic\plauditPreEndorsement\classes\OrcidClient;
 use APP\plugins\generic\plauditPreEndorsement\classes\endorser\Repository as EndorserRepository;

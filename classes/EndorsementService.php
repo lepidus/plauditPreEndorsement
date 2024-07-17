@@ -6,7 +6,7 @@ use GuzzleHttp\Exception\ClientException;
 use APP\core\Application;
 use APP\facades\Repo;
 use PKP\core\Core;
-use APP\plugins\generic\plauditPreEndorsement\classes\Endorsement;
+use APP\plugins\generic\plauditPreEndorsement\classes\EndorsementStatus;
 use APP\plugins\generic\plauditPreEndorsement\classes\PlauditClient;
 use APP\plugins\generic\plauditPreEndorsement\classes\CrossrefClient;
 use APP\plugins\generic\plauditPreEndorsement\classes\OrcidClient;

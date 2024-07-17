@@ -6,7 +6,7 @@ use PKP\controllers\grid\GridRow;
 use PKP\linkAction\LinkAction;
 use PKP\linkAction\request\AjaxModal;
 use PKP\linkAction\request\RemoteActionConfirmationModal;
-use APP\plugins\generic\plauditPreEndorsement\classes\Endorsement;
+use APP\plugins\generic\plauditPreEndorsement\classes\EndorsementStatus;
 use PKP\plugins\PluginRegistry;
 use APP\facades\Repo;
 use APP\submission\Submission;

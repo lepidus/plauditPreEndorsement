@@ -3,7 +3,7 @@
 namespace APP\plugins\generic\plauditPreEndorsement\controllers\grid;
 
 use PKP\controllers\grid\GridCellProvider;
-use APP\plugins\generic\plauditPreEndorsement\classes\Endorsement;
+use APP\plugins\generic\plauditPreEndorsement\classes\EndorsementStatus;
 
 class EndorsementGridCellProvider extends GridCellProvider
 {

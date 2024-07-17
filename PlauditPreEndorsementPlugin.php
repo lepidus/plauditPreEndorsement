@@ -29,7 +29,7 @@ use PKP\core\JSONMessage;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Mail;
 use APP\plugins\generic\plauditPreEndorsement\classes\OrcidClient;
-use APP\plugins\generic\plauditPreEndorsement\classes\Endorsement;
+use APP\plugins\generic\plauditPreEndorsement\classes\EndorsementStatus;
 use APP\plugins\generic\plauditPreEndorsement\classes\components\forms\EndorsementForm;
 use APP\plugins\generic\plauditPreEndorsement\PlauditPreEndorsementSettingsForm;
 use APP\plugins\generic\plauditPreEndorsement\classes\mail\mailables\OrcidRequestEndorserAuthorization;

@@ -4,7 +4,7 @@ namespace APP\plugins\generic\plauditPreEndorsement\tests\endorser;
 
 use PHPUnit\Framework\TestCase;
 use APP\plugins\generic\plauditPreEndorsement\classes\endorser\Endorser;
-use APP\plugins\generic\plauditPreEndorsement\classes\Endorsement;
+use APP\plugins\generic\plauditPreEndorsement\classes\EndorsementStatus;
 
 class EndorserTest extends TestCase
 {

@@ -6,7 +6,7 @@ use APP\plugins\generic\plauditPreEndorsement\classes\endorser\Endorser;
 use APP\plugins\generic\plauditPreEndorsement\classes\endorser\Repository;
 use PKP\tests\DatabaseTestCase;
 use APP\plugins\generic\plauditPreEndorsement\tests\helpers\TestHelperTrait;
-use APP\plugins\generic\plauditPreEndorsement\classes\Endorsement;
+use APP\plugins\generic\plauditPreEndorsement\classes\EndorsementStatus;
 
 class RepositoryTest extends DatabaseTestCase
 {
