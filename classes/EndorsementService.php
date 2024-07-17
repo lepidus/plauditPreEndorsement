@@ -97,7 +97,7 @@ class EndorsementService
             $responseBody = print_r($response->getBody()->getContents(), true);
 
             $this->plugin->writeOnActivityLog($submission, 'plugins.generic.plauditPreEndorsement.log.failedSendingEndorsement', ['code' => $responseCode, 'body' => $responseBody]);
-            $newEndorsementStatus = EndorsementStatus::STATUS_COULDNT_COMPLETE;
+            $newEndorsementStatus = EndorsementStatus::COULDNT_COMPLETE;
         }
 
         $endorser->setStatus($newEndorsementStatus);

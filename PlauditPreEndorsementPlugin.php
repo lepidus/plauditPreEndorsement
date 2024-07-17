@@ -237,11 +237,11 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
     private function getEndorsementStatusSuffix($endorsementStatus): string
     {
         $mapStatusToSuffix = [
-            EndorsementStatus::STATUS_NOT_CONFIRMED => 'NotConfirmed',
-            EndorsementStatus::STATUS_CONFIRMED => 'Confirmed',
-            EndorsementStatus::STATUS_DENIED => 'Denied',
-            EndorsementStatus::STATUS_COMPLETED => 'Completed',
-            EndorsementStatus::STATUS_COULDNT_COMPLETE => 'CouldntComplete'
+            EndorsementStatus::NOT_CONFIRMED => 'NotConfirmed',
+            EndorsementStatus::CONFIRMED => 'Confirmed',
+            EndorsementStatus::DENIED => 'Denied',
+            EndorsementStatus::COMPLETED => 'Completed',
+            EndorsementStatus::COULDNT_COMPLETE => 'CouldntComplete'
         ];
 
         return $mapStatusToSuffix[$endorsementStatus] ?? "";
@@ -314,7 +314,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
             }
 
             $endorser->setEmailToken($endorserEmailToken);
-            $endorser->setStatus(EndorsementStatus::STATUS_NOT_CONFIRMED);
+            $endorser->setStatus(EndorsementStatus::NOT_CONFIRMED);
             $endorser->setEmailCount($endorserEmailCount + 1);
 
             $endorserRepository = app(EndorserRepository::class);
