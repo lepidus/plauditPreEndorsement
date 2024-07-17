@@ -134,11 +134,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
     {
         $request = Application::get()->getRequest();
 
-        if ($request->getRequestedPage() !== 'submission') {
-            return;
-        }
-
-        if ($request->getRequestedOp() === 'saved') {
+        if ($request->getRequestedPage() !== 'submission' || $request->getRequestedOp() == 'saved') {
             return;
         }
 
