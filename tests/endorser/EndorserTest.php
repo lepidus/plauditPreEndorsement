@@ -44,8 +44,8 @@ class EndorserTest extends TestCase
 
     public function testEndorserStatusRetrieval()
     {
-        $this->endorser->setStatus(Endorsement::STATUS_COMPLETED);
-        $this->assertEquals($this->endorser->getStatus(), Endorsement::STATUS_COMPLETED);
+        $this->endorser->setStatus(EndorsementStatus::STATUS_COMPLETED);
+        $this->assertEquals($this->endorser->getStatus(), EndorsementStatus::STATUS_COMPLETED);
     }
 
     public function testEndorserOrcidRetrieval()

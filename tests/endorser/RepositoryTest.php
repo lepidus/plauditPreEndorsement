@@ -106,14 +106,14 @@ class RepositoryTest extends DatabaseTestCase
     public function testCollectorFilterByContextAndStatus(): void
     {
         $repository = app(Repository::class);
-        $this->params['status'] = Endorsement::STATUS_CONFIRMED;
+        $this->params['status'] = EndorsementStatus::STATUS_CONFIRMED;
         $endorser = $repository->newDataObject($this->params);
 
         $repository->add($endorser);
 
         $endorsers = $repository->getCollector()
             ->filterByContextIds([$this->contextId])
-            ->filterByStatus([Endorsement::STATUS_CONFIRMED])
+            ->filterByStatus([EndorsementStatus::STATUS_CONFIRMED])
             ->getMany();
         self::assertTrue(in_array($endorser, $endorsers->all()));
     }
@@ -121,14 +121,14 @@ class RepositoryTest extends DatabaseTestCase
     public function testEmptyCollectorFilterByContextAndStatus(): void
     {
         $repository = app(Repository::class);
-        $this->params['status'] = Endorsement::STATUS_CONFIRMED;
+        $this->params['status'] = EndorsementStatus::STATUS_CONFIRMED;
         $endorser = $repository->newDataObject($this->params);
 
         $repository->add($endorser);
 
         $endorsers = $repository->getCollector()
             ->filterByContextIds([$this->contextId])
-            ->filterByStatus([Endorsement::STATUS_NOT_CONFIRMED])
+            ->filterByStatus([EndorsementStatus::STATUS_NOT_CONFIRMED])
             ->getMany();
         self::assertFalse(in_array($endorser, $endorsers->all()));
     }

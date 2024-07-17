@@ -29,7 +29,7 @@ class PlauditPreEndorsementHandler extends Handler
         $submission = Repo::submission()->get($submissionId);
         $publication = $submission->getCurrentPublication();
 
-        $endorsementIsConfirmed = $publication->getData('endorsementStatus') == Endorsement::STATUS_CONFIRMED;
+        $endorsementIsConfirmed = $publication->getData('endorsementStatus') == EndorsementStatus::STATUS_CONFIRMED;
         if ($endorsementIsConfirmed) {
             return http_response_code(400);
         }
@@ -139,7 +139,7 @@ class PlauditPreEndorsementHandler extends Handler
     {
         $endorser->setEmailToken(null);
         $endorser->setOrcid($orcidUri);
-        $endorser->setStatus(Endorsement::STATUS_CONFIRMED);
+        $endorser->setStatus(EndorsementStatus::STATUS_CONFIRMED);
         $endorserRepository = app(EndorserRepository::class);
         $endorserRepository->edit($endorser, []);
     }
@@ -147,7 +147,7 @@ class PlauditPreEndorsementHandler extends Handler
     private function setAccessDeniedEndorsement($endorser)
     {
         $endorser->setEmailToken(null);
-        $endorser->setStatus(Endorsement::STATUS_DENIED);
+        $endorser->setStatus(EndorsementStatus::STATUS_DENIED);
         $endorserRepository = app(EndorserRepository::class);
         $endorserRepository->edit($endorser, []);
     }

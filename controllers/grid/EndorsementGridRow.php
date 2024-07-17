@@ -37,8 +37,8 @@ class EndorsementGridRow extends GridRow
         $canSendEndorsementManually = $publication->getData('status') == Submission::STATUS_PUBLISHED
             && !$this->plugin->userAccessingIsAuthor($submission)
             && (
-                $element->getStatus() == Endorsement::STATUS_CONFIRMED ||
-                $element->getStatus() == Endorsement::STATUS_COULDNT_COMPLETE
+                $element->getStatus() == EndorsementStatus::STATUS_CONFIRMED ||
+                $element->getStatus() == EndorsementStatus::STATUS_COULDNT_COMPLETE
             );
 
         if ($canSendEndorsementManually) {

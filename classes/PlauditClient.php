@@ -51,10 +51,10 @@ class PlauditClient
             $endorserOrcid = $this->filterOrcidNumbers($endorser->getOrcid());
 
             if ($responseDoi ==  $publicationDoi && $responseOrcid == $endorserOrcid) {
-                return Endorsement::STATUS_COMPLETED;
+                return EndorsementStatus::STATUS_COMPLETED;
             }
         }
 
-        return Endorsement::STATUS_COULDNT_COMPLETE;
+        return EndorsementStatus::STATUS_COULDNT_COMPLETE;
     }
 }

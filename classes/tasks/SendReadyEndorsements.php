@@ -19,7 +19,7 @@ class SendReadyEndorsements extends ScheduledTask
         $endorserRepository = app(EndorserRepository::class);
         $readyEndorsers = $repository->getCollector()
             ->filterByContextIds([$context->getId()])
-            ->filterByStatus([Endorsement::STATUS_CONFIRMED])
+            ->filterByStatus([EndorsementStatus::STATUS_CONFIRMED])
             ->getMany()
             ->toArray();
 

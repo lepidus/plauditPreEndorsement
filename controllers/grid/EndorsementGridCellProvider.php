@@ -26,11 +26,11 @@ class EndorsementGridCellProvider extends GridCellProvider
     private function getEndorsementStatusSuffix(?int $endorsementStatus): string
     {
         $mapStatusToSuffix = [
-            Endorsement::STATUS_NOT_CONFIRMED => __('plugins.generic.plauditPreEndorsement.endorsementNotConfirmed'),
-            Endorsement::STATUS_CONFIRMED => __('plugins.generic.plauditPreEndorsement.endorsementConfirmed'),
-            Endorsement::STATUS_DENIED => __('plugins.generic.plauditPreEndorsement.endorsementDenied'),
-            Endorsement::STATUS_COMPLETED => __('plugins.generic.plauditPreEndorsement.endorsementCompleted'),
-            Endorsement::STATUS_COULDNT_COMPLETE => __('plugins.generic.plauditPreEndorsement.endorsementCouldntComplete')
+            EndorsementStatus::STATUS_NOT_CONFIRMED => __('plugins.generic.plauditPreEndorsement.endorsementNotConfirmed'),
+            EndorsementStatus::STATUS_CONFIRMED => __('plugins.generic.plauditPreEndorsement.endorsementConfirmed'),
+            EndorsementStatus::STATUS_DENIED => __('plugins.generic.plauditPreEndorsement.endorsementDenied'),
+            EndorsementStatus::STATUS_COMPLETED => __('plugins.generic.plauditPreEndorsement.endorsementCompleted'),
+            EndorsementStatus::STATUS_COULDNT_COMPLETE => __('plugins.generic.plauditPreEndorsement.endorsementCouldntComplete')
         ];
 
         return $mapStatusToSuffix[$endorsementStatus] ?? "";
@@ -39,11 +39,11 @@ class EndorsementGridCellProvider extends GridCellProvider
     private function getEndorsementStatusBadge(?int $endorsementStatus): string
     {
         $mapStatusToSuffix = [
-            Endorsement::STATUS_NOT_CONFIRMED => 'endorsementStatusCustomBadge',
-            Endorsement::STATUS_CONFIRMED => 'pkpBadge pkpBadge--isPrimary',
-            Endorsement::STATUS_DENIED => 'pkpBadge pkpBadge--isWarnable',
-            Endorsement::STATUS_COMPLETED => 'pkpBadge pkpBadge--isSuccess',
-            Endorsement::STATUS_COULDNT_COMPLETE => 'pkpBadge pkpBadge--isWarnable'
+            EndorsementStatus::STATUS_NOT_CONFIRMED => 'endorsementStatusCustomBadge',
+            EndorsementStatus::STATUS_CONFIRMED => 'pkpBadge pkpBadge--isPrimary',
+            EndorsementStatus::STATUS_DENIED => 'pkpBadge pkpBadge--isWarnable',
+            EndorsementStatus::STATUS_COMPLETED => 'pkpBadge pkpBadge--isSuccess',
+            EndorsementStatus::STATUS_COULDNT_COMPLETE => 'pkpBadge pkpBadge--isWarnable'
         ];
 
         return $mapStatusToSuffix[$endorsementStatus] ?? "";
