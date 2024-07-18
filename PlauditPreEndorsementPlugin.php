@@ -23,7 +23,7 @@ use APP\pages\submission\SubmissionHandler;
 use PKP\log\event\PKPSubmissionEventLogEntry;
 use PKP\db\DAORegistry;
 use PKP\core\Core;
-use APP\facades\Repo;
+use APP\plugins\generic\plauditPreEndorsement\classes\facades\Repo;
 use PKP\security\Role;
 use PKP\core\JSONMessage;
 use Illuminate\Support\Facades\Event;
@@ -37,7 +37,6 @@ use APP\plugins\generic\plauditPreEndorsement\classes\observers\listeners\SendEm
 use APP\plugins\generic\plauditPreEndorsement\classes\SchemaBuilder;
 use APP\plugins\generic\plauditPreEndorsement\classes\migration\AddEndorsersTable;
 use Illuminate\Database\Migrations\Migration;
-use APP\plugins\generic\plauditPreEndorsement\classes\endorser\Repository as EndorserRepository;
 
 class PlauditPreEndorsementPlugin extends GenericPlugin
 {
@@ -252,8 +251,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
         $publication = $submission->getCurrentPublication();
         $request = Application::get()->getRequest();
 
-        $endorserRepository = app(EndorserRepository::class);
-        $countEndorsers = $endorserRepository->getCollector()
+        $countEndorsers = Repo::endorser()->getCollector()
             ->filterByContextIds([$request->getContext()->getId()])
             ->filterByPublicationIds([$publication->getId()])
             ->getCount();
@@ -313,8 +311,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
             $endorser->setStatus(EndorsementStatus::NOT_CONFIRMED);
             $endorser->setEmailCount($endorserEmailCount + 1);
 
-            $endorserRepository = app(EndorserRepository::class);
-            $endorserRepository->edit($endorser, []);
+            Repo::endorser()->edit($endorser, []);
 
             $this->writeOnActivityLog($submission, 'plugins.generic.plauditPreEndorsement.log.sentEmailEndorser', ['endorserName' => $endorserName, 'endorserEmail' => $endorserEmail]);
         }

@@ -13,9 +13,8 @@ use PKP\linkAction\request\AjaxModal;
 use PKP\security\authorization\SubmissionAccessPolicy;
 use PKP\security\Role;
 use APP\plugins\generic\plauditPreEndorsement\controllers\grid\form\EndorsementForm;
-use APP\facades\Repo;
 use PKP\plugins\PluginRegistry;
-use APP\plugins\generic\plauditPreEndorsement\classes\endorser\Repository as EndorserRepository;
+use APP\plugins\generic\plauditPreEndorsement\classes\facades\Repo;
 use APP\plugins\generic\plauditPreEndorsement\classes\EndorsementService;
 use GuzzleHttp\Exception\ClientException;
 use APP\notification\NotificationManager;
@@ -23,7 +22,6 @@ use APP\notification\NotificationManager;
 class EndorsementGridHandler extends GridHandler
 {
     public $plugin;
-    private $endorserRepository;
 
     public function __construct()
     {
@@ -33,7 +31,6 @@ class EndorsementGridHandler extends GridHandler
             array('fetchGrid', 'fetchRow', 'addEndorser', 'editEndorser', 'updateEndorser', 'deleteEndorser', 'sendEndorsementManually')
         );
         $this->plugin = PluginRegistry::getPlugin('generic', PLAUDIT_PRE_ENDORSEMENT_PLUGIN_NAME);
-        $this->endorserRepository = app(EndorserRepository::class);
     }
 
     public static function setPlugin($plugin)
@@ -108,7 +105,7 @@ class EndorsementGridHandler extends GridHandler
         $submission = $this->getSubmission();
         $submissionId = $submission->getId();
         $publication = $submission->getCurrentPublication();
-        $endorsers = $this->endorserRepository->getCollector()
+        $endorsers = Repo::endorser()->getCollector()
             ->filterByContextIds([$request->getContext()->getId()])
             ->filterByPublicationIds([$publication->getId()])
             ->getMany();
@@ -124,7 +121,7 @@ class EndorsementGridHandler extends GridHandler
     {
         $contextId = $request->getContext()->getId();
         $rowId = $request->getUserVar('rowId');
-        $endorser = $this->endorserRepository->get((int)$rowId, $contextId);
+        $endorser = Repo::endorser()->get((int)$rowId, $contextId);
         $user = $request->getUser();
 
         $endorsementService = new EndorsementService($contextId, $this->plugin);
@@ -182,8 +179,8 @@ class EndorsementGridHandler extends GridHandler
         $submission = $this->getSubmission();
         $submissionId = $submission->getId();
         $rowId = $request->getUserVar('rowId');
-        $endorser = $this->endorserRepository->get((int)$rowId, $context->getId());
-        $this->endorserRepository->delete($endorser);
+        $endorser = Repo::endorser()->get((int)$rowId, $context->getId());
+        Repo::endorser()->delete($endorser);
         $this->plugin->writeOnActivityLog(
             $submission,
             'plugins.generic.plauditPreEndorsement.log.endorsementRemoved',

@@ -5,7 +5,7 @@ use APP\core\Request;
 use APP\plugins\generic\plauditPreEndorsement\classes\EndorsementStatus;
 use APP\plugins\generic\plauditPreEndorsement\classes\PlauditPreEndorsementHandler;
 use PHPUnit\Framework\TestCase;
-use APP\plugins\generic\plauditPreEndorsement\classes\endorser\Repository as EndorserRepository;
+use APP\plugins\generic\plauditPreEndorsement\classes\facades\Repo;
 
 final class PlauditPreEndorsementHandlerTest extends TestCase
 {
@@ -32,7 +32,6 @@ final class PlauditPreEndorsementHandlerTest extends TestCase
 
     private function addEndorsers(): array
     {
-        $endorserRepository = app(EndorserRepository::class);
         $firstEndorserParams = [
             'name' => 'YvesDummy',
             'email' => 'dummy@mailinator.com.br',
@@ -43,8 +42,8 @@ final class PlauditPreEndorsementHandlerTest extends TestCase
             'email' => 'dummy2@mailinator.com.br',
             'emailToken' => md5(microtime() . 'dummy2@mailinator.com.br')
         ];
-        $firstEndorser = $endorserRepository->newDataObject($firstEndorserParams);
-        $secondEndorser = $endorserRepository->newDataObject($secondEndorserParams);
+        $firstEndorser = Repo::endorser()->newDataObject($firstEndorserParams);
+        $secondEndorser = Repo::endorser()->newDataObject($secondEndorserParams);
 
         return [$firstEndorser, $secondEndorser];
     }

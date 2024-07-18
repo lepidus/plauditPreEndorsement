@@ -4,13 +4,12 @@ namespace APP\plugins\generic\plauditPreEndorsement\classes;
 
 use GuzzleHttp\Exception\ClientException;
 use APP\core\Application;
-use APP\facades\Repo;
+use APP\plugins\generic\plauditPreEndorsement\classes\facades\Repo;
 use PKP\core\Core;
 use APP\plugins\generic\plauditPreEndorsement\classes\EndorsementStatus;
 use APP\plugins\generic\plauditPreEndorsement\classes\PlauditClient;
 use APP\plugins\generic\plauditPreEndorsement\classes\CrossrefClient;
 use APP\plugins\generic\plauditPreEndorsement\classes\OrcidClient;
-use APP\plugins\generic\plauditPreEndorsement\classes\endorser\Repository as EndorserRepository;
 
 class EndorsementService
 {
@@ -101,8 +100,7 @@ class EndorsementService
         }
 
         $endorser->setStatus($newEndorsementStatus);
-        $endorserRepository = app(EndorserRepository::class);
-        $endorserRepository->edit($endorser, []);
+        Repo::endorser()->edit($endorser, []);
     }
 
     public function updateEndorserNameFromOrcid($endorser, $orcid)
@@ -113,8 +111,7 @@ class EndorsementService
 
         $endorser->setName($fullName);
 
-        $endorserRepository = app(EndorserRepository::class);
-        $endorserRepository->edit($endorser, []);
+        Repo::endorser()->edit($endorser, []);
         return $endorser;
     }
 

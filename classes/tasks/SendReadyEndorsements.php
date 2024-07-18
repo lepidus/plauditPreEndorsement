@@ -6,7 +6,7 @@ use PKP\scheduledTask\ScheduledTask;
 use PKP\plugins\PluginRegistry;
 use APP\core\Application;
 use APP\plugins\generic\plauditPreEndorsement\classes\EndorsementService;
-use APP\plugins\generic\plauditPreEndorsement\classes\endorser\Repository as EndorserRepository;
+use APP\plugins\generic\plauditPreEndorsement\classes\facades\Repo;
 use APP\plugins\generic\plauditPreEndorsement\classes\EndorsementStatus;
 
 class SendReadyEndorsements extends ScheduledTask
@@ -16,8 +16,7 @@ class SendReadyEndorsements extends ScheduledTask
         PluginRegistry::loadCategory('generic');
         $plugin = PluginRegistry::getPlugin('generic', 'plauditpreendorsementplugin');
         $context = Application::get()->getRequest()->getContext();
-        $endorserRepository = app(EndorserRepository::class);
-        $readyEndorsers = $repository->getCollector()
+        $readyEndorsers = Repo::endorser()->getCollector()
             ->filterByContextIds([$context->getId()])
             ->filterByStatus([EndorsementStatus::CONFIRMED])
             ->getMany()

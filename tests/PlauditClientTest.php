@@ -7,7 +7,7 @@ use PKP\doi\Doi;
 use APP\plugins\generic\plauditPreEndorsement\classes\EndorsementStatus;
 use APP\plugins\generic\plauditPreEndorsement\classes\PlauditClient;
 use APP\plugins\generic\plauditPreEndorsement\tests\TestResponse;
-use APP\plugins\generic\plauditPreEndorsement\classes\endorser\Repository as EndorserRepository;
+use APP\plugins\generic\plauditPreEndorsement\classes\facades\Repo;
 use PHPUnit\Framework\TestCase;
 
 class PlauditClientTest extends TestCase
@@ -34,13 +34,12 @@ class PlauditClientTest extends TestCase
 
     private function createEndorser()
     {
-        $endorserRepository = app(EndorserRepository::class);
         $params = [
             'name' => 'Dummy',
             'email' => 'dummy@mailinator.com.br',
             'orcid' => $this->orcid
         ];
-        $endorser = $endorserRepository->newDataObject($params);
+        $endorser = Repo::endorser()->newDataObject($params);
         return $endorser;
     }
 

@@ -5,13 +5,12 @@ use APP\submission\Submission;
 use APP\publication\Publication;
 use PKP\doi\Doi;
 use APP\core\Application;
-use APP\facades\Repo;
 use PKP\core\Core;
 use APP\plugins\generic\plauditPreEndorsement\classes\CrossrefClient;
 use APP\plugins\generic\plauditPreEndorsement\classes\OrcidClient;
 use APP\plugins\generic\plauditPreEndorsement\classes\EndorsementService;
 use APP\plugins\generic\plauditPreEndorsement\PlauditPreEndorsementPlugin;
-use APP\plugins\generic\plauditPreEndorsement\classes\endorser\Repository as EndorserRepository;
+use APP\plugins\generic\plauditPreEndorsement\classes\facades\Repo;
 use APP\plugins\generic\plauditPreEndorsement\tests\helpers\TestHelperTrait;
 
 final class EndorsementServiceTest extends DatabaseTestCase
@@ -58,15 +57,14 @@ final class EndorsementServiceTest extends DatabaseTestCase
 
     private function createEndorser()
     {
-        $endorserRepository = app(EndorserRepository::class);
         $params = [
             'publicationId' => $this->publication->getId(),
             'contextId' => $this->contextId,
             'name' => 'Dummy',
             'email' => 'dummy@mailinator.com.br'
         ];
-        $endorser = $endorserRepository->newDataObject($params);
-        return $endorserRepository->add($endorser);
+        $endorser = Repo::endorser()->newDataObject($params);
+        return Repo::endorser()->add($endorser);
     }
 
     private function createPublication(): Publication
@@ -171,8 +169,7 @@ final class EndorsementServiceTest extends DatabaseTestCase
 
     public function testUpdateEndorserName(): void
     {
-        $endorserRepository = app(EndorserRepository::class);
-        $endorser = $endorserRepository->get($this->endorserId);
+        $endorser = Repo::endorser()->get($this->endorserId);
         $mockOrcidClient = $this->getMockOrcidClient();
         $this->endorsementService->setOrcidClient($mockOrcidClient);
 

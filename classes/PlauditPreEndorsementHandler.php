@@ -3,7 +3,7 @@
 namespace APP\plugins\generic\plauditPreEndorsement\classes;
 
 use APP\handler\Handler;
-use APP\facades\Repo;
+use APP\plugins\generic\plauditPreEndorsement\classes\facades\Repo;
 use APP\submission\Submission;
 use PKP\plugins\PluginRegistry;
 use APP\template\TemplateManager;
@@ -11,7 +11,6 @@ use APP\plugins\generic\plauditPreEndorsement\PlauditPreEndorsementPlugin;
 use APP\plugins\generic\plauditPreEndorsement\classes\EndorsementStatus;
 use APP\plugins\generic\plauditPreEndorsement\classes\EndorsementService;
 use APP\plugins\generic\plauditPreEndorsement\classes\OrcidClient;
-use APP\plugins\generic\plauditPreEndorsement\classes\endorser\Repository as EndorserRepository;
 
 class PlauditPreEndorsementHandler extends Handler
 {
@@ -76,8 +75,7 @@ class PlauditPreEndorsementHandler extends Handler
     {
         $publication = Repo::publication()->get($request->getUserVar('state'));
         $submission = Repo::submission()->get($publication->getData('submissionId'));
-        $endorserRepository = app(EndorserRepository::class);
-        $endorser = $endorserRepository->get($request->getUserVar('endorserId'));
+        $endorser = Repo::endorser()->get($request->getUserVar('endorserId'));
 
         $plugin = PluginRegistry::getPlugin('generic', 'plauditpreendorsementplugin');
         $contextId = $request->getContext()->getId();
@@ -140,16 +138,14 @@ class PlauditPreEndorsementHandler extends Handler
         $endorser->setEmailToken(null);
         $endorser->setOrcid($orcidUri);
         $endorser->setStatus(EndorsementStatus::CONFIRMED);
-        $endorserRepository = app(EndorserRepository::class);
-        $endorserRepository->edit($endorser, []);
+        Repo::endorser()->edit($endorser, []);
     }
 
     private function setAccessDeniedEndorsement($endorser)
     {
         $endorser->setEmailToken(null);
         $endorser->setStatus(EndorsementStatus::DENIED);
-        $endorserRepository = app(EndorserRepository::class);
-        $endorserRepository->edit($endorser, []);
+        Repo::endorser()->edit($endorser, []);
     }
 
     public function getStatusAuthentication($endorser, $request)
