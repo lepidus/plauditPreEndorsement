@@ -6,7 +6,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 use PKP\install\DowngradeNotSupportedException;
 
-class MoveDeprecatedEndorsementsToEndorsersTable extends Migration
+class MoveDeprecatedEndorsementsToEndorsementsTable extends Migration
 {
     public function up(): void
     {
