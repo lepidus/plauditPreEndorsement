@@ -2,12 +2,12 @@
 
 namespace APP\plugins\generic\plauditPreEndorsement\classes\facades;
 
-use APP\plugins\generic\plauditPreEndorsement\classes\endorser\Repository as EndorserRepository;
+use APP\plugins\generic\plauditPreEndorsement\classes\endorsement\Repository as EndorsementRepository;
 
 class Repo extends \APP\facades\Repo
 {
-    public static function endorser(): EndorserRepository
+    public static function endorsement(): EndorsementRepository
     {
-        return app(EndorserRepository::class);
+        return app(EndorsementRepository::class);
     }
 }

@@ -1,9 +1,9 @@
 <?php
 
-namespace APP\plugins\generic\plauditPreEndorsement\tests\endorser;
+namespace APP\plugins\generic\plauditPreEndorsement\tests\endorsement;
 
-use APP\plugins\generic\plauditPreEndorsement\classes\endorser\Endorser;
-use APP\plugins\generic\plauditPreEndorsement\classes\endorser\Repository;
+use APP\plugins\generic\plauditPreEndorsement\classes\endorsement\Endorsement;
+use APP\plugins\generic\plauditPreEndorsement\classes\endorsement\Repository;
 use PKP\tests\DatabaseTestCase;
 use APP\plugins\generic\plauditPreEndorsement\tests\helpers\TestHelperTrait;
 use APP\plugins\generic\plauditPreEndorsement\classes\EndorsementStatus;
@@ -20,7 +20,7 @@ class RepositoryTest extends DatabaseTestCase
     {
         return [
             ...parent::getAffectedTables(),
-            'endorsers'
+            'endorsements'
         ];
     }
 
@@ -31,105 +31,105 @@ class RepositoryTest extends DatabaseTestCase
         $this->publicationId = $this->createPublicationMock();
         $this->params = [
             'contextId' => $this->contextId,
-            'name' => 'DummyEndorser',
-            'email' => "DummyEndorser@mailinator.com.br",
+            'name' => 'DummyEndorsement',
+            'email' => "DummyEndorsement@mailinator.com.br",
             'publicationId' => $this->publicationId,
             'status' => null,
             'orcid' => null,
             'emailToken' => null,
             'emailCount' => 0
         ];
-        $this->addSchemaFile('endorser');
+        $this->addSchemaFile('endorsement');
     }
 
-    public function testGetNewEndorserObject(): void
+    public function testGetNewEndorsementObject(): void
     {
         $repository = app(Repository::class);
-        $endorser = $repository->newDataObject();
-        self::assertInstanceOf(Endorser::class, $endorser);
-        $endorser = $repository->newDataObject($this->params);
-        self::assertEquals($this->params, $endorser->_data);
+        $endorsement = $repository->newDataObject();
+        self::assertInstanceOf(Endorsement::class, $endorsement);
+        $endorsement = $repository->newDataObject($this->params);
+        self::assertEquals($this->params, $endorsement->_data);
     }
 
     public function testCrud(): void
     {
         $repository = app(Repository::class);
-        $endorser = $repository->newDataObject($this->params);
-        $insertedEndorserId = $repository->add($endorser);
-        $this->params['id'] = $insertedEndorserId;
+        $endorsement = $repository->newDataObject($this->params);
+        $insertedEndorsementId = $repository->add($endorsement);
+        $this->params['id'] = $insertedEndorsementId;
 
-        $fetchedEndorser = $repository->get($insertedEndorserId, $this->contextId);
-        self::assertEquals($this->params, $fetchedEndorser->_data);
+        $fetchedEndorsement = $repository->get($insertedEndorsementId, $this->contextId);
+        self::assertEquals($this->params, $fetchedEndorsement->_data);
 
         $this->params['emailToken'] = 'iuqwidub78a9qbkjabiao';
         $this->params['emailCount'] += 1;
-        $repository->edit($endorser, $this->params);
+        $repository->edit($endorsement, $this->params);
 
-        $fetchedEndorser = $repository->get($endorser->getId(), $this->contextId);
-        self::assertEquals($this->params, $fetchedEndorser->_data);
+        $fetchedEndorsement = $repository->get($endorsement->getId(), $this->contextId);
+        self::assertEquals($this->params, $fetchedEndorsement->_data);
 
-        $repository->delete($endorser);
-        self::assertFalse($repository->exists($endorser->getId()));
+        $repository->delete($endorsement);
+        self::assertFalse($repository->exists($endorsement->getId()));
     }
 
     public function testCollectorFilterByContextAndPublicationId(): void
     {
         $repository = app(Repository::class);
-        $endorser = $repository->newDataObject($this->params);
+        $endorsement = $repository->newDataObject($this->params);
 
-        $repository->add($endorser);
+        $repository->add($endorsement);
 
-        $endorsers = $repository->getCollector()
+        $endorsements = $repository->getCollector()
             ->filterByContextIds([$this->contextId])
             ->filterByPublicationIds([$this->publicationId])
             ->getMany();
-        self::assertTrue(in_array($endorser, $endorsers->all()));
+        self::assertTrue(in_array($endorsement, $endorsements->all()));
     }
 
     public function testEmptyCollectorFilterByContextAndPublicationId(): void
     {
         $repository = app(Repository::class);
-        $endorser = $repository->newDataObject($this->params);
+        $endorsement = $repository->newDataObject($this->params);
         $newMockPublicationId = 2;
         $newPublicationId = $this->createPublicationMock($newMockPublicationId);
-        $endorser->setPublicationId($newPublicationId);
+        $endorsement->setPublicationId($newPublicationId);
 
-        $repository->add($endorser);
+        $repository->add($endorsement);
 
-        $endorsers = $repository->getCollector()
+        $endorsements = $repository->getCollector()
             ->filterByContextIds([$this->contextId])
             ->filterByPublicationIds([$this->publicationId])
             ->getMany();
-        self::assertFalse(in_array($endorser, $endorsers->all()));
+        self::assertFalse(in_array($endorsement, $endorsements->all()));
     }
 
     public function testCollectorFilterByContextAndStatus(): void
     {
         $repository = app(Repository::class);
         $this->params['status'] = EndorsementStatus::CONFIRMED;
-        $endorser = $repository->newDataObject($this->params);
+        $endorsement = $repository->newDataObject($this->params);
 
-        $repository->add($endorser);
+        $repository->add($endorsement);
 
-        $endorsers = $repository->getCollector()
+        $endorsements = $repository->getCollector()
             ->filterByContextIds([$this->contextId])
             ->filterByStatus([EndorsementStatus::CONFIRMED])
             ->getMany();
-        self::assertTrue(in_array($endorser, $endorsers->all()));
+        self::assertTrue(in_array($endorsement, $endorsements->all()));
     }
 
     public function testEmptyCollectorFilterByContextAndStatus(): void
     {
         $repository = app(Repository::class);
         $this->params['status'] = EndorsementStatus::CONFIRMED;
-        $endorser = $repository->newDataObject($this->params);
+        $endorsement = $repository->newDataObject($this->params);
 
-        $repository->add($endorser);
+        $repository->add($endorsement);
 
-        $endorsers = $repository->getCollector()
+        $endorsements = $repository->getCollector()
             ->filterByContextIds([$this->contextId])
             ->filterByStatus([EndorsementStatus::NOT_CONFIRMED])
             ->getMany();
-        self::assertFalse(in_array($endorser, $endorsers->all()));
+        self::assertFalse(in_array($endorsement, $endorsements->all()));
     }
 }

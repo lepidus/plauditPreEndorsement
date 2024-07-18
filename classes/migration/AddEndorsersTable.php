@@ -8,13 +8,13 @@ use Illuminate\Support\Facades\Schema;
 use PKP\install\DowngradeNotSupportedException;
 use APP\plugins\generic\plauditPreEndorsement\classes\migration\upgrade\MoveDeprecatedEndorsementsToEndorsersTable;
 
-class AddEndorsersTable extends Migration
+class addEndorsementsTable extends Migration
 {
     public function up(): void
     {
-        if (!Schema::hasTable('endorsers')) {
-            Schema::create('endorsers', function (Blueprint $table) {
-                $table->bigInteger('endorser_id')->autoIncrement();
+        if (!Schema::hasTable('endorsements')) {
+            Schema::create('endorsements', function (Blueprint $table) {
+                $table->bigInteger('endorsement_id')->autoIncrement();
                 $table->bigInteger('context_id');
                 $table->bigInteger('publication_id');
                 $table->string('name');
@@ -36,7 +36,7 @@ class AddEndorsersTable extends Migration
                     ->onDelete('cascade');
                 $table->index(['context_id'], 'endorsers_publication_id');
 
-                $table->unique(['context_id', 'publication_id', 'email'], 'endorser_pkey');
+                $table->unique(['context_id', 'publication_id', 'email'], 'endorsement_pkey');
             });
         }
 

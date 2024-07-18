@@ -1,6 +1,6 @@
 <?php
 
-namespace APP\plugins\generic\plauditPreEndorsement\classes\endorser;
+namespace APP\plugins\generic\plauditPreEndorsement\classes\endorsement;
 
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
@@ -39,19 +39,19 @@ class Collector implements CollectorInterface
 
     public function getQueryBuilder(): Builder
     {
-        $queryBuilder = DB::table($this->dao->table . ' as endorsers')
-            ->select(['endorsers.*']);
+        $queryBuilder = DB::table($this->dao->table . ' as endorsements')
+            ->select(['endorsements.*']);
 
         if (isset($this->contextIds)) {
-            $queryBuilder->whereIn('endorsers.context_id', $this->contextIds);
+            $queryBuilder->whereIn('endorsements.context_id', $this->contextIds);
         }
 
         if (isset($this->publicationIds)) {
-            $queryBuilder->whereIn('endorsers.publication_id', $this->publicationIds);
+            $queryBuilder->whereIn('endorsements.publication_id', $this->publicationIds);
         }
 
         if (isset($this->status)) {
-            $queryBuilder->whereIn('endorsers.status', $this->status);
+            $queryBuilder->whereIn('endorsements.status', $this->status);
         }
 
         return $queryBuilder;

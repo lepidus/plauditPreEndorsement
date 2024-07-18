@@ -18,7 +18,7 @@ class PlauditPreEndorsementHandler extends Handler
     public const AUTH_INVALID_TOKEN = 'invalid_token';
     public const AUTH_ACCESS_DENIED = 'access_denied';
 
-    public function updateEndorser($args, $request)
+    public function updateEndorsement($args, $request)
     {
         $plugin = new PlauditPreEndorsementPlugin();
         $submissionId = $request->getUserVar('submissionId');
@@ -75,17 +75,17 @@ class PlauditPreEndorsementHandler extends Handler
     {
         $publication = Repo::publication()->get($request->getUserVar('state'));
         $submission = Repo::submission()->get($publication->getData('submissionId'));
-        $endorser = Repo::endorser()->get($request->getUserVar('endorserId'));
+        $endorsement = Repo::endorsement()->get($request->getUserVar('endorsementId'));
 
         $plugin = PluginRegistry::getPlugin('generic', 'plauditpreendorsementplugin');
         $contextId = $request->getContext()->getId();
 
-        $statusAuth = $this->getStatusAuthentication($endorser, $request);
+        $statusAuth = $this->getStatusAuthentication($endorsement, $request);
         if ($statusAuth == self::AUTH_INVALID_TOKEN) {
             $this->logMessageAndDisplayTemplate($submission, $request, 'plugins.generic.plauditPreEndorsement.log.invalidToken', ['errorType' => 'invalidToken']);
             return;
         } elseif ($statusAuth == self::AUTH_ACCESS_DENIED) {
-            $this->setAccessDeniedEndorsement($endorser);
+            $this->setAccessDeniedEndorsement($endorsement);
             $this->logMessageAndDisplayTemplate($submission, $request, 'plugins.generic.plauditPreEndorsement.log.orcidAccessDenied', ['errorType' => 'denied']);
             return;
         }
@@ -110,9 +110,9 @@ class PlauditPreEndorsementHandler extends Handler
             }
 
             $endorsementService = new EndorsementService($contextId, $plugin);
-            $endorsementService->updateEndorserNameFromOrcid($endorser, $orcid);
+            $endorsementService->updateEndorsementNameFromOrcid($endorsement, $orcid);
 
-            $this->setConfirmedEndorsementPublication($endorser, $orcidUri);
+            $this->setConfirmedEndorsementPublication($endorsement, $orcidUri);
             $this->logMessageAndDisplayTemplate($submission, $request, 'plugins.generic.plauditPreEndorsement.log.endorsementConfirmed', ['orcid' => $orcidUri]);
 
             if ($publication->getData('status') == Submission::STATUS_PUBLISHED) {
@@ -133,24 +133,24 @@ class PlauditPreEndorsementHandler extends Handler
         $templateMgr->display($templatePath);
     }
 
-    private function setConfirmedEndorsementPublication($endorser, $orcidUri)
+    private function setConfirmedEndorsementPublication($endorsement, $orcidUri)
     {
-        $endorser->setEmailToken(null);
-        $endorser->setOrcid($orcidUri);
-        $endorser->setStatus(EndorsementStatus::CONFIRMED);
-        Repo::endorser()->edit($endorser, []);
+        $endorsement->setEmailToken(null);
+        $endorsement->setOrcid($orcidUri);
+        $endorsement->setStatus(EndorsementStatus::CONFIRMED);
+        Repo::endorsement()->edit($endorsement, []);
     }
 
-    private function setAccessDeniedEndorsement($endorser)
+    private function setAccessDeniedEndorsement($endorsement)
     {
-        $endorser->setEmailToken(null);
-        $endorser->setStatus(EndorsementStatus::DENIED);
-        Repo::endorser()->edit($endorser, []);
+        $endorsement->setEmailToken(null);
+        $endorsement->setStatus(EndorsementStatus::DENIED);
+        Repo::endorsement()->edit($endorsement, []);
     }
 
-    public function getStatusAuthentication($endorser, $request)
+    public function getStatusAuthentication($endorsement, $request)
     {
-        if ($request->getUserVar('token') != $endorser->getEmailToken()) {
+        if ($request->getUserVar('token') != $endorsement->getEmailToken()) {
             return self::AUTH_INVALID_TOKEN;
         } elseif ($request->getUserVar('error') == 'access_denied') {
             return self::AUTH_ACCESS_DENIED;

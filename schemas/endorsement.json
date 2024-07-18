@@ -1,6 +1,6 @@
 {
-    "title": "Endorser",
-    "description": "An endorser of a publication to be sent to Plaudit.",
+    "title": "Endorsement",
+    "description": "An endorsement of a publication to be sent to Plaudit.",
     "properties": {
       "id": {
         "type": "integer",

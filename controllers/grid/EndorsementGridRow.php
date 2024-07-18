@@ -67,13 +67,13 @@ class EndorsementGridRow extends GridRow
 
         $this->addAction(
             new LinkAction(
-                'editEndorserItem',
+                'editEndorsementItem',
                 new AjaxModal(
                     $router->url(
                         $request,
                         null,
                         null,
-                        'editEndorser',
+                        'editEndorsement',
                         null,
                         array('submissionId' => $submissionId, 'rowId' => $rowId)
                     ),
@@ -96,7 +96,7 @@ class EndorsementGridRow extends GridRow
                         $request,
                         null,
                         null,
-                        'deleteEndorser',
+                        'deleteEndorsement',
                         null,
                         array('submissionId' => $submissionId, 'rowId' => $rowId)
                     ),

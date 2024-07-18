@@ -45,9 +45,9 @@ class EndorsementForm extends Form
         $templateMgr = TemplateManager::getManager();
         $rowId = $this->request->getUserVar('rowId');
         if ($rowId) {
-            $endorser = Repo::endorser()->get($rowId, $this->contextId);
-            $templateMgr->assign('endorserName', $endorser->getName());
-            $templateMgr->assign('endorserEmail', $endorser->getEmail());
+            $endorsement = Repo::endorsement()->get($rowId, $this->contextId);
+            $templateMgr->assign('endorserName', $endorsement->getName());
+            $templateMgr->assign('endorserEmail', $endorsement->getEmail());
         }
         $templateMgr->assign('rowId', $rowId);
         $templateMgr->assign('submissionId', $this->submissionId);
@@ -61,12 +61,12 @@ class EndorsementForm extends Form
         $publication = $submission->getCurrentPublication();
 
         if ($rowId) {
-            $endorser = Repo::endorser()->get((int)$rowId, $this->contextId);
+            $endorsement = Repo::endorsement()->get((int)$rowId, $this->contextId);
             $params = [
                 'name' => $this->getData('endorserName'),
                 'email' => $this->getData('endorserEmail')
             ];
-            Repo::endorser()->edit($endorser, $params);
+            Repo::endorsement()->edit($endorsement, $params);
         } else {
             $params = [
                 'contextId' => $this->contextId,
@@ -74,9 +74,9 @@ class EndorsementForm extends Form
                 'email' => $this->getData('endorserEmail'),
                 'publicationId' => $publication->getId(),
             ];
-            $endorser = Repo::endorser()->newDataObject($params);
-            Repo::endorser()->add($endorser);
-            $this->plugin->sendEmailToEndorser($publication, $endorser);
+            $endorsement = Repo::endorsement()->newDataObject($params);
+            Repo::endorsement()->add($endorsement);
+            $this->plugin->sendEmailToEndorser($publication, $endorsement);
         }
     }
 }

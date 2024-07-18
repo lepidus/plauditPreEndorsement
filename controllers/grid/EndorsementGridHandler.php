@@ -28,7 +28,7 @@ class EndorsementGridHandler extends GridHandler
         parent::__construct();
         $this->addRoleAssignment(
             array(Role::ROLE_ID_MANAGER, Role::ROLE_ID_SUB_EDITOR, Role::ROLE_ID_ASSISTANT, Role::ROLE_ID_AUTHOR),
-            array('fetchGrid', 'fetchRow', 'addEndorser', 'editEndorser', 'updateEndorser', 'deleteEndorser', 'sendEndorsementManually')
+            array('fetchGrid', 'fetchRow', 'addEndorsement', 'editEndorsement', 'updateEndorsement', 'deleteEndorsement', 'sendEndorsementManually')
         );
         $this->plugin = PluginRegistry::getPlugin('generic', PLAUDIT_PRE_ENDORSEMENT_PLUGIN_NAME);
     }
@@ -63,9 +63,9 @@ class EndorsementGridHandler extends GridHandler
         $router = $request->getRouter();
         $this->addAction(
             new LinkAction(
-                'addEndorser',
+                'addEndorsement',
                 new AjaxModal(
-                    $router->url($request, null, null, 'addEndorser', null, ['submissionId' => $submissionId]),
+                    $router->url($request, null, null, 'addEndorsement', null, ['submissionId' => $submissionId]),
                     __('common.add'),
                     'modal_add_item'
                 ),
@@ -105,27 +105,27 @@ class EndorsementGridHandler extends GridHandler
         $submission = $this->getSubmission();
         $submissionId = $submission->getId();
         $publication = $submission->getCurrentPublication();
-        $endorsers = Repo::endorser()->getCollector()
+        $endorsements = Repo::endorsement()->getCollector()
             ->filterByContextIds([$request->getContext()->getId()])
             ->filterByPublicationIds([$publication->getId()])
             ->getMany();
-        return $endorsers->toArray();
+        return $endorsements->toArray();
     }
 
-    public function addEndorser($args, $request)
+    public function addEndorsement($args, $request)
     {
-        return $this->editEndorser($args, $request);
+        return $this->editEndorsement($args, $request);
     }
 
     public function sendEndorsementManually($args, $request)
     {
         $contextId = $request->getContext()->getId();
         $rowId = $request->getUserVar('rowId');
-        $endorser = Repo::endorser()->get((int)$rowId, $contextId);
+        $endorsement = Repo::endorsement()->get((int)$rowId, $contextId);
         $user = $request->getUser();
 
         $endorsementService = new EndorsementService($contextId, $this->plugin);
-        $endorsementService->sendEndorsement($endorser);
+        $endorsementService->sendEndorsement($endorsement);
 
         $notificationManager = new NotificationManager();
         $notificationManager->createTrivialNotification(
@@ -138,7 +138,7 @@ class EndorsementGridHandler extends GridHandler
         return $json->getString();
     }
 
-    public function editEndorser($args, $request)
+    public function editEndorsement($args, $request)
     {
         $context = $request->getContext();
         $submission = $this->getSubmission();
@@ -146,13 +146,13 @@ class EndorsementGridHandler extends GridHandler
 
         $this->setupTemplate($request);
 
-        $endorserForm = new EndorsementForm($context->getId(), $submissionId, $request, $this->plugin);
-        $endorserForm->initData();
-        $json = new JSONMessage(true, $endorserForm->fetch($request));
+        $endorsementForm = new EndorsementForm($context->getId(), $submissionId, $request, $this->plugin);
+        $endorsementForm->initData();
+        $json = new JSONMessage(true, $endorsementForm->fetch($request));
         return $json->getString();
     }
 
-    public function updateEndorser($args, $request)
+    public function updateEndorsement($args, $request)
     {
         $context = $request->getContext();
         $submission = $this->getSubmission();
@@ -160,31 +160,31 @@ class EndorsementGridHandler extends GridHandler
 
         $this->setupTemplate($request);
 
-        $endorserForm = new EndorsementForm($context->getId(), $submissionId, $request, $this->plugin);
-        $endorserForm->readInputData();
-        if ($endorserForm->validate()) {
-            $endorserForm->execute();
+        $endorsementForm = new EndorsementForm($context->getId(), $submissionId, $request, $this->plugin);
+        $endorsementForm->readInputData();
+        if ($endorsementForm->validate()) {
+            $endorsementForm->execute();
             $json = DAO::getDataChangedEvent($submissionId);
             $json->setGlobalEvent('plugin:plauditPreEndorsement:endorsementAdded', ['submissionId' => $submissionId]);
             return $json;
         } else {
-            $json = new JSONMessage(true, $endorserForm->fetch($request));
+            $json = new JSONMessage(true, $endorsementForm->fetch($request));
             return $json->getString();
         }
     }
 
-    public function deleteEndorser($args, $request)
+    public function deleteEndorsement($args, $request)
     {
         $context = $request->getContext();
         $submission = $this->getSubmission();
         $submissionId = $submission->getId();
         $rowId = $request->getUserVar('rowId');
-        $endorser = Repo::endorser()->get((int)$rowId, $context->getId());
-        Repo::endorser()->delete($endorser);
+        $endorsement = Repo::endorsement()->get((int)$rowId, $context->getId());
+        Repo::endorsement()->delete($endorsement);
         $this->plugin->writeOnActivityLog(
             $submission,
             'plugins.generic.plauditPreEndorsement.log.endorsementRemoved',
-            ['endorserName' => $endorser->getName(), 'endorserEmail' => $endorser->getEmail()]
+            ['endorserName' => $endorsement->getName(), 'endorserEmail' => $endorsement->getEmail()]
         );
         $json = DAO::getDataChangedEvent($submissionId);
         $json->setGlobalEvent('plugin:plauditPreEndorsement:endorsementRemoved', ['submissionId' => $submissionId]);

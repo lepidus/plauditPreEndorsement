@@ -6,7 +6,7 @@ use APP\server\Server;
 use APP\publication\Publication;
 use PKP\user\User;
 use PKP\plugins\Hook;
-use APP\plugins\generic\plauditPreEndorsement\classes\endorser\Endorser;
+use APP\plugins\generic\plauditPreEndorsement\classes\endorsement\Endorsement;
 
 trait TestHelperTrait
 {
@@ -72,14 +72,14 @@ trait TestHelperTrait
         );
     }
 
-    private function createEndorserDataObject($contextId, $publicationId)
+    private function createEndorsementDataObject($contextId, $publicationId)
     {
-        $endorser = $this->endorserDAO->newDataObject();
-        $endorser->setContextId($contextId);
-        $endorser->setPublicationId($publicationId);
-        $endorser->setName("DummyEndorser");
-        $endorser->setEmail("DummyEndorser@mailinator.com.br");
+        $endorsement = $this->endorsementDAO->newDataObject();
+        $endorsement->setContextId($contextId);
+        $endorsement->setPublicationId($publicationId);
+        $endorsement->setName("DummyEndorsement");
+        $endorsement->setEmail("DummyEndorsement@mailinator.com.br");
 
-        return $endorser;
+        return $endorsement;
     }
 }

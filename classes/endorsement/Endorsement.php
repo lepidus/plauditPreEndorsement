@@ -1,8 +1,8 @@
 <?php
 
-namespace APP\plugins\generic\plauditPreEndorsement\classes\endorser;
+namespace APP\plugins\generic\plauditPreEndorsement\classes\endorsement;
 
-class Endorser extends \PKP\core\DataObject
+class Endorsement extends \PKP\core\DataObject
 {
     public function getId(): int
     {
