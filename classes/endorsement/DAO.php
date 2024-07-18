@@ -1,6 +1,6 @@
 <?php
 
-namespace APP\plugins\generic\plauditPreEndorsement\classes\endorser;
+namespace APP\plugins\generic\plauditPreEndorsement\classes\endorsement;
 
 use PKP\core\EntityDAO;
 use Illuminate\Support\LazyCollection;
@@ -10,11 +10,11 @@ class DAO extends EntityDAO
 {
     use EntityWithParent;
 
-    public $schema = 'endorser';
-    public $table = 'endorsers';
-    public $primaryKeyColumn = 'endorser_id';
+    public $schema = 'endorsement';
+    public $table = 'endorsements';
+    public $primaryKeyColumn = 'endorsement_id';
     public $primaryTableColumns = [
-        'id' => 'endorser_id',
+        'id' => 'endorsement_id',
         'contextId' => 'context_id',
         'publicationId' => 'publication_id',
         'name' => 'name',
@@ -30,24 +30,24 @@ class DAO extends EntityDAO
         return 'context_id';
     }
 
-    public function newDataObject(): Endorser
+    public function newDataObject(): Endorsement
     {
-        return app(Endorser::class);
+        return app(Endorsement::class);
     }
 
-    public function insert(Endorser $endorser): int
+    public function insert(Endorsement $endorsement): int
     {
-        return parent::_insert($endorser);
+        return parent::_insert($endorsement);
     }
 
-    public function delete(Endorser $endorser)
+    public function delete(Endorsement $endorsement)
     {
-        return parent::_delete($endorser);
+        return parent::_delete($endorsement);
     }
 
-    public function update(Endorser $endorser)
+    public function update(Endorsement $endorsement)
     {
-        return parent::_update($endorser);
+        return parent::_update($endorsement);
     }
 
     public function getCount(Collector $query): int
@@ -65,12 +65,12 @@ class DAO extends EntityDAO
 
         return LazyCollection::make(function () use ($rows) {
             foreach ($rows as $row) {
-                yield $row->endorser_id => $this->fromRow($row);
+                yield $row->endorsement_id => $this->fromRow($row);
             }
         });
     }
 
-    public function fromRow(object $row): Endorser
+    public function fromRow(object $row): Endorsement
     {
         return parent::fromRow($row);
     }

@@ -6,7 +6,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 use PKP\install\DowngradeNotSupportedException;
 
-class MoveDeprecatedEndorsementsToEndorsersTable extends Migration
+class MoveDeprecatedEndorsementsToEndorsementsTable extends Migration
 {
     public function up(): void
     {
@@ -14,7 +14,7 @@ class MoveDeprecatedEndorsementsToEndorsersTable extends Migration
 
         if (!empty($endorsementSettings)) {
             $deprecatedEndorsements = $this->getDeprecatedEndorsements($endorsementSettings);
-            $this->moveToEndorsersTable($deprecatedEndorsements);
+            $this->moveToEndorsementsTable($deprecatedEndorsements);
             $this->deleteDeprecatedEndorsements();
         }
     }
@@ -48,13 +48,13 @@ class MoveDeprecatedEndorsementsToEndorsersTable extends Migration
         return $deprecatedEndorsements;
     }
 
-    private function moveToEndorsersTable($deprecatedEndorsements)
+    private function moveToEndorsementsTable($deprecatedEndorsements)
     {
         foreach ($deprecatedEndorsements as $publicationId => $settings) {
             $submissionId = DB::table('publications')->where('publication_id', $publicationId)->value('submission_id');
             $contextId = DB::table('submissions')->where('submission_id', $submissionId)->value('context_id');
 
-            DB::table('endorsers')->insert([
+            DB::table('endorsements')->insert([
                 'context_id' => $contextId,
                 'publication_id' => $publicationId,
                 'name' => $settings['endorserName'] ?? '',

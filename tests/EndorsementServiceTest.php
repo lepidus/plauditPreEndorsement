@@ -5,13 +5,12 @@ use APP\submission\Submission;
 use APP\publication\Publication;
 use PKP\doi\Doi;
 use APP\core\Application;
-use APP\facades\Repo;
 use PKP\core\Core;
 use APP\plugins\generic\plauditPreEndorsement\classes\CrossrefClient;
 use APP\plugins\generic\plauditPreEndorsement\classes\OrcidClient;
 use APP\plugins\generic\plauditPreEndorsement\classes\EndorsementService;
 use APP\plugins\generic\plauditPreEndorsement\PlauditPreEndorsementPlugin;
-use APP\plugins\generic\plauditPreEndorsement\classes\endorser\Repository as EndorserRepository;
+use APP\plugins\generic\plauditPreEndorsement\classes\facades\Repo;
 use APP\plugins\generic\plauditPreEndorsement\tests\helpers\TestHelperTrait;
 
 final class EndorsementServiceTest extends DatabaseTestCase
@@ -25,20 +24,20 @@ final class EndorsementServiceTest extends DatabaseTestCase
     private $plugin;
     private $doi = '10.1234/TestePublication.1234';
     private $secretKey = 'a1b2c3d4-e5f6g7h8';
-    private $endorserName = 'Caio Anjo';
-    private $endorserOrcid = '0010-1010-1101-0001';
-    private $endorserGivenNameOrcid = 'Caio';
-    private $endorserFamilyNameOrcid = 'dos Anjos';
-    private $endorserId;
+    private $endorsementName = 'Caio Anjo';
+    private $endorsementOrcid = '0010-1010-1101-0001';
+    private $endorsementGivenNameOrcid = 'Caio';
+    private $endorsementFamilyNameOrcid = 'dos Anjos';
+    private $endorsementId;
 
     public function setUp(): void
     {
         parent::setUp();
-        $this->addSchemaFile('endorser');
+        $this->addSchemaFile('endorsement');
         $this->publication = $this->createPublication();
         $this->plugin = new PlauditPreEndorsementPlugin();
         $this->endorsementService = new EndorsementService($this->contextId, $this->plugin);
-        $this->endorserId = $this->createEndorser();
+        $this->endorsementId = $this->createEndorsement();
     }
 
     public function tearDown(): void
@@ -53,20 +52,19 @@ final class EndorsementServiceTest extends DatabaseTestCase
 
     protected function getAffectedTables(): array
     {
-        return ['event_log', 'event_log_settings', 'endorsers'];
+        return ['event_log', 'event_log_settings', 'endorsements'];
     }
 
-    private function createEndorser()
+    private function createEndorsement()
     {
-        $endorserRepository = app(EndorserRepository::class);
         $params = [
             'publicationId' => $this->publication->getId(),
             'contextId' => $this->contextId,
             'name' => 'Dummy',
             'email' => 'dummy@mailinator.com.br'
         ];
-        $endorser = $endorserRepository->newDataObject($params);
-        return $endorserRepository->add($endorser);
+        $endorsement = Repo::endorsement()->newDataObject($params);
+        return Repo::endorsement()->add($endorsement);
     }
 
     private function createPublication(): Publication
@@ -110,15 +108,15 @@ final class EndorsementServiceTest extends DatabaseTestCase
                         'value' => 1666816304613
                     ],
                     'given-names' => [
-                        'value' => $this->endorserGivenNameOrcid
+                        'value' => $this->endorsementGivenNameOrcid
                     ],
                     'family-name' => [
-                        'value' => $this->endorserFamilyNameOrcid
+                        'value' => $this->endorsementFamilyNameOrcid
                     ],
                     'credit-name' => '',
                     'source' => '',
                     'visibility' => 'public',
-                    'path' => $this->endorserOrcid
+                    'path' => $this->endorsementOrcid
                 ]
             ]
         ];
@@ -126,10 +124,10 @@ final class EndorsementServiceTest extends DatabaseTestCase
         $mockOrcidClient = $this->createMock(OrcidClient::class);
         $mockOrcidClient->method('getReadPublicAccessToken')->willReturn($fictionalAccessToken);
         $mockOrcidClient->method('getOrcidRecord')->willReturnMap([
-            [$this->endorserOrcid, $fictionalAccessToken, $testRecord]
+            [$this->endorsementOrcid, $fictionalAccessToken, $testRecord]
         ]);
         $mockOrcidClient->method('getFullNameFromRecord')->willReturnMap([
-            [$testRecord, $this->endorserGivenNameOrcid . ' ' . $this->endorserFamilyNameOrcid]
+            [$testRecord, $this->endorsementGivenNameOrcid . ' ' . $this->endorsementFamilyNameOrcid]
         ]);
 
         return $mockOrcidClient;
@@ -169,17 +167,16 @@ final class EndorsementServiceTest extends DatabaseTestCase
         $this->assertEquals('ok', $validateResult);
     }
 
-    public function testUpdateEndorserName(): void
+    public function testUpdateEndorsementName(): void
     {
-        $endorserRepository = app(EndorserRepository::class);
-        $endorser = $endorserRepository->get($this->endorserId);
+        $endorsement = Repo::endorsement()->get($this->endorsementId);
         $mockOrcidClient = $this->getMockOrcidClient();
         $this->endorsementService->setOrcidClient($mockOrcidClient);
 
-        $newEndorser = $this->endorsementService->updateEndorserNameFromOrcid($endorser, $this->endorserOrcid);
-        $expectedNewName = $this->endorserGivenNameOrcid . ' ' . $this->endorserFamilyNameOrcid;
+        $newEndorsement = $this->endorsementService->updateEndorsementNameFromOrcid($endorsement, $this->endorsementOrcid);
+        $expectedNewName = $this->endorsementGivenNameOrcid . ' ' . $this->endorsementFamilyNameOrcid;
 
-        $this->assertEquals($expectedNewName, $newEndorser->getName());
+        $this->assertEquals($expectedNewName, $newEndorsement->getName());
     }
 
     public function testMessageWasAlreadyLoggedToday(): void

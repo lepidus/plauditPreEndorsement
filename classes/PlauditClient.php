@@ -3,7 +3,7 @@
 namespace APP\plugins\generic\plauditPreEndorsement\classes;
 
 use APP\core\Application;
-use APP\plugins\generic\plauditPreEndorsement\classes\Endorsement;
+use APP\plugins\generic\plauditPreEndorsement\classes\EndorsementStatus;
 
 class PlauditClient
 {
@@ -15,12 +15,12 @@ class PlauditClient
         return $matches[0];
     }
 
-    public function requestEndorsementCreation($endorser, $publication, $secretKey)
+    public function requestEndorsementCreation($endorsement, $publication, $secretKey)
     {
         $httpClient = Application::get()->getHttpClient();
         $headers = ['Content-Type' => 'application/json'];
 
-        $orcid = $this->filterOrcidNumbers($endorser->getOrcid());
+        $orcid = $this->filterOrcidNumbers($endorsement->getOrcid());
         $postData = [
             'secret_key' => $secretKey,
             'orcid' => $orcid,
@@ -39,7 +39,7 @@ class PlauditClient
         return $response;
     }
 
-    public function getEndorsementStatusByResponse($response, $publication, $endorser)
+    public function getEndorsementStatusByResponse($response, $publication, $endorsement)
     {
         if ($response->getStatusCode() == 200) {
             $body = json_decode($response->getBody()->getContents(), true);
@@ -48,13 +48,13 @@ class PlauditClient
             $responseDoi = $endorsementData['doi'];
             $responseOrcid = $endorsementData['orcid'];
             $publicationDoi = strtolower($publication->getDoi());
-            $endorserOrcid = $this->filterOrcidNumbers($endorser->getOrcid());
+            $endorsementOrcid = $this->filterOrcidNumbers($endorsement->getOrcid());
 
-            if ($responseDoi ==  $publicationDoi && $responseOrcid == $endorserOrcid) {
-                return Endorsement::STATUS_COMPLETED;
+            if ($responseDoi ==  $publicationDoi && $responseOrcid == $endorsementOrcid) {
+                return EndorsementStatus::COMPLETED;
             }
         }
 
-        return Endorsement::STATUS_COULDNT_COMPLETE;
+        return EndorsementStatus::COULDNT_COMPLETE;
     }
 }

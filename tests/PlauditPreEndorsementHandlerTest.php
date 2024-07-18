@@ -2,24 +2,24 @@
 
 use APP\publication\Publication;
 use APP\core\Request;
-use APP\plugins\generic\plauditPreEndorsement\classes\Endorsement;
+use APP\plugins\generic\plauditPreEndorsement\classes\EndorsementStatus;
 use APP\plugins\generic\plauditPreEndorsement\classes\PlauditPreEndorsementHandler;
 use PHPUnit\Framework\TestCase;
-use APP\plugins\generic\plauditPreEndorsement\classes\endorser\Repository as EndorserRepository;
+use APP\plugins\generic\plauditPreEndorsement\classes\facades\Repo;
 
 final class PlauditPreEndorsementHandlerTest extends TestCase
 {
     private $publication;
-    private $firstEndorser;
-    private $secondEndorser;
-    private $endorserEmailToken;
+    private $firstEndorsement;
+    private $secondEndorsement;
+    private $endorsementEmailToken;
 
     public function setUp(): void
     {
         parent::setUp();
-        $this->endorserEmailToken = md5(microtime() . 'dummy@mailinator.com.br');
+        $this->endorsementEmailToken = md5(microtime() . 'dummy@mailinator.com.br');
         $this->publication = $this->createPublication();
-        [$this->firstEndorser, $this->secondEndorser] = $this->addEndorsers();
+        [$this->firstEndorsement, $this->secondEndorsement] = $this->addEndorsements();
     }
 
     private function createPublication(): Publication
@@ -30,32 +30,31 @@ final class PlauditPreEndorsementHandlerTest extends TestCase
         return $this->publication;
     }
 
-    private function addEndorsers(): array
+    private function addEndorsements(): array
     {
-        $endorserRepository = app(EndorserRepository::class);
-        $firstEndorserParams = [
+        $firstEndorsementParams = [
             'name' => 'YvesDummy',
             'email' => 'dummy@mailinator.com.br',
-            'emailToken' => $this->endorserEmailToken
+            'emailToken' => $this->endorsementEmailToken
         ];
-        $secondEndorserParams = [
+        $secondEndorsementParams = [
             'name' => 'JhonDummy',
             'email' => 'dummy2@mailinator.com.br',
             'emailToken' => md5(microtime() . 'dummy2@mailinator.com.br')
         ];
-        $firstEndorser = $endorserRepository->newDataObject($firstEndorserParams);
-        $secondEndorser = $endorserRepository->newDataObject($secondEndorserParams);
+        $firstEndorsement = Repo::endorsement()->newDataObject($firstEndorsementParams);
+        $secondEndorsement = Repo::endorsement()->newDataObject($secondEndorsementParams);
 
-        return [$firstEndorser, $secondEndorser];
+        return [$firstEndorsement, $secondEndorsement];
     }
 
-    private function verifyEndorserAuth($token, $endorser, $error = null): string
+    private function verifyEndorsementAuth($token, $endorsement, $error = null): string
     {
         $request = new Request();
         $request->_requestVars = [
             'state' => $this->publication->getId(),
             'token' => $token,
-            'endorserId' => rand()
+            'endorsementId' => rand()
         ];
 
         if ($error) {
@@ -63,24 +62,24 @@ final class PlauditPreEndorsementHandlerTest extends TestCase
         }
 
         $handler = new PlauditPreEndorsementHandler();
-        return $handler->getStatusAuthentication($endorser, $request);
+        return $handler->getStatusAuthentication($endorsement, $request);
     }
 
-    public function testEndorserAuthenticatesCorrectly(): void
+    public function testEndorsementAuthenticatesCorrectly(): void
     {
-        $result = $this->verifyEndorserAuth($this->endorserEmailToken, $this->firstEndorser);
+        $result = $this->verifyEndorsementAuth($this->endorsementEmailToken, $this->firstEndorsement);
         $this->assertEquals(PlauditPreEndorsementHandler::AUTH_SUCCESS, $result);
     }
 
-    public function testEndorserTokenIsDifferent(): void
+    public function testEndorsementTokenIsDifferent(): void
     {
-        $result = $this->verifyEndorserAuth($this->endorserEmailToken, $this->secondEndorser);
+        $result = $this->verifyEndorsementAuth($this->endorsementEmailToken, $this->secondEndorsement);
         $this->assertEquals(PlauditPreEndorsementHandler::AUTH_INVALID_TOKEN, $result);
     }
 
-    public function testEndorserAutheticationHasAccessDenied(): void
+    public function testEndorsementAutheticationHasAccessDenied(): void
     {
-        $result = $this->verifyEndorserAuth($this->endorserEmailToken, $this->firstEndorser, 'access_denied');
+        $result = $this->verifyEndorsementAuth($this->endorsementEmailToken, $this->firstEndorsement, 'access_denied');
         $this->assertEquals(PlauditPreEndorsementHandler::AUTH_ACCESS_DENIED, $result);
     }
 }

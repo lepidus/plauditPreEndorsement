@@ -6,7 +6,7 @@ use PKP\controllers\grid\GridRow;
 use PKP\linkAction\LinkAction;
 use PKP\linkAction\request\AjaxModal;
 use PKP\linkAction\request\RemoteActionConfirmationModal;
-use APP\plugins\generic\plauditPreEndorsement\classes\Endorsement;
+use APP\plugins\generic\plauditPreEndorsement\classes\EndorsementStatus;
 use PKP\plugins\PluginRegistry;
 use APP\facades\Repo;
 use APP\submission\Submission;
@@ -37,8 +37,8 @@ class EndorsementGridRow extends GridRow
         $canSendEndorsementManually = $publication->getData('status') == Submission::STATUS_PUBLISHED
             && !$this->plugin->userAccessingIsAuthor($submission)
             && (
-                $element->getStatus() == Endorsement::STATUS_CONFIRMED ||
-                $element->getStatus() == Endorsement::STATUS_COULDNT_COMPLETE
+                $element->getStatus() == EndorsementStatus::CONFIRMED ||
+                $element->getStatus() == EndorsementStatus::COULDNT_COMPLETE
             );
 
         if ($canSendEndorsementManually) {
@@ -67,13 +67,13 @@ class EndorsementGridRow extends GridRow
 
         $this->addAction(
             new LinkAction(
-                'editEndorserItem',
+                'editEndorsementItem',
                 new AjaxModal(
                     $router->url(
                         $request,
                         null,
                         null,
-                        'editEndorser',
+                        'editEndorsement',
                         null,
                         array('submissionId' => $submissionId, 'rowId' => $rowId)
                     ),
@@ -96,7 +96,7 @@ class EndorsementGridRow extends GridRow
                         $request,
                         null,
                         null,
-                        'deleteEndorser',
+                        'deleteEndorsement',
                         null,
                         array('submissionId' => $submissionId, 'rowId' => $rowId)
                     ),

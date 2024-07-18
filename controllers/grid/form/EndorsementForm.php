@@ -9,8 +9,7 @@ use PKP\form\validation\FormValidator;
 use PKP\form\validation\FormValidatorCSRF;
 use PKP\form\validation\FormValidatorPost;
 use PKP\plugins\PluginRegistry;
-use APP\facades\Repo;
-use APP\plugins\generic\plauditPreEndorsement\classes\endorser\Repository as EndorserRepository;
+use APP\plugins\generic\plauditPreEndorsement\classes\facades\Repo;
 
 class EndorsementForm extends Form
 {
@@ -18,7 +17,6 @@ class EndorsementForm extends Form
     public $submissionId;
     private $request;
     private $plugin;
-    private $endorserRepository;
 
     public function __construct($contextId, $submissionId, $request = null, $plugin = null)
     {
@@ -26,7 +24,6 @@ class EndorsementForm extends Form
         $this->submissionId = $submissionId;
         $this->request = $request ?? null;
         $this->plugin = $plugin;
-        $this->endorserRepository = app(EndorserRepository::class);
 
         $this->addCheck(new FormValidatorPost($this));
         $this->addCheck(new FormValidatorCSRF($this));
@@ -48,9 +45,9 @@ class EndorsementForm extends Form
         $templateMgr = TemplateManager::getManager();
         $rowId = $this->request->getUserVar('rowId');
         if ($rowId) {
-            $endorser = $this->endorserRepository->get($rowId, $this->contextId);
-            $templateMgr->assign('endorserName', $endorser->getName());
-            $templateMgr->assign('endorserEmail', $endorser->getEmail());
+            $endorsement = Repo::endorsement()->get($rowId, $this->contextId);
+            $templateMgr->assign('endorserName', $endorsement->getName());
+            $templateMgr->assign('endorserEmail', $endorsement->getEmail());
         }
         $templateMgr->assign('rowId', $rowId);
         $templateMgr->assign('submissionId', $this->submissionId);
@@ -64,12 +61,12 @@ class EndorsementForm extends Form
         $publication = $submission->getCurrentPublication();
 
         if ($rowId) {
-            $endorser = $this->endorserRepository->get((int)$rowId, $this->contextId);
+            $endorsement = Repo::endorsement()->get((int)$rowId, $this->contextId);
             $params = [
                 'name' => $this->getData('endorserName'),
                 'email' => $this->getData('endorserEmail')
             ];
-            $this->endorserRepository->edit($endorser, $params);
+            Repo::endorsement()->edit($endorsement, $params);
         } else {
             $params = [
                 'contextId' => $this->contextId,
@@ -77,9 +74,9 @@ class EndorsementForm extends Form
                 'email' => $this->getData('endorserEmail'),
                 'publicationId' => $publication->getId(),
             ];
-            $endorser = $this->endorserRepository->newDataObject($params);
-            $this->endorserRepository->add($endorser);
-            $this->plugin->sendEmailToEndorser($publication, $endorser);
+            $endorsement = Repo::endorsement()->newDataObject($params);
+            Repo::endorsement()->add($endorsement);
+            $this->plugin->sendEmailToEndorser($publication, $endorsement);
         }
     }
 }

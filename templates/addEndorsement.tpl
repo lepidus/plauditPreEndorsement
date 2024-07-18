@@ -6,7 +6,7 @@
 
 <div id="AddEndorsementForm">
 
-    {capture assign=actionUrl}{url router=$smarty.const.ROUTE_COMPONENT component="plugins.generic.plauditPreEndorsement.controllers.grid.EndorsementGridHandler" op="updateEndorser" submissionId=$submissionId escape=false}{/capture}
+    {capture assign=actionUrl}{url router=$smarty.const.ROUTE_COMPONENT component="plugins.generic.plauditPreEndorsement.controllers.grid.EndorsementGridHandler" op="updateEndorsement" submissionId=$submissionId escape=false}{/capture}
     <form class="pkp_form" id="endorsementForm" method="post" action="{$actionUrl}">
         {csrf}
         {include file="controllers/notification/inPlaceNotification.tpl" notificationId="OASwitchboardSettingsFormNotification"}
