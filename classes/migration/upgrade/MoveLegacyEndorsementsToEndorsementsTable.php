@@ -6,16 +6,16 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 use PKP\install\DowngradeNotSupportedException;
 
-class MoveDeprecatedEndorsementsToEndorsementsTable extends Migration
+class MoveLegacyEndorsementsToEndorsementsTable extends Migration
 {
     public function up(): void
     {
         $endorsementSettings = $this->getEndorsementsFromPublicationSettings();
 
         if (!empty($endorsementSettings)) {
-            $deprecatedEndorsements = $this->getDeprecatedEndorsements($endorsementSettings);
-            $this->moveToEndorsementsTable($deprecatedEndorsements);
-            $this->deleteDeprecatedEndorsements();
+            $legacyEndorsements = $this->getLegacyEndorsements($endorsementSettings);
+            $this->moveToEndorsementsTable($legacyEndorsements);
+            $this->deleteLegacyEndorsements();
         }
     }
 
@@ -38,19 +38,19 @@ class MoveDeprecatedEndorsementsToEndorsementsTable extends Migration
             ->get();
     }
 
-    private function getDeprecatedEndorsements($endorsementSettings)
+    private function getLegacyEndorsements($endorsementSettings)
     {
-        $deprecatedEndorsements = [];
+        $legacyEndorsements = [];
         foreach ($endorsementSettings as $endorsementSetting) {
             $publicationId = $endorsementSetting->publication_id;
-            $deprecatedEndorsements[$publicationId][$endorsementSetting->setting_name] = $endorsementSetting->setting_value;
+            $legacyEndorsements[$publicationId][$endorsementSetting->setting_name] = $endorsementSetting->setting_value;
         }
-        return $deprecatedEndorsements;
+        return $legacyEndorsements;
     }
 
-    private function moveToEndorsementsTable($deprecatedEndorsements)
+    private function moveToEndorsementsTable($legacyEndorsements)
     {
-        foreach ($deprecatedEndorsements as $publicationId => $settings) {
+        foreach ($legacyEndorsements as $publicationId => $settings) {
             $submissionId = DB::table('publications')->where('publication_id', $publicationId)->value('submission_id');
             $contextId = DB::table('submissions')->where('submission_id', $submissionId)->value('context_id');
 
@@ -67,7 +67,7 @@ class MoveDeprecatedEndorsementsToEndorsementsTable extends Migration
         }
     }
 
-    private function deleteDeprecatedEndorsements()
+    private function deleteLegacyEndorsements()
     {
         DB::table('publication_settings')
             ->whereIn('setting_name', [

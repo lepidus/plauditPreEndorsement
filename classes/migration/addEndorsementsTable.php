@@ -6,7 +6,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use PKP\install\DowngradeNotSupportedException;
-use APP\plugins\generic\plauditPreEndorsement\classes\migration\upgrade\MoveDeprecatedEndorsementsToEndorsementsTable;
+use APP\plugins\generic\plauditPreEndorsement\classes\migration\upgrade\MoveLegacyEndorsementsToEndorsementsTable;
 
 class addEndorsementsTable extends Migration
 {
@@ -40,7 +40,7 @@ class addEndorsementsTable extends Migration
             });
         }
 
-        $upgradeMigration = new MoveDeprecatedEndorsementsToEndorsementsTable();
+        $upgradeMigration = new MoveLegacyEndorsementsToEndorsementsTable();
         $upgradeMigration->up();
     }
 
