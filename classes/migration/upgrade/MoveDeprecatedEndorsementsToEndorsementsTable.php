@@ -4,15 +4,27 @@ namespace APP\plugins\generic\plauditPreEndorsement\classes\migration\upgrade;
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Schema\Blueprint;
 use PKP\install\DowngradeNotSupportedException;
 
 class MoveDeprecatedEndorsementsToEndorsementsTable extends Migration
 {
     public function up(): void
     {
+        if (!Schema::hasTable('legacy_endorsements')) {
+            Schema::create('legacy_endorsements', function (Blueprint $table) {
+                $table->bigInteger('publication_id');
+                $table->string('setting_name');
+                $table->text('setting_value');
+            });
+        }
+
         $endorsementSettings = $this->getEndorsementsFromPublicationSettings();
 
         if (!empty($endorsementSettings)) {
+            $this->backupEndorsements($endorsementSettings);
+
             $deprecatedEndorsements = $this->getDeprecatedEndorsements($endorsementSettings);
             $this->moveToEndorsementsTable($deprecatedEndorsements);
             $this->deleteDeprecatedEndorsements();
@@ -78,5 +90,18 @@ class MoveDeprecatedEndorsementsToEndorsementsTable extends Migration
                 'endorserEmailToken',
                 'endorserEmailCount'
             ])->delete();
+    }
+
+    private function backupEndorsements($endorsementSettings)
+    {
+        $backupData = [];
+        foreach ($endorsementSettings as $setting) {
+            $backupData[] = [
+                'publication_id' => $setting->publication_id,
+                'setting_name' => $setting->setting_name,
+                'setting_value' => $setting->setting_value,
+            ];
+        }
+        DB::table('legacy_endorsements')->insert($backupData);
     }
 }
