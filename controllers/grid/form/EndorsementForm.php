@@ -10,6 +10,7 @@ use PKP\form\validation\FormValidatorCSRF;
 use PKP\form\validation\FormValidatorPost;
 use PKP\plugins\PluginRegistry;
 use APP\plugins\generic\plauditPreEndorsement\classes\facades\Repo;
+use APP\submission\Submission;
 
 class EndorsementForm extends Form
 {
@@ -76,7 +77,11 @@ class EndorsementForm extends Form
             ];
             $endorsement = Repo::endorsement()->newDataObject($params);
             Repo::endorsement()->add($endorsement);
-            $this->plugin->sendEmailToEndorser($publication, $endorsement);
+
+            $submission = Repo::submission()->get($this->submissionId);
+            if (!$submission->getSubmissionProgress()) {
+                $this->plugin->sendEmailToEndorser($publication, $endorsement);
+            }
         }
     }
 }
