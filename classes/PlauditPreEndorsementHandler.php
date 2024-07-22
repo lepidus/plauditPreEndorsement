@@ -8,7 +8,7 @@ use APP\submission\Submission;
 use PKP\plugins\PluginRegistry;
 use APP\template\TemplateManager;
 use APP\plugins\generic\plauditPreEndorsement\PlauditPreEndorsementPlugin;
-use APP\plugins\generic\plauditPreEndorsement\classes\EndorsementStatus;
+use APP\plugins\generic\plauditPreEndorsement\classes\endorsement\Endorsement;
 use APP\plugins\generic\plauditPreEndorsement\classes\EndorsementService;
 use APP\plugins\generic\plauditPreEndorsement\classes\OrcidClient;
 
@@ -28,7 +28,7 @@ class PlauditPreEndorsementHandler extends Handler
         $submission = Repo::submission()->get($submissionId);
         $publication = $submission->getCurrentPublication();
 
-        $endorsementIsConfirmed = $publication->getData('endorsementStatus') == EndorsementStatus::CONFIRMED;
+        $endorsementIsConfirmed = $publication->getData('endorsementStatus') == Endorsement::STATUS_CONFIRMED;
         if ($endorsementIsConfirmed) {
             return http_response_code(400);
         }
@@ -137,14 +137,14 @@ class PlauditPreEndorsementHandler extends Handler
     {
         $endorsement->setEmailToken(null);
         $endorsement->setOrcid($orcidUri);
-        $endorsement->setStatus(EndorsementStatus::CONFIRMED);
+        $endorsement->setStatus(Endorsement::STATUS_CONFIRMED);
         Repo::endorsement()->edit($endorsement, []);
     }
 
     private function setAccessDeniedEndorsement($endorsement)
     {
         $endorsement->setEmailToken(null);
-        $endorsement->setStatus(EndorsementStatus::DENIED);
+        $endorsement->setStatus(Endorsement::STATUS_DENIED);
         Repo::endorsement()->edit($endorsement, []);
     }
 

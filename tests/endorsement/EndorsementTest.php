@@ -4,7 +4,6 @@ namespace APP\plugins\generic\plauditPreEndorsement\tests\endorsement;
 
 use PHPUnit\Framework\TestCase;
 use APP\plugins\generic\plauditPreEndorsement\classes\endorsement\Endorsement;
-use APP\plugins\generic\plauditPreEndorsement\classes\EndorsementStatus;
 
 class EndorsementTest extends TestCase
 {
@@ -44,8 +43,8 @@ class EndorsementTest extends TestCase
 
     public function testEndorsementStatusRetrieval()
     {
-        $this->endorsement->setStatus(EndorsementStatus::COMPLETED);
-        $this->assertEquals($this->endorsement->getStatus(), EndorsementStatus::COMPLETED);
+        $this->endorsement->setStatus(Endorsement::STATUS_COMPLETED);
+        $this->assertEquals($this->endorsement->getStatus(), Endorsement::STATUS_COMPLETED);
     }
 
     public function testEndorsementOrcidRetrieval()

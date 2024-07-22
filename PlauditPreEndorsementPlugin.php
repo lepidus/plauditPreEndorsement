@@ -29,7 +29,7 @@ use PKP\core\JSONMessage;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Mail;
 use APP\plugins\generic\plauditPreEndorsement\classes\OrcidClient;
-use APP\plugins\generic\plauditPreEndorsement\classes\EndorsementStatus;
+use APP\plugins\generic\plauditPreEndorsement\classes\endorsement\Endorsement;
 use APP\plugins\generic\plauditPreEndorsement\classes\components\forms\EndorsementForm;
 use APP\plugins\generic\plauditPreEndorsement\PlauditPreEndorsementSettingsForm;
 use APP\plugins\generic\plauditPreEndorsement\classes\mail\mailables\OrcidRequestEndorserAuthorization;
@@ -232,11 +232,11 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
     private function getEndorsementStatusSuffix($endorsementStatus): string
     {
         $mapStatusToSuffix = [
-            EndorsementStatus::NOT_CONFIRMED => 'NotConfirmed',
-            EndorsementStatus::CONFIRMED => 'Confirmed',
-            EndorsementStatus::DENIED => 'Denied',
-            EndorsementStatus::COMPLETED => 'Completed',
-            EndorsementStatus::COULDNT_COMPLETE => 'CouldntComplete'
+            Endorsement::STATUS_NOT_CONFIRMED => 'NotConfirmed',
+            Endorsement::STATUS_CONFIRMED => 'Confirmed',
+            Endorsement::STATUS_DENIED => 'Denied',
+            Endorsement::STATUS_COMPLETED => 'Completed',
+            Endorsement::STATUS_COULDNT_COMPLETE => 'CouldntComplete'
         ];
 
         return $mapStatusToSuffix[$endorsementStatus] ?? "";
@@ -308,7 +308,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
             }
 
             $endorsement->setEmailToken($endorsementEmailToken);
-            $endorsement->setStatus(EndorsementStatus::NOT_CONFIRMED);
+            $endorsement->setStatus(Endorsement::STATUS_NOT_CONFIRMED);
             $endorsement->setEmailCount($endorsementEmailCount + 1);
 
             Repo::endorsement()->edit($endorsement, []);

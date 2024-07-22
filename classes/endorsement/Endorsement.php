@@ -4,6 +4,12 @@ namespace APP\plugins\generic\plauditPreEndorsement\classes\endorsement;
 
 class Endorsement extends \PKP\core\DataObject
 {
+    public const STATUS_NOT_CONFIRMED = 0;
+    public const STATUS_CONFIRMED = 1;
+    public const STATUS_DENIED = 2;
+    public const STATUS_COMPLETED = 3;
+    public const STATUS_COULDNT_COMPLETE = 4;
+
     public function getId(): int
     {
         return $this->getData("id");
