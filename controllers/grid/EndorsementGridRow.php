@@ -65,26 +65,29 @@ class EndorsementGridRow extends GridRow
             );
         }
 
-        $this->addAction(
-            new LinkAction(
-                'editEndorsementItem',
-                new AjaxModal(
-                    $router->url(
-                        $request,
-                        null,
-                        null,
-                        'editEndorsement',
-                        null,
-                        array('submissionId' => $submissionId, 'rowId' => $rowId)
+        if ($element->getStatus() < Endorsement::STATUS_CONFIRMED) {
+            $this->addAction(
+                new LinkAction(
+                    'editEndorsementItem',
+                    new AjaxModal(
+                        $router->url(
+                            $request,
+                            null,
+                            null,
+                            'editEndorsement',
+                            null,
+                            array('submissionId' => $submissionId, 'rowId' => $rowId)
+                        ),
+                        __('grid.action.edit'),
+                        'modal_edit',
+                        true
                     ),
                     __('grid.action.edit'),
-                    'modal_edit',
-                    true
-                ),
-                __('grid.action.edit'),
-                'edit'
-            )
-        );
+                    'edit'
+                )
+            );
+        }
+
         $this->addAction(
             new LinkAction(
                 'delete',
