@@ -3,7 +3,7 @@
 namespace APP\plugins\generic\plauditPreEndorsement\classes;
 
 use APP\core\Application;
-use APP\plugins\generic\plauditPreEndorsement\classes\EndorsementStatus;
+use APP\plugins\generic\plauditPreEndorsement\classes\endorsement\Endorsement;
 
 class PlauditClient
 {
@@ -51,10 +51,10 @@ class PlauditClient
             $endorsementOrcid = $this->filterOrcidNumbers($endorsement->getOrcid());
 
             if ($responseDoi ==  $publicationDoi && $responseOrcid == $endorsementOrcid) {
-                return EndorsementStatus::COMPLETED;
+                return Endorsement::STATUS_COMPLETED;
             }
         }
 
-        return EndorsementStatus::COULDNT_COMPLETE;
+        return Endorsement::STATUS_COULDNT_COMPLETE;
     }
 }

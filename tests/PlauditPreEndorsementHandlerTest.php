@@ -2,7 +2,7 @@
 
 use APP\publication\Publication;
 use APP\core\Request;
-use APP\plugins\generic\plauditPreEndorsement\classes\EndorsementStatus;
+use APP\plugins\generic\plauditPreEndorsement\classes\endorsement\Endorsement;
 use APP\plugins\generic\plauditPreEndorsement\classes\PlauditPreEndorsementHandler;
 use PHPUnit\Framework\TestCase;
 use APP\plugins\generic\plauditPreEndorsement\classes\facades\Repo;
