@@ -36,6 +36,18 @@ class EndorsementForm extends Form
             $publication = $submission->getCurrentPublication();
             return is_null(Repo::endorsement()->getByEmail($endorserEmail, $publication->getId(), $contextId));
         }));
+        $this->addCheck(new \PKP\form\validation\FormValidatorCustom($this, 'endorserEmail', 'required', 'plugins.generic.plauditPreEndorsement.addEndorsementForm.emailExistsInSubmissionAuthors', function ($endorserEmail) use ($submissionId) {
+            $submission = Repo::submission()->get($submissionId);
+            $publication = $submission->getCurrentPublication();
+            $authors = $publication->getData('authors');
+
+            foreach ($authors as $author) {
+                if ($author->getData('email') == $endorserEmail) {
+                    return false;
+                }
+            }
+            return true;
+        }));
     }
 
     public function initData()
