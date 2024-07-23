@@ -10,16 +10,25 @@ use APP\plugins\generic\plauditPreEndorsement\classes\facades\Repo;
 
 class Validator
 {
-    public static function addValidations(EndorsementForm $form, $contextId, $submissionId)
+    public static function addValidations(EndorsementForm $form, $contextId, $submissionId, $rowId)
     {
         $form->addCheck(new FormValidatorPost($form));
         $form->addCheck(new FormValidatorCSRF($form));
         $form->addCheck(new \PKP\form\validation\FormValidator($form, 'endorserName', 'required', 'validator.required'));
         $form->addCheck(new \PKP\form\validation\FormValidatorEmail($form, 'endorserEmail', 'required', 'user.profile.form.emailRequired'));
-        $form->addCheck(new \PKP\form\validation\FormValidatorCustom($form, 'endorserEmail', 'required', 'user.register.form.emailExists', function ($endorserEmail) use ($contextId, $submissionId) {
+        $form->addCheck(new \PKP\form\validation\FormValidatorCustom($form, 'endorserEmail', 'required', 'user.register.form.emailExists', function ($endorserEmail) use ($contextId, $submissionId, $rowId) {
             $submission = Repo::submission()->get($submissionId);
             $publication = $submission->getCurrentPublication();
-            return is_null(Repo::endorsement()->getByEmail($endorserEmail, $publication->getId(), $contextId));
+            $endorsement = Repo::endorsement()->getByEmail($endorserEmail, $publication->getId(), $contextId);
+
+            if (is_null($endorsement)) {
+                return true;
+            } else {
+                if ($rowId) {
+                    return $rowId == $endorsement->getId();
+                }
+                return false;
+            }
         }));
         $form->addCheck(new \PKP\form\validation\FormValidatorCustom($form, 'endorserEmail', 'required', 'plugins.generic.plauditPreEndorsement.addEndorsementForm.emailExistsInSubmissionAuthors', function ($endorserEmail) use ($submissionId) {
             $submission = Repo::submission()->get($submissionId);

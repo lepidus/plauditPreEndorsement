@@ -17,14 +17,14 @@ class EndorsementForm extends Form
     private $request;
     private $plugin;
 
-    public function __construct($contextId, $submissionId, $request = null, $plugin = null)
+    public function __construct($contextId, $submissionId, $request = null, $plugin = null, $rowId = null)
     {
         $this->contextId = $contextId;
         $this->submissionId = $submissionId;
         $this->request = $request ?? null;
         $this->plugin = $plugin;
         parent::__construct($plugin->getTemplateResource('addEndorsement.tpl'));
-        Validator::addValidations($this, $contextId, $submissionId);
+        Validator::addValidations($this, $contextId, $submissionId, $rowId);
     }
 
     public function initData()
@@ -66,8 +66,9 @@ class EndorsementForm extends Form
 
             $endorserChanged = ($this->getData('endorserEmail') != $endorsement->getEmail());
             Repo::endorsement()->edit($endorsement, $params);
+            $newEndorsement = Repo::endorsement()->get((int)$rowId, $this->contextId);
             if (!$submission->getSubmissionProgress()) {
-                $this->plugin->sendEmailToEndorser($publication, $endorsement);
+                $this->plugin->sendEmailToEndorser($publication, $newEndorsement, $endorserChanged);
             }
         } else {
             $params = [
