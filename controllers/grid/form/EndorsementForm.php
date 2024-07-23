@@ -25,12 +25,17 @@ class EndorsementForm extends Form
         $this->submissionId = $submissionId;
         $this->request = $request ?? null;
         $this->plugin = $plugin;
+        parent::__construct($plugin->getTemplateResource('addEndorsement.tpl'));
 
         $this->addCheck(new FormValidatorPost($this));
         $this->addCheck(new FormValidatorCSRF($this));
         $this->addCheck(new \PKP\form\validation\FormValidator($this, 'endorserName', 'required', 'validator.required'));
         $this->addCheck(new \PKP\form\validation\FormValidatorEmail($this, 'endorserEmail', 'required', 'user.profile.form.emailRequired'));
-        parent::__construct($plugin->getTemplateResource('addEndorsement.tpl'));
+        $this->addCheck(new \PKP\form\validation\FormValidatorCustom($this, 'endorserEmail', 'required', 'user.register.form.emailExists', function ($endorserEmail) use ($contextId, $submissionId) {
+            $submission = Repo::submission()->get($submissionId);
+            $publication = $submission->getCurrentPublication();
+            return is_null(Repo::endorsement()->getByEmail($endorserEmail, $publication->getId(), $contextId));
+        }));
     }
 
     public function initData()
