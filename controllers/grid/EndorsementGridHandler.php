@@ -91,13 +91,16 @@ class EndorsementGridHandler extends GridHandler
             $cellProvider,
             ['maxLength' => 40]
         ));
-        $this->addColumn(new GridColumn(
-            'endorsementStatus',
-            'plugins.generic.plauditPreEndorsement.endorsementStatus',
-            null,
-            $this->plugin->getTemplateResource('gridCells/endorsementStatus.tpl'),
-            $cellProvider
-        ));
+
+        if (!$submission->getSubmissionProgress()) {
+            $this->addColumn(new GridColumn(
+                'endorsementStatus',
+                'plugins.generic.plauditPreEndorsement.endorsementStatus',
+                null,
+                $this->plugin->getTemplateResource('gridCells/endorsementStatus.tpl'),
+                $cellProvider
+            ));
+        }
     }
 
     protected function loadData($request, $filter)
