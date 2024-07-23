@@ -63,7 +63,12 @@ class EndorsementForm extends Form
                 'name' => $this->getData('endorserName'),
                 'email' => $this->getData('endorserEmail')
             ];
+
+            $endorserChanged = ($this->getData('endorserEmail') != $endorsement->getEmail());
             Repo::endorsement()->edit($endorsement, $params);
+            if (!$submission->getSubmissionProgress()) {
+                $this->plugin->sendEmailToEndorser($publication, $endorsement);
+            }
         } else {
             $params = [
                 'contextId' => $this->contextId,
@@ -74,7 +79,6 @@ class EndorsementForm extends Form
             $endorsement = Repo::endorsement()->newDataObject($params);
             Repo::endorsement()->add($endorsement);
 
-            $submission = Repo::submission()->get($this->submissionId);
             if (!$submission->getSubmissionProgress()) {
                 $this->plugin->sendEmailToEndorser($publication, $endorsement);
             }
