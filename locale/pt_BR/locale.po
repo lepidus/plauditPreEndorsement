@@ -188,3 +188,6 @@ msgstr "Tentativa de envio do endosso à Plaudit com DOI {$doi} e ORCID {$orcid}
 
 msgid "plugins.generic.plauditPreEndorsement.log.endorsementRemoved"
 msgstr "Um endosso de submissão foi removido: {$endorserName} ({$endorserEmail})"
+
+msgid "plugins.generic.plauditPreEndorsement.addEndorsementForm.emailExistsInSubmissionAuthors"
+msgstr "O e-mail do endossador não pode ser o mesmo de autores da submissão."

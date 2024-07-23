@@ -10,8 +10,6 @@ use APP\plugins\generic\plauditPreEndorsement\classes\endorsement\Endorsement;
 
 trait TestHelperTrait
 {
-    private const DEFAULT_LOCALE = "en";
-
     private function createServerMock()
     {
         $server = $this->getMockBuilder(Server::class)
@@ -21,9 +19,9 @@ trait TestHelperTrait
         $server->expects($this->any())
             ->method('getId')
             ->will($this->returnValue(1));
-        $server->setName('server-title', self::DEFAULT_LOCALE);
+        $server->setName('server-title', "en");
         $server->setData('publisherInstitution', 'server-publisher');
-        $server->setPrimaryLocale(self::DEFAULT_LOCALE);
+        $server->setPrimaryLocale("en");
         $server->setPath('server-path');
         $server->setId(1);
 

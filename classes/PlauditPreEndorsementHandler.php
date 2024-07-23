@@ -18,46 +18,6 @@ class PlauditPreEndorsementHandler extends Handler
     public const AUTH_INVALID_TOKEN = 'invalid_token';
     public const AUTH_ACCESS_DENIED = 'access_denied';
 
-    public function updateEndorsement($args, $request)
-    {
-        $plugin = new PlauditPreEndorsementPlugin();
-        $submissionId = $request->getUserVar('submissionId');
-        $endorserName = $request->getUserVar('endorserName');
-        $endorserEmail = $request->getUserVar('endorserEmail');
-
-        $submission = Repo::submission()->get($submissionId);
-        $publication = $submission->getCurrentPublication();
-
-        $endorsementIsConfirmed = $publication->getData('endorsementStatus') == Endorsement::STATUS_CONFIRMED;
-        if ($endorsementIsConfirmed) {
-            return http_response_code(400);
-        }
-
-        if (!$plugin->inputIsEmail($endorserEmail)) {
-            http_response_code(400);
-            header('Content-Type: application/json');
-            echo json_encode(['errorMessage' => __('plugins.generic.plauditPreEndorsement.endorsementEmailInvalid')]);
-            return;
-        }
-
-        if ($this->checkDataIsFromAnyAuthor($publication, 'email', $endorserEmail)) {
-            http_response_code(400);
-            header('Content-Type: application/json');
-            echo json_encode(['errorMessage' => __('plugins.generic.plauditPreEndorsement.endorsementFromAuthor')]);
-            return;
-        }
-
-        $endorserChanged = ($endorserEmail != $publication->getData('endorserEmail'));
-
-        $publication->setData('endorserName', $endorserName);
-        $publication->setData('endorserEmail', $endorserEmail);
-        Repo::publication()->edit($publication, []);
-
-        $plugin->sendEmailToEndorser($publication, $endorserChanged);
-
-        return http_response_code(200);
-    }
-
     private function checkDataIsFromAnyAuthor($publication, $dataName, $dataValue): bool
     {
         $authors = $publication->getData('authors');

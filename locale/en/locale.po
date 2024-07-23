@@ -188,3 +188,6 @@ msgstr "Attempt to send endorsement to Plaudit with DOI {$doi} and ORCID {$orcid
 
 msgid "plugins.generic.plauditPreEndorsement.log.endorsementRemoved"
 msgstr "A submission endorsement has been removed: {$endorserName} ({$endorserEmail})"
+
+msgid "plugins.generic.plauditPreEndorsement.addEndorsementForm.emailExistsInSubmissionAuthors"
+msgstr "The endorser's email address must not be the same as that of the authors of the submission."

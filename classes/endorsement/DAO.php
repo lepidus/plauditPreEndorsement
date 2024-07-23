@@ -5,6 +5,7 @@ namespace APP\plugins\generic\plauditPreEndorsement\classes\endorsement;
 use PKP\core\EntityDAO;
 use Illuminate\Support\LazyCollection;
 use PKP\core\traits\EntityWithParent;
+use Illuminate\Support\Facades\DB;
 
 class DAO extends EntityDAO
 {
@@ -55,6 +56,17 @@ class DAO extends EntityDAO
         return $query
             ->getQueryBuilder()
             ->count();
+    }
+
+    public function getByEmail(string $email, int $publicationId, int $contextId): ?Endorsement
+    {
+        $row = DB::table($this->table)
+            ->where('email', $email)
+            ->where('publication_id', $publicationId)
+            ->where('context_id', $contextId)
+            ->get('endorsement_id')
+            ->first();
+        return $row ? $this->get($row->endorsement_id) : null;
     }
 
     public function getMany(Collector $query): LazyCollection

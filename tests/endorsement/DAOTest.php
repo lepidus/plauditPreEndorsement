@@ -77,6 +77,20 @@ class DAOTest extends DatabaseTestCase
         self::assertEquals($fetchedEndorsement->getName(), $updatedName);
     }
 
+    public function testGetEndorsementByEmail(): void
+    {
+        $endorsement = $this->retrieveEndorsement();
+
+        self::assertEquals(
+            $this->endorsementDAO->getByEmail(
+                $endorsement->getEmail(),
+                (int) $endorsement->getPublicationId(),
+                (int) $endorsement->getContextId()
+            ),
+            $endorsement
+        );
+    }
+
     private function retrieveEndorsement($endorsementId = null)
     {
         $insertedEndorsementId = isset($endorsementId) ? $endorsementId : $this->createEndorsement();

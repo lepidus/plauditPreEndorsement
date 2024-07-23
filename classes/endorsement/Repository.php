@@ -51,6 +51,11 @@ class Repository
         return $this->dao->exists($id, $contextId);
     }
 
+    public function getByEmail(string $email, int $publicationId, int $contextId): ?Endorsement
+    {
+        return $this->dao->getByEmail($email, $publicationId, $contextId);
+    }
+
     public function getCollector(): Collector
     {
         return app(Collector::class);

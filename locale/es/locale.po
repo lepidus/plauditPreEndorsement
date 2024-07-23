@@ -188,3 +188,6 @@ msgstr "Intento de enviar endoso a Plaudit con DOI {$doi} y ORCID {$orcid}"
 
 msgid "plugins.generic.plauditPreEndorsement.log.endorsementRemoved"
 msgstr "Se ha eliminado un endoso del envío: {$endorserName} ({$endorserEmail})"
+
+msgid "plugins.generic.plauditPreEndorsement.addEndorsementForm.emailExistsInSubmissionAuthors"
+msgstr "La dirección de correo electrónico del avalista no debe coincidir con la de los autores del envío."
