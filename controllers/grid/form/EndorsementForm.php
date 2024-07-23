@@ -28,6 +28,7 @@ class EndorsementForm extends Form
 
         $this->addCheck(new FormValidatorPost($this));
         $this->addCheck(new FormValidatorCSRF($this));
+        $this->addCheck(new \PKP\form\validation\FormValidator($this, 'endorserName', 'required', 'validator.required'));
         $this->addCheck(new \PKP\form\validation\FormValidatorEmail($this, 'endorserEmail', 'required', 'user.profile.form.emailRequired'));
         parent::__construct($plugin->getTemplateResource('addEndorsement.tpl'));
     }
