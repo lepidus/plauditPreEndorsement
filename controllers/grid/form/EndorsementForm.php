@@ -5,9 +5,7 @@ namespace APP\plugins\generic\plauditPreEndorsement\controllers\grid\form;
 use APP\template\TemplateManager;
 use PKP\db\DAORegistry;
 use PKP\form\Form;
-use PKP\form\validation\FormValidator;
-use PKP\form\validation\FormValidatorCSRF;
-use PKP\form\validation\FormValidatorPost;
+use APP\plugins\generic\plauditPreEndorsement\controllers\grid\form\Validator;
 use PKP\plugins\PluginRegistry;
 use APP\plugins\generic\plauditPreEndorsement\classes\facades\Repo;
 use APP\submission\Submission;
@@ -26,28 +24,7 @@ class EndorsementForm extends Form
         $this->request = $request ?? null;
         $this->plugin = $plugin;
         parent::__construct($plugin->getTemplateResource('addEndorsement.tpl'));
-
-        $this->addCheck(new FormValidatorPost($this));
-        $this->addCheck(new FormValidatorCSRF($this));
-        $this->addCheck(new \PKP\form\validation\FormValidator($this, 'endorserName', 'required', 'validator.required'));
-        $this->addCheck(new \PKP\form\validation\FormValidatorEmail($this, 'endorserEmail', 'required', 'user.profile.form.emailRequired'));
-        $this->addCheck(new \PKP\form\validation\FormValidatorCustom($this, 'endorserEmail', 'required', 'user.register.form.emailExists', function ($endorserEmail) use ($contextId, $submissionId) {
-            $submission = Repo::submission()->get($submissionId);
-            $publication = $submission->getCurrentPublication();
-            return is_null(Repo::endorsement()->getByEmail($endorserEmail, $publication->getId(), $contextId));
-        }));
-        $this->addCheck(new \PKP\form\validation\FormValidatorCustom($this, 'endorserEmail', 'required', 'plugins.generic.plauditPreEndorsement.addEndorsementForm.emailExistsInSubmissionAuthors', function ($endorserEmail) use ($submissionId) {
-            $submission = Repo::submission()->get($submissionId);
-            $publication = $submission->getCurrentPublication();
-            $authors = $publication->getData('authors');
-
-            foreach ($authors as $author) {
-                if ($author->getData('email') == $endorserEmail) {
-                    return false;
-                }
-            }
-            return true;
-        }));
+        Validator::addValidations($this, $contextId, $submissionId);
     }
 
     public function initData()
