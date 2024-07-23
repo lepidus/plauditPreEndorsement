@@ -132,4 +132,14 @@ class RepositoryTest extends DatabaseTestCase
             ->getMany();
         self::assertFalse(in_array($endorsement, $endorsements->all()));
     }
+
+    public function testGetEndorsementByEmail(): void
+    {
+        $repository = app(Repository::class);
+        $endorsement = $repository->newDataObject($this->params);
+        $repository->add($endorsement);
+
+        $fetchedEndorsement = $repository->getByEmail($this->params['email'], $endorsement->getPublicationId(), $endorsement->getContextId());
+        self::assertEquals($endorsement, $fetchedEndorsement);
+    }
 }
