@@ -57,7 +57,6 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
             Hook::add('Template::SubmissionWizard::Section', array($this, 'addToSubmissionWizardTemplate'));
             Hook::add('Template::SubmissionWizard::Section::Review', [$this, 'addToReviewSubmissionWizardTemplate']);
             Hook::add('Schema::get::endorsement', [$this, 'addEndorsementSchema']);
-            Hook::add('Submission::validateSubmit', [$this, 'validateEndorsement']);
 
             Hook::add('Template::Workflow::Publication', [$this, 'addEndorsementFieldsToWorkflow']);
             Hook::add('LoadHandler', [$this, 'setupPreEndorsementHandler']);
@@ -124,11 +123,6 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
         Repo::eventLog()->add($eventLog);
     }
 
-    public function inputIsEmail(string $input): bool
-    {
-        return filter_var($input, FILTER_VALIDATE_EMAIL);
-    }
-
     public function addToSubmissionWizardSteps($hookName, $params)
     {
         $request = Application::get()->getRequest();
@@ -189,28 +183,6 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
 
         if ($step == 'details') {
             $output .= $templateMgr->fetch($this->getTemplateResource('endorsementComponent.tpl'));
-        }
-
-        return false;
-    }
-
-    public function validateEndorsement($hookName, $params)
-    {
-        $errors = &$params[0];
-        $submission = $params[1];
-        $publication = $submission->getCurrentPublication();
-        $endorsementEmail = $publication->getData('endorserEmail');
-
-        if ($endorsementEmail) {
-            if (!$this->inputIsEmail($endorsementEmail)) {
-                $errors['endorsement']  = [__("plugins.generic.plauditPreEndorsement.endorsementEmailInvalid")];
-            } else {
-                foreach ($publication->getData('authors') as $author) {
-                    if ($author->getData('email') == $endorsementEmail) {
-                        $errors['endorsement'] = [__("plugins.generic.plauditPreEndorsement.endorsementFromAuthor")];
-                    }
-                }
-            }
         }
 
         return false;
