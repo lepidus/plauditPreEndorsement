@@ -126,4 +126,12 @@ describe("Plaudit Pre-Endorsement Plugin - Endorser fields in submission wizard"
         cy.waitJQuery();
         cy.contains('h1', 'Submission complete');
     });
+
+    it("Check endorsements emails", function() {
+        cy.visit('localhost:8025');
+        cy.contains('Ramiro Vaca');
+        cy.contains('DummyEndorsement@mailinator.com');
+        cy.contains('bong.joon-ho@email.kr');
+        cy.contains('Endorsement confirmation');
+    });
 });
