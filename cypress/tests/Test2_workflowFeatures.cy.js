@@ -62,4 +62,13 @@ describe("Plaudit Pre-Endorsement Plugin - Workflow features", function() {
         cy.contains('A submission endorsement has been removed: Bong Joon-ho (bong.joon-ho@email.kr)');
         cy.contains('An endorsement confirmation e-mail has been sent to Francis Ford Coppola (francis.coppola@hollywood.com)');
     });
+
+    it("Check endorsements emails", function() {
+        cy.visit('localhost:8025');
+        cy.contains('Ramiro Vaca');
+        cy.contains('DummyEndorsement@mailinator.com');
+        cy.contains('bong.joon-ho@email.kr');
+        cy.contains('francis.coppola@hollywood.com');
+        cy.contains('Endorsement confirmation');
+    });
 });
