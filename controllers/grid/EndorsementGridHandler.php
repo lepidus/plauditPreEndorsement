@@ -85,9 +85,9 @@ class EndorsementGridHandler extends GridHandler
         ));
         $this->addColumn(new GridColumn(
             'endorserEmail',
-            'plugins.generic.plauditPreEndorsement.endorserEmail',
+            'plugins.generic.plauditPreEndorsement.emailColumnName',
             null,
-            'controllers/grid/gridCell.tpl',
+            $this->plugin->getTemplateResource('gridCells/endorserEmail.tpl'),
             $cellProvider,
             ['maxLength' => 40]
         ));
