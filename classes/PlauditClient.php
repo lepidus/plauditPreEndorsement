@@ -3,7 +3,7 @@
 namespace APP\plugins\generic\plauditPreEndorsement\classes;
 
 use APP\core\Application;
-use APP\plugins\generic\plauditPreEndorsement\classes\Endorsement;
+use APP\plugins\generic\plauditPreEndorsement\classes\endorsement\Endorsement;
 
 class PlauditClient
 {
@@ -15,12 +15,12 @@ class PlauditClient
         return $matches[0];
     }
 
-    public function requestEndorsementCreation($publication, $secretKey)
+    public function requestEndorsementCreation($endorsement, $publication, $secretKey)
     {
         $httpClient = Application::get()->getHttpClient();
         $headers = ['Content-Type' => 'application/json'];
 
-        $orcid = $this->filterOrcidNumbers($publication->getData('endorserOrcid'));
+        $orcid = $this->filterOrcidNumbers($endorsement->getOrcid());
         $postData = [
             'secret_key' => $secretKey,
             'orcid' => $orcid,
@@ -39,7 +39,7 @@ class PlauditClient
         return $response;
     }
 
-    public function getEndorsementStatusByResponse($response, $publication)
+    public function getEndorsementStatusByResponse($response, $publication, $endorsement)
     {
         if ($response->getStatusCode() == 200) {
             $body = json_decode($response->getBody()->getContents(), true);
@@ -48,9 +48,9 @@ class PlauditClient
             $responseDoi = $endorsementData['doi'];
             $responseOrcid = $endorsementData['orcid'];
             $publicationDoi = strtolower($publication->getDoi());
-            $publicationOrcid = $this->filterOrcidNumbers($publication->getData('endorserOrcid'));
+            $endorsementOrcid = $this->filterOrcidNumbers($endorsement->getOrcid());
 
-            if ($responseDoi ==  $publicationDoi && $responseOrcid == $publicationOrcid) {
+            if ($responseDoi ==  $publicationDoi && $responseOrcid == $endorsementOrcid) {
                 return Endorsement::STATUS_COMPLETED;
             }
         }

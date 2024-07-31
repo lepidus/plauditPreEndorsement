@@ -5,8 +5,9 @@ namespace APP\plugins\generic\plauditPreEndorsement\classes\tasks;
 use PKP\scheduledTask\ScheduledTask;
 use PKP\plugins\PluginRegistry;
 use APP\core\Application;
-use APP\plugins\generic\plauditPreEndorsement\classes\PlauditPreEndorsementDAO;
 use APP\plugins\generic\plauditPreEndorsement\classes\EndorsementService;
+use APP\plugins\generic\plauditPreEndorsement\classes\facades\Repo;
+use APP\plugins\generic\plauditPreEndorsement\classes\endorsement\Endorsement;
 
 class SendReadyEndorsements extends ScheduledTask
 {
@@ -14,14 +15,16 @@ class SendReadyEndorsements extends ScheduledTask
     {
         PluginRegistry::loadCategory('generic');
         $plugin = PluginRegistry::getPlugin('generic', 'plauditpreendorsementplugin');
-        $preEndorsementDao = new PlauditPreEndorsementDAO();
         $context = Application::get()->getRequest()->getContext();
+        $readyEndorsements = Repo::endorsement()->getCollector()
+            ->filterByContextIds([$context->getId()])
+            ->filterByStatus([Endorsement::STATUS_CONFIRMED])
+            ->getMany()
+            ->toArray();
 
-        $readyPublications = $preEndorsementDao->getPublicationsWithEndorsementReadyToSend($context->getId());
-
-        foreach($readyPublications as $publication) {
+        foreach($readyEndorsements as $endorsement) {
             $endorsementService = new EndorsementService($context->getId(), $plugin);
-            $endorsementService->sendEndorsement($publication, true);
+            $endorsementService->sendEndorsement($endorsement, true);
         }
 
         return true;

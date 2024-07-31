@@ -4,9 +4,9 @@ namespace APP\plugins\generic\plauditPreEndorsement\classes;
 
 use GuzzleHttp\Exception\ClientException;
 use APP\core\Application;
-use APP\facades\Repo;
+use APP\plugins\generic\plauditPreEndorsement\classes\facades\Repo;
 use PKP\core\Core;
-use APP\plugins\generic\plauditPreEndorsement\classes\Endorsement;
+use APP\plugins\generic\plauditPreEndorsement\classes\endorsement\Endorsement;
 use APP\plugins\generic\plauditPreEndorsement\classes\PlauditClient;
 use APP\plugins\generic\plauditPreEndorsement\classes\CrossrefClient;
 use APP\plugins\generic\plauditPreEndorsement\classes\OrcidClient;
@@ -36,15 +36,16 @@ class EndorsementService
         $this->orcidClient = $orcidClient;
     }
 
-    public function sendEndorsement($publication, $needCheckMessageWasLoggedToday = false)
+    public function sendEndorsement($endorsement, $needCheckMessageWasLoggedToday = false)
     {
+        $publication = Repo::publication()->get($endorsement->getPublicationId());
         $validationResult = $this->validateEndorsementSending($publication);
 
-        if($validationResult == 'ok') {
-            $this->sendEndorsementToPlaudit($publication);
+        if ($validationResult == 'ok') {
+            $this->sendEndorsementToPlaudit($endorsement, $publication);
         } else {
             $submissionId = $publication->getData('submissionId');
-            if(!$needCheckMessageWasLoggedToday or !$this->messageWasAlreadyLoggedToday($submissionId, $validationResult)) {
+            if (!$needCheckMessageWasLoggedToday or !$this->messageWasAlreadyLoggedToday($submissionId, $validationResult)) {
                 $submission = Repo::submission()->get($submissionId);
                 $this->plugin->writeOnActivityLog($submission, $validationResult);
             }
@@ -56,32 +57,39 @@ class EndorsementService
         $doi = $publication->getDoi();
         $secretKey = $this->plugin->getSetting($this->contextId, 'plauditAPISecret');
 
-        if(empty($doi)) {
+        if (empty($doi)) {
             return 'plugins.generic.plauditPreEndorsement.log.failedEndorsementSending.emptyDoi';
         }
 
-        if(!$this->crossrefClient->doiIsIndexed($doi)) {
+        if (!$this->crossrefClient->doiIsIndexed($doi)) {
             return 'plugins.generic.plauditPreEndorsement.log.failedEndorsementSending.doiNotIndexed';
         }
 
-        if(empty($secretKey)) {
+        if (empty($secretKey)) {
             return 'plugins.generic.plauditPreEndorsement.log.failedEndorsementSending.secretKey';
         }
 
         return 'ok';
     }
 
-    public function sendEndorsementToPlaudit($publication)
+    public function sendEndorsementToPlaudit($endorsement, $publication)
     {
         $submission = Repo::submission()->get($publication->getData('submissionId'));
-        $this->plugin->writeOnActivityLog($submission, 'plugins.generic.plauditPreEndorsement.log.attemptSendingEndorsement', ['doi' => $publication->getDoi(), 'orcid' => $publication->getData('endorserOrcid')]);
+        $this->plugin->writeOnActivityLog(
+            $submission,
+            'plugins.generic.plauditPreEndorsement.log.attemptSendingEndorsement',
+            [
+                'doi' => $publication->getDoi(),
+                'orcid' => $endorsement->getOrcid()
+            ]
+        );
 
         $plauditClient = new PlauditClient();
 
         try {
             $secretKey = $this->plugin->getSetting($this->contextId, 'plauditAPISecret');
-            $response = $plauditClient->requestEndorsementCreation($publication, $secretKey);
-            $newEndorsementStatus = $plauditClient->getEndorsementStatusByResponse($response, $publication);
+            $response = $plauditClient->requestEndorsementCreation($endorsement, $publication, $secretKey);
+            $newEndorsementStatus = $plauditClient->getEndorsementStatusByResponse($response, $publication, $endorsement);
         } catch (ClientException $exception) {
             $response = $exception->getResponse();
             $responseCode = $response->getStatusCode();
@@ -91,22 +99,20 @@ class EndorsementService
             $newEndorsementStatus = Endorsement::STATUS_COULDNT_COMPLETE;
         }
 
-        Repo::publication()->edit($publication, [
-            'endorsementStatus' => $newEndorsementStatus
-        ]);
+        $endorsement->setStatus($newEndorsementStatus);
+        Repo::endorsement()->edit($endorsement, []);
     }
 
-    public function updateEndorserNameFromOrcid($publication, $orcid)
+    public function updateEndorsementNameFromOrcid($endorsement, $orcid)
     {
         $accessToken = $this->orcidClient->getReadPublicAccessToken();
         $orcidRecord = $this->orcidClient->getOrcidRecord($orcid, $accessToken);
         $fullName = $this->orcidClient->getFullNameFromRecord($orcidRecord);
 
-        $publication->setData('endorserName', $fullName);
-        $publicationDao = Repo::publication()->dao;
-        $publicationDao->update($publication);
+        $endorsement->setName($fullName);
 
-        return $publication;
+        Repo::endorsement()->edit($endorsement, []);
+        return $endorsement;
     }
 
     public function messageWasAlreadyLoggedToday(int $submissionId, string $message): bool
@@ -116,9 +122,9 @@ class EndorsementService
             ->getMany();
         $today = Core::getCurrentDate();
 
-        foreach($submissionLogEntries->toArray() as $logEntry) {
+        foreach ($submissionLogEntries->toArray() as $logEntry) {
             $entryWasLoggedToday = $this->datesAreOnSameDay($logEntry->getDateLogged(), $today);
-            if($entryWasLoggedToday and $logEntry->getMessage() == $message) {
+            if ($entryWasLoggedToday and $logEntry->getMessage() == $message) {
                 return true;
             }
         }

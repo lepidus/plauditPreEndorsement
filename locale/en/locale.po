@@ -32,20 +32,32 @@ msgstr "Endorser's email address"
 msgid "plugins.generic.plauditPreEndorsement.endorserOrcid"
 msgstr "Endorser's ORCID"
 
+msgid "plugins.generic.plauditPreEndorsement.endorsementStatus"
+msgstr "Status"
+
+msgid "plugins.generic.plauditPreEndorsement.emailColumnName"
+msgstr "Endorser's email address / Emails count"
+
 msgid "plugins.generic.plauditPreEndorsement.endorsementConfirmed"
-msgstr "The endorsement has been confirmed by the endorser"
+msgstr "Confirmed by endorser"
 
 msgid "plugins.generic.plauditPreEndorsement.endorsementNotConfirmed"
-msgstr "The endorsement has not yet been confirmed by the endorser"
+msgstr "Awaiting confirmation"
 
 msgid "plugins.generic.plauditPreEndorsement.endorsementDenied"
-msgstr "The endorser denied access to his/her ORCID registry"
+msgstr "Access to ORCID denied"
 
 msgid "plugins.generic.plauditPreEndorsement.endorsementCouldntComplete"
-msgstr "The submission of the endorsement to Plaudit could not be completed"
+msgstr "Error sending to Plaudit"
 
 msgid "plugins.generic.plauditPreEndorsement.endorsementCompleted"
-msgstr "The endorsement was successfully sent to Plaudit"
+msgstr "Sent to Plaudit"
+
+msgid "plugins.generic.plauditPreEndorsement.sendEndorsementToPlauditNotification"
+msgstr "Attempt to send endorsement to Plaudit completed. You can check the endorser's status or view the Activity Log for more details."
+
+msgid "plugins.generic.plauditPreEndorsement.sendEndorsementToPlauditConfirmationMessage"
+msgstr "Do you want to send the endorsement of this submission to Plaudit?"
 
 msgid "plugins.generic.plauditPreEndorsement.endorserEmailCount.one"
 msgstr "1 endorsement confirmation e-mail has been sent to the endorser"
@@ -178,4 +190,4 @@ msgid "plugins.generic.plauditPreEndorsement.log.attemptSendingEndorsement"
 msgstr "Attempt to send endorsement to Plaudit with DOI {$doi} and ORCID {$orcid}"
 
 msgid "plugins.generic.plauditPreEndorsement.log.endorsementRemoved"
-msgstr "The submission endorsement has been removed"
+msgstr "A submission endorsement has been removed: {$endorserName} ({$endorserEmail})"

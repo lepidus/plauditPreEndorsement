@@ -32,20 +32,26 @@ msgstr "Endereço de e-mail do(a) endossador(a)"
 msgid "plugins.generic.plauditPreEndorsement.endorserOrcid"
 msgstr "ORCID do(a) endossador(a)"
 
+msgid "plugins.generic.plauditPreEndorsement.endorsementStatus"
+msgstr "Situação"
+
+msgid "plugins.generic.plauditPreEndorsement.emailColumnName"
+msgstr "Endereço de email do endossador / Contagem de emails"
+
 msgid "plugins.generic.plauditPreEndorsement.endorsementConfirmed"
-msgstr "O endosso foi confirmado pelo(a) endossador(a)"
+msgstr "Confirmado pelo(a) endossador(a)"
 
 msgid "plugins.generic.plauditPreEndorsement.endorsementNotConfirmed"
-msgstr "O endosso ainda não foi confirmado pelo(a) endossador(a)"
+msgstr "Aguardando confirmação"
 
 msgid "plugins.generic.plauditPreEndorsement.endorsementDenied"
-msgstr "O(A) endossador(a) negou acesso ao seu registro ORCID"
+msgstr "Acesso ao ORCID negado"
 
 msgid "plugins.generic.plauditPreEndorsement.endorsementCouldntComplete"
-msgstr "O envio do endosso à Plaudit não pôde ser completado"
+msgstr "Erro no envio à Plaudit"
 
 msgid "plugins.generic.plauditPreEndorsement.endorsementCompleted"
-msgstr "O endosso foi enviado com sucesso à Plaudit"
+msgstr "Enviado à Plaudit"
 
 msgid "plugins.generic.plauditPreEndorsement.endorserEmailCount.one"
 msgstr "Foi enviado 1 e-mail de confirmação do endosso para o(a) endossador(a)"
@@ -55,6 +61,12 @@ msgstr "Foram enviados {$numEmails} e-mails de confirmação do endosso para o(a
 
 msgid "plugins.generic.plauditPreEndorsement.sendEndorsementToPlaudit"
 msgstr "Enviar endosso à Plaudit"
+
+msgid "plugins.generic.plauditPreEndorsement.sendEndorsementToPlauditConfirmationMessage"
+msgstr "Deseja enviar o endosso desta submissão à Plaudit?"
+
+msgid "plugins.generic.plauditPreEndorsement.sendEndorsementToPlauditNotification"
+msgstr "Tentativa de envio do endosso à Plaudit concluída. Você pode checar o status do endossador ou verificar o Histórico de Atividades para mais detalhes."
 
 msgid "plugins.generic.plauditPreEndorsement.removeEndorsement"
 msgstr "Remover endosso"
@@ -143,7 +155,6 @@ msgstr "O ORCID informado para o(a) endossador(a) não pode ser o mesmo de um do
 msgid "plugins.generic.plauditPreEndorsement.failure.contact"
 msgstr "Por favor, entre em contato com o administrador do servidor, informando seu nome, ORCID ID e detalhes da submissão"
 
-
 msgid "plugins.generic.plauditPreEndorsement.log.sentEmailEndorser"
 msgstr "Foi enviado um e-mail de confirmação de endosso para {$endorserName} ({$endorserEmail})"
 
@@ -178,4 +189,4 @@ msgid "plugins.generic.plauditPreEndorsement.log.attemptSendingEndorsement"
 msgstr "Tentativa de envio do endosso à Plaudit com DOI {$doi} e ORCID {$orcid}"
 
 msgid "plugins.generic.plauditPreEndorsement.log.endorsementRemoved"
-msgstr "O endosso da submissão foi removido"
+msgstr "Um endosso de submissão foi removido: {$endorserName} ({$endorserEmail})"

@@ -1,4 +1,4 @@
-#updateEndorserForm {
+#updateEndorsementForm {
     padding: 0.875rem 1rem;
     margin: 0 -2rem;
 }
@@ -43,4 +43,22 @@
 .formButtons {
     text-align: right;
     margin-top: 2rem;
+}
+
+.endorsementStatusCustomBadge {
+    display: inline-block;
+    padding: .25em 1em;
+    font-size: .75rem;
+    font-weight: 400;
+    line-height: 1.5em;
+    border: 1px solid #ddd;
+    border-radius: 1.2em;
+    color: #fff;
+    background-color: #e08914;
+}
+
+#plauditPreEndorsement-button {
+    span {
+        text-align: center;
+    }
 }
