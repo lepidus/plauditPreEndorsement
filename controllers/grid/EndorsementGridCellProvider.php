@@ -14,7 +14,7 @@ class EndorsementGridCellProvider extends GridCellProvider
             case 'endorserName':
                 return array('label' => $element->getName(), 'orcid' => $element->getOrcid());
             case 'endorserEmail':
-                return array('label' => $element->getEmail());
+                return array('label' => $element->getEmail(), 'emailCount' => $element->getEmailCount());
             case 'endorsementStatus':
                 return array(
                     'label' => $this->getEndorsementStatusSuffix($element->getStatus()),
