@@ -22,6 +22,7 @@ use PKP\form\validation\FormValidator;
 use PKP\form\validation\FormValidatorPost;
 use PKP\form\validation\FormValidatorCSRF;
 use PKP\form\validation\FormValidatorCustom;
+use APP\plugins\generic\plauditPreEndorsement\classes\api\APIKeyEncryption;
 use APP\plugins\generic\plauditPreEndorsement\classes\OrcidCredentialsValidator;
 
 class PlauditPreEndorsementSettingsForm extends Form
@@ -43,7 +44,8 @@ class PlauditPreEndorsementSettingsForm extends Form
         $this->plugin = $plugin;
         $orcidValidator = new OrcidCredentialsValidator($plugin);
         $this->validator = $orcidValidator;
-        parent::__construct($plugin->getTemplateResource('settingsForm.tpl'));
+        $template = APIKeyEncryption::secretConfigExists() ? 'settingsForm.tpl' : 'tokenError.tpl';
+        parent::__construct($plugin->getTemplateResource($template));
         $this->addCheck(new FormValidatorPost($this));
         $this->addCheck(new FormValidatorCSRF($this));
 

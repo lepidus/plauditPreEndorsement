@@ -20,6 +20,9 @@ msgstr "This plugin allows authors to do the pre-endorsement of their submission
 msgid "plugins.generic.plauditPreEndorsement.endorsement"
 msgstr "Endorsement"
 
+msgid "plugins.generic.plauditPreEndorsement.settings.apiKeyIsEmpty"
+msgstr "Your site administrator must set a secret in the config file ('api_key_secret')."
+
 msgid "plugins.generic.plauditPreEndorsement.endorsement.description"
 msgstr "Do you have the endorsement of an experienced researcher in the field of knowledge of the manuscript? If yes, please provide the name and e-mail address of the endorsing researcher. Endorsements can significantly speed up the moderation process. The endorsement cannot be given by one of the authors of the manuscript."
 
