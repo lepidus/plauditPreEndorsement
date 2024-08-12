@@ -90,9 +90,20 @@ class PlauditPreEndorsementSettingsForm extends Form
         $contextId = $this->contextId;
         foreach (self::CONFIG_VARS as $configVar => $type) {
             if ($configVar === 'orcidAPIPath') {
-                $plugin->updateSetting($contextId, $configVar, trim($this->getData($configVar), "\"\';"), $type);
+                $orcidAPIPath = trim($this->getData($configVar), "\"\';");
+                $plugin->updateSetting(
+                    $contextId,
+                    $configVar,
+                    APIKeyEncryption::encryptString($orcidAPIPath),
+                    $type
+                );
             } else {
-                $plugin->updateSetting($contextId, $configVar, $this->getData($configVar), $type);
+                $plugin->updateSetting(
+                    $contextId,
+                    $configVar,
+                    APIKeyEncryption::encryptString($this->getData($configVar)),
+                    $type
+                );
             }
         }
 
