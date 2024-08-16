@@ -33,16 +33,20 @@ class APIKeyEncryption
         return JWT::encode($plainText, $secret, 'HS256');
     }
 
-    public static function decryptString(string $encryptedText): string
+    public static function decryptString(string $encryptedText)
     {
         $secret = self::getSecretFromConfig();
         try {
             return JWT::decode($encryptedText, $secret, ['HS256']);
-        } catch (Firebase\JWT\SignatureInvalidException $e) {
-            throw new Exception(
-                'The `api_key_secret` configuration is not the same as the one used to encrypt the key.',
-                1
-            );
+        } catch (Exception $e) {
+            if ($e instanceof Firebase\JWT\SignatureInvalidException) {
+                throw new Exception(
+                    'The `api_key_secret` configuration is not the same as the one used to encrypt the key.',
+                    1
+                );
+            }
+
+            throw $e;
         }
     }
 }

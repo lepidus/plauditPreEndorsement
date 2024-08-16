@@ -7,6 +7,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use PKP\install\DowngradeNotSupportedException;
 use APP\plugins\generic\plauditPreEndorsement\classes\migration\upgrade\MoveLegacyEndorsementsToEndorsementsTable;
+use APP\plugins\generic\plauditPreEndorsement\classes\migration\upgrade\EncryptLegacyCredentials;
 
 class addEndorsementsTable extends Migration
 {
@@ -40,8 +41,10 @@ class addEndorsementsTable extends Migration
             });
         }
 
-        $upgradeMigration = new MoveLegacyEndorsementsToEndorsementsTable();
-        $upgradeMigration->up();
+        foreach ([MoveLegacyEndorsementsToEndorsementsTable::class, EncryptLegacyCredentials::class] as $class) {
+            $migration = new $class();
+            $migration->up();
+        }
     }
 
     public function down(): void
