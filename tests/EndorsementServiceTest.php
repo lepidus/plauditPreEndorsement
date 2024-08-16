@@ -12,6 +12,7 @@ use APP\plugins\generic\plauditPreEndorsement\classes\EndorsementService;
 use APP\plugins\generic\plauditPreEndorsement\PlauditPreEndorsementPlugin;
 use APP\plugins\generic\plauditPreEndorsement\classes\facades\Repo;
 use APP\plugins\generic\plauditPreEndorsement\tests\helpers\TestHelperTrait;
+use APP\plugins\generic\plauditPreEndorsement\classes\api\APIKeyEncryption;
 
 final class EndorsementServiceTest extends DatabaseTestCase
 {
@@ -162,7 +163,8 @@ final class EndorsementServiceTest extends DatabaseTestCase
         $validateResult = $this->endorsementService->validateEndorsementSending($this->publication);
         $this->assertEquals('plugins.generic.plauditPreEndorsement.log.failedEndorsementSending.secretKey', $validateResult);
 
-        $this->plugin->updateSetting($this->contextId, 'plauditAPISecret', $this->secretKey);
+        $secretKey = APIKeyEncryption::encryptString($this->secretKey);
+        $this->plugin->updateSetting($this->contextId, 'plauditAPISecret', $secretKey);
         $validateResult = $this->endorsementService->validateEndorsementSending($this->publication);
         $this->assertEquals('ok', $validateResult);
     }

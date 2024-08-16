@@ -57,7 +57,7 @@ class EndorsementService
     {
         $doi = $publication->getDoi();
         $plauditApiKeySecretSetting = $this->plugin->getSetting($this->contextId, 'plauditAPISecret');
-        $secretKey = APIKeyEncryption::decryptString($plauditApiKeySecretSetting);
+        $secretKey = $plauditApiKeySecretSetting ? APIKeyEncryption::decryptString($plauditApiKeySecretSetting) : null;
 
         if (empty($doi)) {
             return 'plugins.generic.plauditPreEndorsement.log.failedEndorsementSending.emptyDoi';
