@@ -21,4 +21,11 @@ class OrcidCredentialsValidator
         }
         return $valid;
     }
+
+    public static function hasCredentials($plugin, $contextId): bool
+    {
+        $hasClientId = !empty($plugin->getSetting($contextId, 'orcidClientId'));
+        $hasClientSecret = !empty($plugin->getSetting($contextId, 'orcidClientSecret'));
+        return $hasClientId && $hasClientSecret;
+    }
 }

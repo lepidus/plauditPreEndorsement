@@ -1,3 +1,7 @@
 .orcidAPIPath, .orcidClientId, .orcidClientSecret, .plauditAPISecret {
     margin-top: 1rem;
 }
+
+#credentialsFields {
+    overflow: hidden;
+}

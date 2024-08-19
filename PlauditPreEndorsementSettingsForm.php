@@ -60,25 +60,6 @@ class PlauditPreEndorsementSettingsForm extends Form
         }
     }
 
-    public function initData()
-    {
-        $contextId = $this->contextId;
-        $plugin = &$this->plugin;
-        $this->_data = array();
-        foreach (self::CONFIG_VARS as $configVar => $type) {
-            if ($configVar === 'orcidAPIPath') {
-                $this->_data[$configVar] = $plugin->getSetting($contextId, $configVar);
-            } else {
-                $configValue = $plugin->getSetting($contextId, $configVar) ?
-                    APIKeyEncryption::decryptString(
-                        $plugin->getSetting($contextId, $configVar)
-                    ) :
-                    $plugin->getSetting($contextId, $configVar);
-                $this->_data[$configVar] = $configValue;
-            }
-        }
-    }
-
     public function readInputData()
     {
         $this->readUserVars(array_keys(self::CONFIG_VARS));
@@ -90,6 +71,7 @@ class PlauditPreEndorsementSettingsForm extends Form
         $templateMgr->assign('globallyConfigured', $this->orcidIsGloballyConfigured());
         $templateMgr->assign('pluginName', $this->plugin->getName());
         $templateMgr->assign('applicationName', Application::get()->getName());
+        $templateMgr->assign('hasCredentials', OrcidCredentialsValidator::hasCredentials($this->plugin, $this->contextId));
         return parent::fetch($request, $template, $display);
     }
 

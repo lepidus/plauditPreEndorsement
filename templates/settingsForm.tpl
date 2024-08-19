@@ -12,8 +12,12 @@
 
 <script>
 $(function() {ldelim}
-    // Attach the form handler.
     $('#plauditPreEndorsementSettingsForm').pkpHandler('$.pkp.controllers.form.AjaxFormHandler');
+
+    $('#showCredentialsFields').click(function(e) {ldelim}
+        e.preventDefault();
+        $('#credentialsFields').slideToggle(300);
+    {rdelim});
 {rdelim});
 </script>
 <link rel="stylesheet" type="text/css" href="/plugins/generic/plauditPreEndorsement/styles/endorserSettingsForm.css">
@@ -27,24 +31,33 @@ $(function() {ldelim}
         {include file="controllers/notification/inPlaceNotification.tpl" notificationId="orcidProfileSettingsFormNotification"}
         {fbvFormArea id="orcidApiSettings" title="plugins.generic.plauditPreEndorsement.settings.title"}
             {fbvFormSection}
-                {if $globallyConfigured}
-                <p>
-                    {translate key="plugins.generic.plauditPreEndorsement.settings.globallyconfigured"}
-                </p>
-                {/if}
-                {fbvElement id="orcidAPIPath" class="orcidAPIPath" type="select" translate="true" from=$orcidApiUrls selected=$orcidAPIPath required="true" label="plugins.generic.plauditPreEndorsement.settings.orcidAPIPath" disabled=$globallyConfigured}
-                {fbvElement type="text" id="orcidClientId" class="orcidClientId" value=$orcidClientId required="true" label="plugins.generic.plauditPreEndorsement.settings.orcidClientId" maxlength="40" size=$fbvStyles.size.MEDIUM disabled=$globallyConfigured}
-                {if $globallyConfigured}
-                    <p>
-                        {translate key="plugins.generic.plauditPreEndorsement.settings.orcidClientSecret"}: <i>{translate key="plugins.generic.plauditPreEndorsement.settings.hidden"}</i>
+                {if $hasCredentials}
+                    <p class="pkpNotification pkpNotification--success">
+                        {translate key="plugins.generic.plauditPreEndorsement.settings.credentialsRegistered"}
+                        <a href="#" id="showCredentialsFields">{translate key="plugins.generic.plauditPreEndorsement.settings.clickHere"}</a>.
                     </p>
-                {else}
-                    {fbvElement type="text" id="orcidClientSecret" class="orcidClientSecret" value=$orcidClientSecret required="true" label="plugins.generic.plauditPreEndorsement.settings.orcidClientSecret" maxlength="40" size=$fbvStyles.size.MEDIUM disabled=$globallyConfigured}
+                    <p><span class="formRequired">{translate key="plugins.generic.plauditPreEndorsement.settings.securityNotice"}</span></p>
                 {/if}
-                {fbvElement type="text" id="plauditAPISecret" class="plauditAPISecret" value=$plauditAPISecret required="true" label="plugins.generic.plauditPreEndorsement.settings.plauditAPISecret" size=$fbvStyles.size.MEDIUM}
+                <div id="credentialsFields" {if $hasCredentials}style="display:none;"{/if}>
+                    {if $globallyConfigured}
+                        <p>
+                            {translate key="plugins.generic.plauditPreEndorsement.settings.globallyconfigured"}
+                        </p>
+                    {/if}
+                    {fbvElement id="orcidAPIPath" class="orcidAPIPath" type="select" translate="true" from=$orcidApiUrls selected=$orcidAPIPath required="true" label="plugins.generic.plauditPreEndorsement.settings.orcidAPIPath" disabled=$globallyConfigured}
+                    {fbvElement type="text" id="orcidClientId" class="orcidClientId" value=$orcidClientId required="true" label="plugins.generic.plauditPreEndorsement.settings.orcidClientId" maxlength="40" size=$fbvStyles.size.MEDIUM disabled=$globallyConfigured}
+                    {if $globallyConfigured}
+                        <p>
+                            {translate key="plugins.generic.plauditPreEndorsement.settings.orcidClientSecret"}: <i>{translate key="plugins.generic.plauditPreEndorsement.settings.hidden"}</i>
+                        </p>
+                    {else}
+                        {fbvElement type="text" id="orcidClientSecret" class="orcidClientSecret" value=$orcidClientSecret required="true" label="plugins.generic.plauditPreEndorsement.settings.orcidClientSecret" maxlength="40" size=$fbvStyles.size.MEDIUM disabled=$globallyConfigured}
+                    {/if}
+                    {fbvElement type="text" id="plauditAPISecret" class="plauditAPISecret" value=$plauditAPISecret required="true" label="plugins.generic.plauditPreEndorsement.settings.plauditAPISecret" size=$fbvStyles.size.MEDIUM}
+                    <p><span class="formRequired">{translate key="common.requiredField"}</span></p>
+                </div>
             {/fbvFormSection}
         {/fbvFormArea}
         {fbvFormButtons}
-        <p><span class="formRequired">{translate key="common.requiredField"}</span></p>
     </div>
 </form>
