@@ -24,10 +24,10 @@ msgid "plugins.generic.plauditPreEndorsement.settings.apiKeyIsEmpty"
 msgstr "El administrador de su sitio debe establecer un secreto en el archivo de configuración ('api_key_secret')."
 
 msgid "plugins.generic.plauditPreEndorsement.settings.credentialsRegistered"
-msgstr "Sus credenciales ya están registradas. Si desea ingresar nuevas credenciales, "
+msgstr "Sus credenciales ya están registradas."
 
 msgid "plugins.generic.plauditPreEndorsement.settings.clickHere"
-msgstr "haga clic aquí"
+msgstr "Quiero ingresar nuevas credenciales"
 
 msgid "plugins.generic.plauditPreEndorsement.settings.securityNotice"
 msgstr "Por razones de seguridad, las credenciales están siendo encriptadas. Por el mismo motivo, no mostraremos las credenciales ya registradas en este formulario."

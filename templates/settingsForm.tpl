@@ -34,9 +34,9 @@ $(function() {ldelim}
                 {if $hasCredentials}
                     <p class="pkpNotification pkpNotification--success">
                         {translate key="plugins.generic.plauditPreEndorsement.settings.credentialsRegistered"}
-                        <a href="#" id="showCredentialsFields">{translate key="plugins.generic.plauditPreEndorsement.settings.clickHere"}</a>.
                     </p>
-                    <p><span class="formRequired">{translate key="plugins.generic.plauditPreEndorsement.settings.securityNotice"}</span></p>
+                    <p><span class="sub_label">{translate key="plugins.generic.plauditPreEndorsement.settings.securityNotice"}</span></p>
+                    <a href="#" id="showCredentialsFields">{translate key="plugins.generic.plauditPreEndorsement.settings.clickHere"}</a>.
                 {/if}
                 <div id="credentialsFields" {if $hasCredentials}style="display:none;"{/if}>
                     {if $globallyConfigured}
