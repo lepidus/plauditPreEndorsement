@@ -20,6 +20,18 @@ msgstr "Este módulo permite a los autores dar aprobación previa a sus envíos"
 msgid "plugins.generic.plauditPreEndorsement.endorsement"
 msgstr "Endoso"
 
+msgid "plugins.generic.plauditPreEndorsement.settings.apiKeyIsEmpty"
+msgstr "El administrador de su sitio debe establecer un secreto en el archivo de configuración ('api_key_secret')."
+
+msgid "plugins.generic.plauditPreEndorsement.settings.credentialsRegistered"
+msgstr "Sus credenciales ya están registradas."
+
+msgid "plugins.generic.plauditPreEndorsement.settings.clickHere"
+msgstr "Quiero ingresar nuevas credenciales"
+
+msgid "plugins.generic.plauditPreEndorsement.settings.securityNotice"
+msgstr "Por razones de seguridad, las credenciales están siendo encriptadas. Por el mismo motivo, no mostraremos las credenciales ya registradas en este formulario."
+
 msgid "plugins.generic.plauditPreEndorsement.endorsement.description"
 msgstr "¿Cuenta con el aval de un/a investigador/a experimentado/a en el campo de conocimiento del manuscrito? En caso afirmativo, indique el nombre y la dirección de correo electrónico del/a investigador/a que lo avala. Los avales pueden acelerar considerablemente el proceso de moderación. El aval no puede ser dado por uno de los autores del manuscrito."
 

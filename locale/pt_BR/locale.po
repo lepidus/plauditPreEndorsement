@@ -20,6 +20,18 @@ msgstr "Esse plugin permite aos autores realizar o pré-endosso das suas submiss
 msgid "plugins.generic.plauditPreEndorsement.endorsement"
 msgstr "Endosso"
 
+msgid "plugins.generic.plauditPreEndorsement.settings.apiKeyIsEmpty"
+msgstr "O administrador do seu site deve definir um segredo no arquivo de configuração ('api_key_secret')."
+
+msgid "plugins.generic.plauditPreEndorsement.settings.credentialsRegistered"
+msgstr "Suas credenciais já estão registradas."
+
+msgid "plugins.generic.plauditPreEndorsement.settings.clickHere"
+msgstr "Quero inserir novas credenciais"
+
+msgid "plugins.generic.plauditPreEndorsement.settings.securityNotice"
+msgstr "Por questões de segurança, as credenciais estão sendo criptografadas. Pela mesma razão, não exibiremos as credenciais já registradas neste formulário."
+
 msgid "plugins.generic.plauditPreEndorsement.endorsement.description"
 msgstr "Você possui o endosso de um(a) pesquisador(a) experiente na área de conhecimento do manuscrito? Em caso positivo, informe o nome e endereço e-mail do(a) pesquisador(a) endossador(a). Endossos podem acelerar significativamente o processo de moderação. O endosso não pode ser dado por um dos autores do manuscrito."
 

@@ -3,6 +3,7 @@
 namespace APP\plugins\generic\plauditPreEndorsement\classes;
 
 use APP\core\Application;
+use APP\plugins\generic\plauditPreEndorsement\classes\api\APIKeyEncryption;
 
 class OrcidClient
 {
@@ -31,8 +32,8 @@ class OrcidClient
         $tokenUrl = $this->plugin->getSetting($this->contextId, 'orcidAPIPath') . 'oauth/token';
         $requestHeaders = ['Accept' => 'application/json'];
         $requestData = [
-            'client_id' => $this->plugin->getSetting($this->contextId, 'orcidClientId'),
-            'client_secret' => $this->plugin->getSetting($this->contextId, 'orcidClientSecret'),
+            'client_id' => APIKeyEncryption::decryptString($this->plugin->getSetting($this->contextId, 'orcidClientId')),
+            'client_secret' => APIKeyEncryption::decryptString($this->plugin->getSetting($this->contextId, 'orcidClientSecret')),
             'grant_type' => 'client_credentials',
             'scope' => '/read-public'
         ];
@@ -76,8 +77,8 @@ class OrcidClient
         $tokenUrl = $this->plugin->getSetting($this->contextId, 'orcidAPIPath') . 'oauth/token';
         $requestHeaders = ['Accept' => 'application/json'];
         $requestData = [
-            'client_id' => $this->plugin->getSetting($this->contextId, 'orcidClientId'),
-            'client_secret' => $this->plugin->getSetting($this->contextId, 'orcidClientSecret'),
+            'client_id' => APIKeyEncryption::decryptString($this->plugin->getSetting($this->contextId, 'orcidClientId')),
+            'client_secret' => APIKeyEncryption::decryptString($this->plugin->getSetting($this->contextId, 'orcidClientSecret')),
             'grant_type' => 'authorization_code',
             'code' => $code
         ];
@@ -125,7 +126,7 @@ class OrcidClient
 
         return $this->getOauthPath() . 'authorize?' . http_build_query(
             array(
-                'client_id' => $this->plugin->getSetting($this->contextId, 'orcidClientId'),
+                'client_id' => APIKeyEncryption::decryptString($this->plugin->getSetting($this->contextId, 'orcidClientId')),
                 'response_type' => 'code',
                 'scope' => $scope,
                 'redirect_uri' => $redirectUrl)

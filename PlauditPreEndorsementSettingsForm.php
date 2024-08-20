@@ -22,6 +22,7 @@ use PKP\form\validation\FormValidator;
 use PKP\form\validation\FormValidatorPost;
 use PKP\form\validation\FormValidatorCSRF;
 use PKP\form\validation\FormValidatorCustom;
+use APP\plugins\generic\plauditPreEndorsement\classes\api\APIKeyEncryption;
 use APP\plugins\generic\plauditPreEndorsement\classes\OrcidCredentialsValidator;
 
 class PlauditPreEndorsementSettingsForm extends Form
@@ -43,7 +44,8 @@ class PlauditPreEndorsementSettingsForm extends Form
         $this->plugin = $plugin;
         $orcidValidator = new OrcidCredentialsValidator($plugin);
         $this->validator = $orcidValidator;
-        parent::__construct($plugin->getTemplateResource('settingsForm.tpl'));
+        $template = APIKeyEncryption::secretConfigExists() ? 'settingsForm.tpl' : 'tokenError.tpl';
+        parent::__construct($plugin->getTemplateResource($template));
         $this->addCheck(new FormValidatorPost($this));
         $this->addCheck(new FormValidatorCSRF($this));
 
@@ -58,16 +60,6 @@ class PlauditPreEndorsementSettingsForm extends Form
         }
     }
 
-    public function initData()
-    {
-        $contextId = $this->contextId;
-        $plugin = &$this->plugin;
-        $this->_data = array();
-        foreach (self::CONFIG_VARS as $configVar => $type) {
-            $this->_data[$configVar] = $plugin->getSetting($contextId, $configVar);
-        }
-    }
-
     public function readInputData()
     {
         $this->readUserVars(array_keys(self::CONFIG_VARS));
@@ -79,6 +71,7 @@ class PlauditPreEndorsementSettingsForm extends Form
         $templateMgr->assign('globallyConfigured', $this->orcidIsGloballyConfigured());
         $templateMgr->assign('pluginName', $this->plugin->getName());
         $templateMgr->assign('applicationName', Application::get()->getName());
+        $templateMgr->assign('hasCredentials', OrcidCredentialsValidator::hasCredentials($this->plugin, $this->contextId));
         return parent::fetch($request, $template, $display);
     }
 
@@ -88,9 +81,20 @@ class PlauditPreEndorsementSettingsForm extends Form
         $contextId = $this->contextId;
         foreach (self::CONFIG_VARS as $configVar => $type) {
             if ($configVar === 'orcidAPIPath') {
-                $plugin->updateSetting($contextId, $configVar, trim($this->getData($configVar), "\"\';"), $type);
+                $orcidAPIPath = trim($this->getData($configVar), "\"\';");
+                $plugin->updateSetting(
+                    $contextId,
+                    $configVar,
+                    $orcidAPIPath,
+                    $type
+                );
             } else {
-                $plugin->updateSetting($contextId, $configVar, $this->getData($configVar), $type);
+                $plugin->updateSetting(
+                    $contextId,
+                    $configVar,
+                    APIKeyEncryption::encryptString($this->getData($configVar)),
+                    $type
+                );
             }
         }
 

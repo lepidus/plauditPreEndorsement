@@ -8,3 +8,11 @@ include:
       - 'templates/groups/pkp_plugin.yml'
       - 'templates/groups/ops/unit_tests.yml'
       - 'templates/groups/ops/cypress_tests.yml'
+
+.unit_test_template:
+  before_script:
+    - sed -i 's/api_key_secret = ""/api_key_secret = "$API_KEY_SECRET"/' /var/www/ops/config.inc.php
+
+.integration_tests_template:
+  before_script:
+    - sed -i 's/api_key_secret = ""/api_key_secret = "$API_KEY_SECRET"/' /var/www/ops/config.inc.php

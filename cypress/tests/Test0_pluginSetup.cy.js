@@ -29,5 +29,10 @@ describe('Plaudit Pre-endorsement - Plugin setup', function () {
 
 		cy.get('#plauditPreEndorsementSettingsForm button:contains("OK")').click();
 		cy.contains('Please configure the ORCID API access for use in pulling ORCID profile information').should('not.exist');
+
+		cy.get('a[id^=' + pluginRowId + '-settings-button]').click();
+		cy.contains('Your credentials are already registered.');
+		cy.contains('For security reasons, the credentials are being encrypted. For the same reason, we will not display the already registered credentials in this form.');
+		cy.contains('I want to enter new credentials.');
 	});
 });
