@@ -22,7 +22,7 @@ class SendReadyEndorsements extends ScheduledTask
             ->getMany()
             ->toArray();
 
-        foreach($readyEndorsements as $endorsement) {
+        foreach ($readyEndorsements as $endorsement) {
             $endorsementService = new EndorsementService($context->getId(), $plugin);
             $endorsementService->sendEndorsement($endorsement, true);
         }
