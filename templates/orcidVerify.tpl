@@ -31,7 +31,8 @@
                 
                 {translate key="plugins.generic.plauditPreEndorsement.verify.{$errorType|escape}"}
             </div>
-            {translate key="plugins.generic.plauditPreEndorsement.failure.contact"}
+            </br>
+            {translate key="plugins.generic.plauditPreEndorsement.failure.contact" contactEmail=$contactEmail}
         {/if}
     </div>
 </div>

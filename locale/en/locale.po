@@ -153,7 +153,8 @@ msgid "plugins.generic.plauditPreEndorsement.verify.failure"
 msgstr "Failure"
 
 msgid "plugins.generic.plauditPreEndorsement.verify.invalidToken"
-msgstr "Your email does not correspond to the one informed as endorser of the submission currently"
+msgstr "An error occurred during authentication and your ORCID could not be added as an endorser. "
+"If you have received multiple emails, please make sure you are using the link sent in the most recent email."
 
 msgid "plugins.generic.plauditPreEndorsement.verify.denied"
 msgstr "You denied access to your ORCID record"
@@ -165,7 +166,8 @@ msgid "plugins.generic.plauditPreEndorsement.verify.orcidFromAuthor"
 msgstr "The ORCID informed for the endorser cannot be the same as one of the authors of the submission"
 
 msgid "plugins.generic.plauditPreEndorsement.failure.contact"
-msgstr "Please contact the server manager with your name, ORCID iD, and details of your submission"
+msgstr "If the problem persists, contact the server manager by the e-mail address <a href=\"mailto:{$contactEmail}\">{$contactEmail}</a>,"
+" providing your name, ORCID iD, and details of your submission"
 
 
 msgid "plugins.generic.plauditPreEndorsement.log.sentEmailEndorser"

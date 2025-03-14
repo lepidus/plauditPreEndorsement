@@ -83,6 +83,8 @@ class PlauditPreEndorsementHandler extends Handler
 
     private function logMessageAndDisplayTemplate($submission, $request, string $message, array $data)
     {
+        $context = $request->getContext();
+        $data['contactEmail'] = $context->getData('contactEmail');
         $plugin = PluginRegistry::getPlugin('generic', 'plauditpreendorsementplugin');
         $templatePath = $plugin->getTemplateResource('orcidVerify.tpl');
 
