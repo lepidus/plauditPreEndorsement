@@ -86,6 +86,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
 
     public function writeOnActivityLog($submission, $message, $messageParams = array())
     {
+        import('lib.pkp.classes.log.SubmissionLog');
         $request = Application::get()->getRequest();
         SubmissionLog::logEvent($request, $submission, SUBMISSION_LOG_METADATA_UPDATE, $message, $messageParams);
     }
@@ -104,15 +105,15 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
 
         $endorserEmail = $form->getData('endorserEmail');
 
-        if(!empty($endorserEmail)) {
-            if(!$this->inputIsEmail($endorserEmail)) {
+        if (!empty($endorserEmail)) {
+            if (!$this->inputIsEmail($endorserEmail)) {
                 $form->addErrorField('endorsementEmailInvalid');
                 $form->addError('endorsementEmailInvalid', __("plugins.generic.plauditPreEndorsement.endorsementEmailInvalid"));
                 return;
             }
 
-            foreach($authors as $author) {
-                if($author->getData('email') == $endorserEmail) {
+            foreach ($authors as $author) {
+                if ($author->getData('email') == $endorserEmail) {
                     $form->addErrorField('endorsementFromAuthor');
                     $form->addError('endorsementFromAuthor', __("plugins.generic.plauditPreEndorsement.endorsementFromAuthor"));
                     return;
@@ -276,7 +277,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
                 'authors' => htmlspecialchars($publication->getAuthorString($authorsUserGroups))
             ]);
 
-            if(is_null($publication->getData('endorserEmailCount')) || $endorserChanged) {
+            if (is_null($publication->getData('endorserEmailCount')) || $endorserChanged) {
                 $endorserEmailCount = 0;
             } else {
                 $endorserEmailCount = $publication->getData('endorserEmailCount');

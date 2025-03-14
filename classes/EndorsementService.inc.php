@@ -34,11 +34,11 @@ class EndorsementService
     {
         $validationResult = $this->validateEndorsementSending($publication);
 
-        if($validationResult == 'ok') {
+        if ($validationResult == 'ok') {
             $this->sendEndorsementToPlaudit($publication);
         } else {
             $submissionId = $publication->getData('submissionId');
-            if(!$needCheckMessageWasLoggedToday or !$this->messageWasAlreadyLoggedToday($submissionId, $validationResult)) {
+            if (!$needCheckMessageWasLoggedToday or !$this->messageWasAlreadyLoggedToday($submissionId, $validationResult)) {
                 $submission = DAORegistry::getDAO('SubmissionDAO')->getById($submissionId);
                 $this->plugin->writeOnActivityLog($submission, $validationResult);
             }
@@ -50,15 +50,15 @@ class EndorsementService
         $doi = $publication->getData('pub-id::doi');
         $secretKey = $this->plugin->getSetting($this->contextId, 'plauditAPISecret');
 
-        if(empty($doi)) {
+        if (empty($doi)) {
             return 'plugins.generic.plauditPreEndorsement.log.failedEndorsementSending.emptyDoi';
         }
 
-        if(!$this->crossrefClient->doiIsIndexed($doi)) {
+        if (!$this->crossrefClient->doiIsIndexed($doi)) {
             return 'plugins.generic.plauditPreEndorsement.log.failedEndorsementSending.doiNotIndexed';
         }
 
-        if(empty($secretKey)) {
+        if (empty($secretKey)) {
             return 'plugins.generic.plauditPreEndorsement.log.failedEndorsementSending.secretKey';
         }
 
@@ -108,9 +108,9 @@ class EndorsementService
         $submissionLogEntries = $submissionEventLogDao->getBySubmissionId($submissionId);
         $today = Core::getCurrentDate();
 
-        foreach($submissionLogEntries->toArray() as $logEntry) {
+        foreach ($submissionLogEntries->toArray() as $logEntry) {
             $entryWasLoggedToday = $this->datesAreOnSameDay($logEntry->getDateLogged(), $today);
-            if($entryWasLoggedToday and $logEntry->getMessage() == $message) {
+            if ($entryWasLoggedToday and $logEntry->getMessage() == $message) {
                 return true;
             }
         }

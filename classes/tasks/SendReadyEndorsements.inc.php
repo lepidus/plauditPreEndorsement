@@ -15,7 +15,7 @@ class SendReadyEndorsements extends ScheduledTask
 
         $readyPublications = $preEndorsementDao->getPublicationsWithEndorsementReadyToSend($context->getId());
 
-        foreach($readyPublications as $publication) {
+        foreach ($readyPublications as $publication) {
             $endorsementService = new EndorsementService($context->getId(), $plugin);
             $endorsementService->sendEndorsement($publication, true);
         }
