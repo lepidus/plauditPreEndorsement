@@ -153,7 +153,8 @@ msgid "plugins.generic.plauditPreEndorsement.verify.failure"
 msgstr "Falha"
 
 msgid "plugins.generic.plauditPreEndorsement.verify.invalidToken"
-msgstr "Seu e-mail não corresponde ao informado como endossador da submissão atualmente"
+msgstr "Um erro ocorreu durante a autenticação e seu ORCID não pôde ser adicionado como endossador(a). "
+"Caso tenha recebido múltiplos e-mails, por favor, certifique-se de estar usando o link enviado no e-mail mais recente."
 
 msgid "plugins.generic.plauditPreEndorsement.verify.denied"
 msgstr "Você negou acesso ao seu registro ORCID"
@@ -165,7 +166,9 @@ msgid "plugins.generic.plauditPreEndorsement.verify.orcidFromAuthor"
 msgstr "O ORCID informado para o(a) endossador(a) não pode ser o mesmo de um dos autores da submissão"
 
 msgid "plugins.generic.plauditPreEndorsement.failure.contact"
-msgstr "Por favor, entre em contato com o administrador do servidor, informando seu nome, ORCID ID e detalhes da submissão"
+msgstr "Se o problema persistir, entre em contato com o administrador do servidor pelo e-mail <a href=\"mailto:{$contactEmail}\">{$contactEmail}</a>,"
+" informando seu nome, ORCID ID e detalhes da submissão"
+
 
 msgid "plugins.generic.plauditPreEndorsement.log.sentEmailEndorser"
 msgstr "Foi enviado um e-mail de confirmação de endosso para {$endorserName} ({$endorserEmail})"
