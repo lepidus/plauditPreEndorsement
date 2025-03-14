@@ -129,7 +129,8 @@ msgid "plugins.generic.plauditPreEndorsement.verify.failure"
 msgstr "Falla"
 
 msgid "plugins.generic.plauditPreEndorsement.verify.invalidToken"
-msgstr "Su correo electrónico no corresponde al informado como endosante de la presentación actualmente"
+msgstr "Se ha producido un error durante la autenticación y su ORCID no ha podido ser añadido como endosante. "
+"Si ha recibido varios correos electrónicos, asegúrese de que está utilizando el enlace enviado en el correo electrónico más reciente."
 
 msgid "plugins.generic.plauditPreEndorsement.verify.denied"
 msgstr "Ha denegado el acceso a su registro ORCID"
@@ -141,7 +142,8 @@ msgid "plugins.generic.plauditPreEndorsement.verify.orcidFromAuthor"
 msgstr "El ORCID proporcionado para el endosante no debe ser el mismo que el de uno de los autores del envío"
 
 msgid "plugins.generic.plauditPreEndorsement.failure.contact"
-msgstr "Comuníquese con el administrador del servidor con su nombre, ORCID ID y detalles de envío"
+msgstr "Si el problema persiste, comuníquese con el administrador del servidor por correo electrónico en <a href=\"mailto:{$contactEmail}\">{$contactEmail}</a>,"
+" indicando su nombre, ORCID ID y detalles de envío"
 
 
 msgid "plugins.generic.plauditPreEndorsement.log.sentEmailEndorser"

@@ -86,6 +86,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
 
     public function writeOnActivityLog($submission, $message, $messageParams = array())
     {
+        import('lib.pkp.classes.log.SubmissionLog');
         $request = Application::get()->getRequest();
         SubmissionLog::logEvent($request, $submission, SUBMISSION_LOG_METADATA_UPDATE, $message, $messageParams);
     }

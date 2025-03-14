@@ -171,6 +171,9 @@ class PlauditPreEndorsementHandler extends Handler
 
         $plugin->writeOnActivityLog($submission, $message, $data);
 
+        $context = $request->getContext();
+        $data['contactEmail'] = $context->getData('contactEmail');
+
         $templateMgr = TemplateManager::getManager($request);
         $templateMgr->assign($data);
         $templateMgr->display($templatePath);
