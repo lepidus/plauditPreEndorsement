@@ -7,7 +7,8 @@ use PHPUnit\Framework\TestCase;
 
 final class OrcidClientTest extends TestCase
 {
-    private $testRecord = [
+    private $orcidClient;
+    private $orcidRecordResponse = [
         'person' => [
             'last-modified-date' => '',
             'name' => [
@@ -30,13 +31,44 @@ final class OrcidClientTest extends TestCase
             ]
         ]
     ];
+    private $emptyWorksResponse = [
+        'last-modified-date' => null,
+        'group' => [],
+        'path' => '/0000-0001-5542-5100/works'
+    ];
+    private $filledWorksResponse = [
+        'last-modified-date' => [
+            'value' => 1710359793007
+        ],
+        'group' => [
+            [
+                'last-modified-date' => [
+                    'value' => 1710359793007
+                ],
+                'external-ids' => [],
+                'work-summary' => []
+            ]
+        ],
+        'path' => '/0000-0001-5542-5100/works'
+    ];
+
+    public function setUp(): void
+    {
+        parent::setUp();
+        $plugin = new PlauditPreEndorsementPlugin();
+        $contextId = 1;
+        $this->orcidClient = new OrcidClient($plugin, $contextId);
+    }
 
     public function testGetFullNameFromRecord(): void
     {
-        $plugin = new PlauditPreEndorsementPlugin();
-        $contextId = 1;
-        $orcidClient = new OrcidClient($plugin, $contextId);
+        $fullName = $this->orcidClient->getFullNameFromRecord($this->orcidRecordResponse);
+        $this->assertEquals('Alfred Hitchcock', $fullName);
+    }
 
-        $this->assertEquals('Alfred Hitchcock', $orcidClient->getFullNameFromRecord($this->testRecord));
+    public function testCheckRecordHasWorks(): void
+    {
+        $this->assertFalse($this->orcidClient->recordHasWorks($this->emptyWorksResponse));
+        $this->assertTrue($this->orcidClient->recordHasWorks($this->filledWorksResponse));
     }
 }
