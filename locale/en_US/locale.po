@@ -138,6 +138,9 @@ msgstr "You denied access to your ORCID record"
 msgid "plugins.generic.plauditPreEndorsement.verify.authFailure"
 msgstr "The ORCID authorization link has already been used or is invalid"
 
+msgid "plugins.generic.plauditPreEndorsement.verify.emptyWorks"
+msgstr "The ORCID record informed for the endorser must have works publicly listed for consultation"
+
 msgid "plugins.generic.plauditPreEndorsement.verify.orcidFromAuthor"
 msgstr "The ORCID informed for the endorser cannot be the same as one of the authors of the submission"
 
@@ -160,6 +163,9 @@ msgstr "The endorser denied access to its ORCID"
 
 msgid "plugins.generic.plauditPreEndorsement.log.orcidRequestError"
 msgstr "An error occurred during the endorser's ORCID requesting. The message returned was: {$orcidAPIError}"
+
+msgid "plugins.generic.plauditPreEndorsement.log.endorserOrcidWithoutWorks"
+msgstr "The endorsement has not been confirmed, as the ORCID informed has no works listed or this information is not public"
 
 msgid "plugins.generic.plauditPreEndorsement.log.endorserOrcidFromAuthor"
 msgstr "The endorsement has not been confirmed, as the ORCID provided is from one of the authors"

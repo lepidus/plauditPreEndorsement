@@ -147,12 +147,18 @@ class PlauditPreEndorsementHandler extends Handler
         $orcidUri = ($isSandBox ? ENDORSEMENT_ORCID_URL_SANDBOX : ENDORSEMENT_ORCID_URL) . $orcid;
 
         if (strlen($orcid) > 0) {
+            $endorsementService = new EndorsementService($contextId, $plugin);
+
+            if (!$endorsementService->checkEndorserHasWorksListed($orcid)) {
+                $this->logMessageAndDisplayTemplate($submission, $request, 'plugins.generic.plauditPreEndorsement.log.endorserOrcidWithoutWorks', ['errorType' => 'emptyWorks']);
+                return;
+            }
+
             if ($this->checkDataIsFromAnyAuthor($publication, 'orcid', $orcidUri)) {
                 $this->logMessageAndDisplayTemplate($submission, $request, 'plugins.generic.plauditPreEndorsement.log.endorserOrcidFromAuthor', ['errorType' => 'orcidFromAuthor']);
                 return;
             }
 
-            $endorsementService = new EndorsementService($contextId, $plugin);
             $endorsementService->updateEndorserNameFromOrcid($publication, $orcid);
 
             $this->setConfirmedEndorsementPublication($publication, $orcidUri);
