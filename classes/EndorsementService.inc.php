@@ -102,6 +102,14 @@ class EndorsementService
         return $publication;
     }
 
+    public function checkEndorserHasWorksListed($orcid)
+    {
+        $accessToken = $this->orcidClient->getReadPublicAccessToken();
+        $orcidWorks = $this->orcidClient->getOrcidWorks($orcid, $accessToken);
+
+        return $this->orcidClient->recordHasWorks($orcidWorks);
+    }
+
     public function messageWasAlreadyLoggedToday(int $submissionId, string $message): bool
     {
         $submissionEventLogDao = DAORegistry::getDAO('SubmissionEventLogDAO');
