@@ -25,5 +25,4 @@
     description="emails.endorserOrcidWithoutWorks.description"
     body="emails.endorserOrcidWithoutWorks.body"
   />
-  endorserOrcidWithoutWorks
 </emails>
