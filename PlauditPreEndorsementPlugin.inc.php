@@ -299,7 +299,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
         return $this->getPluginPath() . '/emailTemplates.xml';
     }
 
-    private function getMailTemplate($emailKey, $context = null)
+    public function getMailTemplate($emailKey, $context = null)
     {
         import('lib.pkp.classes.mail.MailTemplate');
         return new MailTemplate($emailKey, null, $context, false);

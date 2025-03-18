@@ -151,6 +151,7 @@ class PlauditPreEndorsementHandler extends Handler
 
             if (!$endorsementService->checkEndorserHasWorksListed($orcid)) {
                 $this->logMessageAndDisplayTemplate($submission, $request, 'plugins.generic.plauditPreEndorsement.log.endorserOrcidWithoutWorks', ['errorType' => 'emptyWorks']);
+                $this->sendEndorserOrcidWorksEmail($publication, $request->getContext());
                 return;
             }
 
@@ -200,6 +201,28 @@ class PlauditPreEndorsementHandler extends Handler
         $publication->setData('endorsementStatus', ENDORSEMENT_STATUS_DENIED);
         $publicationDao = DAORegistry::getDAO('PublicationDAO');
         $publicationDao->updateObject($publication);
+    }
+
+    private function sendEndorserOrcidWorksEmail($publication, $context)
+    {
+        $plugin = PluginRegistry::getPlugin('generic', 'plauditpreendorsementplugin');
+        $emailTemplate = 'ENDORSER_ORCID_WITHOUT_WORKS';
+        $email = $plugin->getMailTemplate($emailTemplate, $context);
+
+        $primaryAuthor = $publication->getPrimaryAuthor();
+        if (!isset($primaryAuthor)) {
+            $primaryAuthor = $publication->getData('authors')[0];
+        }
+
+        $email->setFrom($context->getData('contactEmail'), $context->getData('contactName'));
+        $email->setRecipients([['name' => $primaryAuthor->getFullName(), 'email' => $primaryAuthor->getEmail()]]);
+
+        $email->sendWithParams([
+            'authorName' => $primaryAuthor->getLocalizedGivenName(),
+            'contactEmail' => $context->getData('contactEmail'),
+            'endorserName' => htmlspecialchars($publication->getData('endorserName')),
+            'preprintTitle' => htmlspecialchars($publication->getLocalizedTitle()),
+        ]);
     }
 
     public function getStatusAuthentication($publication, $request)
