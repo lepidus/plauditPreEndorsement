@@ -138,6 +138,9 @@ msgstr "Ha denegado el acceso a su registro ORCID"
 msgid "plugins.generic.plauditPreEndorsement.verify.authFailure"
 msgstr "El enlace de autorización ORCID ya se ha utilizado o no es válido"
 
+msgid "plugins.generic.plauditPreEndorsement.verify.emptyWorks"
+msgstr "El registro ORCID proporcionado para el endosante debe tener obras listadas públicamente para su consulta"
+
 msgid "plugins.generic.plauditPreEndorsement.verify.orcidFromAuthor"
 msgstr "El ORCID proporcionado para el endosante no debe ser el mismo que el de uno de los autores del envío"
 
@@ -160,6 +163,9 @@ msgstr "El endosante ha denegado el acceso a su ORCID"
 
 msgid "plugins.generic.plauditPreEndorsement.log.orcidRequestError"
 msgstr "Se ha producido un error al solicitar el ORCID del endosante. El mensaje devuelto fue: {$orcidAPIError}"
+
+msgid "plugins.generic.plauditPreEndorsement.log.endorserOrcidWithoutWorks"
+msgstr "El endoso no ha sido confirmado, ya que en la información de ORCID no figuran obras o esta información no es pública"
 
 msgid "plugins.generic.plauditPreEndorsement.log.endorserOrcidFromAuthor"
 msgstr "El endoso no ha sido confirmado, ya que el ORCID facilitado es el de uno de los autores"
