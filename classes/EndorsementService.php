@@ -118,6 +118,14 @@ class EndorsementService
         return $endorsement;
     }
 
+    public function checkEndorserHasWorksListed($orcid)
+    {
+        $accessToken = $this->orcidClient->getReadPublicAccessToken();
+        $orcidWorks = $this->orcidClient->getOrcidWorks($orcid, $accessToken);
+
+        return $this->orcidClient->recordHasWorks($orcidWorks);
+    }
+
     public function messageWasAlreadyLoggedToday(int $submissionId, string $message): bool
     {
         $submissionLogEntries = Repo::eventLog()->getCollector()

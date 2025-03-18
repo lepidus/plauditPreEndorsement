@@ -98,7 +98,7 @@ final class EndorsementServiceTest extends DatabaseTestCase
     private function getMockOrcidClient()
     {
         $fictionalAccessToken = 'kjh-adf-fictional-1362m';
-        $testRecord = [
+        $mockRecordResponse = [
             'person' => [
                 'last-modified-date' => '',
                 'name' => [
@@ -121,14 +121,35 @@ final class EndorsementServiceTest extends DatabaseTestCase
                 ]
             ]
         ];
+        $mockWorksResponse = [
+            'last-modified-date' => [
+                'value' => 1710359793007
+            ],
+            'group' => [
+                [
+                    'last-modified-date' => [
+                        'value' => 1710359793007
+                    ],
+                    'external-ids' => [],
+                    'work-summary' => []
+                ]
+            ],
+            'path' => '/0010-1010-1101-0001/works'
+        ];
 
         $mockOrcidClient = $this->createMock(OrcidClient::class);
         $mockOrcidClient->method('getReadPublicAccessToken')->willReturn($fictionalAccessToken);
         $mockOrcidClient->method('getOrcidRecord')->willReturnMap([
-            [$this->endorsementOrcid, $fictionalAccessToken, $testRecord]
+            [$this->endorsementOrcid, $fictionalAccessToken, $mockRecordResponse]
+        ]);
+        $mockOrcidClient->method('getOrcidWorks')->willReturnMap([
+            [$this->endorsementOrcid, $fictionalAccessToken, $mockWorksResponse]
         ]);
         $mockOrcidClient->method('getFullNameFromRecord')->willReturnMap([
-            [$testRecord, $this->endorsementGivenNameOrcid . ' ' . $this->endorsementFamilyNameOrcid]
+            [$mockRecordResponse, $this->endorsementGivenNameOrcid . ' ' . $this->endorsementFamilyNameOrcid]
+        ]);
+        $mockOrcidClient->method('recordHasWorks')->willReturnMap([
+            [$mockWorksResponse, true]
         ]);
 
         return $mockOrcidClient;
@@ -179,6 +200,15 @@ final class EndorsementServiceTest extends DatabaseTestCase
         $expectedNewName = $this->endorsementGivenNameOrcid . ' ' . $this->endorsementFamilyNameOrcid;
 
         $this->assertEquals($expectedNewName, $newEndorsement->getName());
+    }
+
+    public function testCheckEndorserHasWorksListed(): void
+    {
+        $mockOrcidClient = $this->getMockOrcidClient();
+        $this->endorsementService->setOrcidClient($mockOrcidClient);
+
+        $hasWorks = $this->endorsementService->checkEndorserHasWorksListed($this->endorsementOrcid);
+        $this->assertTrue($hasWorks);
     }
 
     public function testMessageWasAlreadyLoggedToday(): void
