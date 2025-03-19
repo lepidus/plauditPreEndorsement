@@ -70,7 +70,7 @@ class PlauditPreEndorsementHandler extends Handler
 
             if (!$endorsementService->checkEndorserHasWorksListed($orcid)) {
                 $this->logMessageAndDisplayTemplate($submission, $request, 'plugins.generic.plauditPreEndorsement.log.endorserOrcidWithoutWorks', ['errorType' => 'emptyWorks']);
-                $this->sendEndorserOrcidWorksEmail($submission, $publication, $request->getContext());
+                $this->sendEndorserOrcidWorksEmail($submission, $publication, $endorsement, $request->getContext());
                 return;
             }
 
@@ -119,7 +119,7 @@ class PlauditPreEndorsementHandler extends Handler
         Repo::endorsement()->edit($endorsement, []);
     }
 
-    private function sendEndorserOrcidWorksEmail($submission, $publication, $context)
+    private function sendEndorserOrcidWorksEmail($submission, $publication, $endorsement, $context)
     {
         $emailTemplate = Repo::emailTemplate()->getByKey(
             $context->getId(),
@@ -134,7 +134,7 @@ class PlauditPreEndorsementHandler extends Handler
 
         $emailParams = [
             'authorName' => $primaryAuthor->getLocalizedGivenName(),
-            'endorserName' => htmlspecialchars($publication->getData('endorserName'))
+            'endorserName' => htmlspecialchars($endorsement->getName())
         ];
 
         $email = new EndorserOrcidWithoutWorks($context, $submission, $emailParams);
