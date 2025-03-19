@@ -3,14 +3,16 @@
 namespace APP\plugins\generic\plauditPreEndorsement\classes;
 
 use APP\handler\Handler;
-use APP\plugins\generic\plauditPreEndorsement\classes\facades\Repo;
 use APP\submission\Submission;
 use PKP\plugins\PluginRegistry;
 use APP\template\TemplateManager;
-use APP\plugins\generic\plauditPreEndorsement\PlauditPreEndorsementPlugin;
+use Illuminate\Support\Facades\Mail;
 use APP\plugins\generic\plauditPreEndorsement\classes\endorsement\Endorsement;
+use APP\plugins\generic\plauditPreEndorsement\classes\facades\Repo;
+use APP\plugins\generic\plauditPreEndorsement\classes\mail\mailables\EndorserOrcidWithoutWorks;
 use APP\plugins\generic\plauditPreEndorsement\classes\EndorsementService;
 use APP\plugins\generic\plauditPreEndorsement\classes\OrcidClient;
+use APP\plugins\generic\plauditPreEndorsement\PlauditPreEndorsementPlugin;
 
 class PlauditPreEndorsementHandler extends Handler
 {
@@ -64,12 +66,19 @@ class PlauditPreEndorsementHandler extends Handler
         $orcidUri = ($isSandBox ? OrcidClient::ORCID_URL_SANDBOX : OrcidClient::ORCID_URL) . $orcid;
 
         if (strlen($orcid) > 0) {
+            $endorsementService = new EndorsementService($contextId, $plugin);
+
+            if (!$endorsementService->checkEndorserHasWorksListed($orcid)) {
+                $this->logMessageAndDisplayTemplate($submission, $request, 'plugins.generic.plauditPreEndorsement.log.endorserOrcidWithoutWorks', ['errorType' => 'emptyWorks']);
+                $this->sendEndorserOrcidWorksEmail($submission, $publication, $request->getContext());
+                return;
+            }
+
             if ($this->checkDataIsFromAnyAuthor($publication, 'orcid', $orcidUri)) {
                 $this->logMessageAndDisplayTemplate($submission, $request, 'plugins.generic.plauditPreEndorsement.log.endorserOrcidFromAuthor', ['errorType' => 'orcidFromAuthor']);
                 return;
             }
 
-            $endorsementService = new EndorsementService($contextId, $plugin);
             $endorsementService->updateEndorsementNameFromOrcid($endorsement, $orcid);
 
             $this->setConfirmedEndorsementPublication($endorsement, $orcidUri);
@@ -108,6 +117,33 @@ class PlauditPreEndorsementHandler extends Handler
         $endorsement->setEmailToken(null);
         $endorsement->setStatus(Endorsement::STATUS_DENIED);
         Repo::endorsement()->edit($endorsement, []);
+    }
+
+    private function sendEndorserOrcidWorksEmail($submission, $publication, $context)
+    {
+        $emailTemplate = Repo::emailTemplate()->getByKey(
+            $context->getId(),
+            'ENDORSER_ORCID_WITHOUT_WORKS'
+        );
+
+        $primaryAuthor = $publication->getPrimaryAuthor();
+        if (!isset($primaryAuthor)) {
+            $authors = $publication->getData('authors');
+            $primaryAuthor = $authors->first();
+        }
+
+        $emailParams = [
+            'authorName' => $primaryAuthor->getLocalizedGivenName(),
+            'endorserName' => htmlspecialchars($publication->getData('endorserName'))
+        ];
+
+        $email = new EndorserOrcidWithoutWorks($context, $submission, $emailParams);
+        $email->from($context->getData('contactEmail'), $context->getData('contactName'));
+        $email->to([['name' => $primaryAuthor->getFullName(), 'email' => $primaryAuthor->getEmail()]]);
+        $email->subject($emailTemplate->getLocalizedData('subject'));
+        $email->body($emailTemplate->getLocalizedData('body'));
+
+        Mail::send($email);
     }
 
     public function getStatusAuthentication($endorsement, $request)
