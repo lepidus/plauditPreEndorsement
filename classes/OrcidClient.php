@@ -96,10 +96,34 @@ class OrcidClient
         return $responseJson['orcid'];
     }
 
-    public function getFullNameFromRecord(array $record): string
+    public function getOrcidWorks(string $orcid, string $accessToken): array
     {
-        $givenName = $record['person']['name']['given-names']['value'];
-        $familyName = $record['person']['name']['family-name']['value'];
+        $httpClient = Application::get()->getHttpClient();
+
+        $worksUrl = $this->plugin->getSetting($this->contextId, 'orcidAPIPath') . 'v3.0/' . urlencode($orcid) . '/works';
+        $response = $httpClient->request(
+            'GET',
+            $worksUrl,
+            [
+                'headers' => [
+                    'Accept' => 'application/json',
+                    'Authorization' => 'Bearer ' . $accessToken,
+                ],
+            ]
+        );
+
+        return json_decode($response->getBody(), true);
+    }
+
+    public function recordHasWorks(array $worksResponse): bool
+    {
+        return !empty($worksResponse['group']);
+    }
+
+    public function getFullNameFromRecord(array $recordResponse): string
+    {
+        $givenName = $recordResponse['person']['name']['given-names']['value'];
+        $familyName = $recordResponse['person']['name']['family-name']['value'];
 
         return "$givenName $familyName";
     }

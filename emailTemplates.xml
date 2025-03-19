@@ -16,4 +16,11 @@
     subject="emails.orcidRequestEndorserAuthorization.subject"
     body="emails.orcidRequestEndorserAuthorization.body"
   />
+  <email
+    key="ENDORSER_ORCID_WITHOUT_WORKS"
+    name="emails.endorserOrcidWithoutWorks.name"
+    description="emails.endorserOrcidWithoutWorks.description"
+    subject="emails.endorserOrcidWithoutWorks.subject"
+    body="emails.endorserOrcidWithoutWorks.body"
+  />
 </emails>
