@@ -41,3 +41,24 @@ msgstr ""
 "<br>\n"
 "If you have any questions, please contact us: {$contactEmail}<br/>\n"
 ""
+
+
+msgid "emails.endorserOrcidWithoutWorks.name"
+msgstr "Lack of works in the endorser's ORCID record"
+
+msgid "emails.endorserOrcidWithoutWorks.description"
+msgstr "E-mail template used to inform the author of the submission about the absence of works in the endorser's ORCID record"
+
+msgid "emails.endorserOrcidWithoutWorks.subject"
+msgstr "Lack of works in the endorser's ORCID record"
+
+msgid "emails.endorserOrcidWithoutWorks.body"
+msgstr ""
+"Dear {$authorName}<br/>\n"
+"<br/>\n"
+"The ORCID record of the endorser {$endorserName} added to the submission \“{$preprintTitle}\” has no papers listed, or this information is not public.<br/>\n"
+"<br/>\n"
+"If possible, ask the endorser to include their most recent scientific production or consider adding another endorser.<br/>\n"
+"<br/>\n"
+"If you have any questions, please contact: {$contactEmail}<br/>\n"
+""

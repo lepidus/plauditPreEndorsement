@@ -41,3 +41,24 @@ msgstr ""
 "<br>\n"
 "Si tiene alguna pregunta, por favor contáctenos: {$contactEmail}<br/>\n"
 ""
+
+
+msgid "emails.endorserOrcidWithoutWorks.name"
+msgstr "Ausencia de trabajos en el registro ORCID del endosante"
+
+msgid "emails.endorserOrcidWithoutWorks.description"
+msgstr "Plantilla de correo electrónico utilizada para informar al autor del envío sobre la ausencia de obras en el registro ORCID del endosante"
+
+msgid "emails.endorserOrcidWithoutWorks.subject"
+msgstr "Ausencia de trabajos en el registro ORCID del endosante"
+
+msgid "emails.endorserOrcidWithoutWorks.body"
+msgstr ""
+"Estimado {$authorName}<br>\n"
+"<br>\n"
+"El registro ORCID del endosante {$endorserName} añadido a lo envío \"{$preprintTitle}\" no incluye ningún trabajo, o esta información no es pública.<br>\n"
+"<br>\n"
+"Si es posible, pida al endosante que incluya su producción científica más reciente o considere la posibilidad de añadir otro endosante.<br>\n"
+"<br>\n"
+"Si tiene alguna pregunta, póngase en contacto con {$contactEmail}<br>\n"
+""

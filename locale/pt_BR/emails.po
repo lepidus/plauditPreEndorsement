@@ -41,3 +41,24 @@ msgstr ""
 "<br>\n"
 "Caso tenha alguma dúvida, entre em contato conosco: {$contactEmail}<br/>\n"
 ""
+
+
+msgid "emails.endorserOrcidWithoutWorks.name"
+msgstr "Ausência de trabalhos no registro ORCID do(a) endossador(a)"
+
+msgid "emails.endorserOrcidWithoutWorks.description"
+msgstr "Modelo de e-mail usado para informar o(a) autor(a) da submissão sobre a ausência de trabalhos no registro ORCID do(a) endossador(a)"
+
+msgid "emails.endorserOrcidWithoutWorks.subject"
+msgstr "Ausência de trabalhos no registro ORCID do(a) endossador(a)"
+
+msgid "emails.endorserOrcidWithoutWorks.body"
+msgstr ""
+"Prezado(a) {$authorName}<br>\n"
+"<br>\n"
+"O registro ORCID do(a) endossador(a) {$endorserName} adicionado(a) à submissão \"{$preprintTitle}\" não possui trabalhos listados, ou essa informação não está pública.<br>\n"
+"<br>\n"
+"Se possível, solicite ao(à) endossador(a) para incluir sua produção científica mais recente ou considere adicionar outro(a) endossador(a).<br>\n"
+"<br>\n"
+"Em caso de alguma dúvida, entre em contato com: {$contactEmail}<br>\n"
+""
