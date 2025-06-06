@@ -130,7 +130,7 @@ msgstr "Falha"
 
 msgid "plugins.generic.plauditPreEndorsement.verify.invalidToken"
 msgstr "Um erro ocorreu durante a autenticação e seu ORCID não pôde ser adicionado como endossador(a). "
-"Caso tenha recebido múltiplos e-mails, por favor, certifique-se de estar usando o link enviado no e-mail mais recente."
+"Entre em contato com o(a) autor(a) submissor(a) e solicite um novo pedido de pré-endosso (disponível na guia "Pré-endosso" na submissão)."
 
 msgid "plugins.generic.plauditPreEndorsement.verify.denied"
 msgstr "Você negou acesso ao seu registro ORCID"

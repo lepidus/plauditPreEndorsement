@@ -130,7 +130,7 @@ msgstr "Failure"
 
 msgid "plugins.generic.plauditPreEndorsement.verify.invalidToken"
 msgstr "An error occurred during authentication and your ORCID could not be added as an endorser. "
-"If you have received multiple emails, please make sure you are using the link sent in the most recent email."
+"Please contact the submitting author and request a new pre-endorsement request (available in the "Pre-Endorsement" tab in the submission)."
 
 msgid "plugins.generic.plauditPreEndorsement.verify.denied"
 msgstr "You denied access to your ORCID record"
