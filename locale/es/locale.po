@@ -154,7 +154,7 @@ msgstr "Falla"
 
 msgid "plugins.generic.plauditPreEndorsement.verify.invalidToken"
 msgstr "Se ha producido un error durante la autenticación y su ORCID no ha podido ser añadido como endosante. "
-"Si ha recibido varios correos electrónicos, asegúrese de que está utilizando el enlace enviado en el correo electrónico más reciente."
+"Póngase en contacto con el/la autor/a que envía y solicite una nueva solicitud de pre-aprobación (disponible en la pestaña \"Pre-Aprobación\" en el envío)."
 
 msgid "plugins.generic.plauditPreEndorsement.verify.denied"
 msgstr "Ha denegado el acceso a su registro ORCID"
