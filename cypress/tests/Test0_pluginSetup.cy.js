@@ -4,7 +4,6 @@ describe('Plaudit Pre-endorsement - Plugin setup', function () {
 
 		cy.contains('a', 'Website').click();
 
-		cy.waitJQuery();
 		cy.get('#plugins-button').click();
 
 		cy.get('input[id^=select-cell-plauditpreendorsementplugin]').check();
