@@ -53,7 +53,7 @@ class MoveLegacyEndorsementsToEndorsementsTable extends Migration
         foreach ($legacyEndorsements as $publicationId => $settings) {
             if (empty($settings['endorserName'])
                 || empty($settings['endorserEmail'])
-                || empty($settings['endorsementStatus'])
+                || !isset($settings['endorsementStatus'])
             ) {
                 continue;
             }
