@@ -51,6 +51,13 @@ class MoveLegacyEndorsementsToEndorsementsTable extends Migration
     private function moveToEndorsementsTable($legacyEndorsements)
     {
         foreach ($legacyEndorsements as $publicationId => $settings) {
+            if (empty($settings['endorserName'])
+                || empty($settings['endorserEmail'])
+                || empty($settings['endorsementStatus'])
+            ) {
+                continue;
+            }
+
             $submissionId = DB::table('publications')->where('publication_id', $publicationId)->value('submission_id');
             $contextId = DB::table('submissions')->where('submission_id', $submissionId)->value('context_id');
 
