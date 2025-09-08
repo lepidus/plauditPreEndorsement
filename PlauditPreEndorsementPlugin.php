@@ -17,8 +17,6 @@ use PKP\plugins\GenericPlugin;
 use APP\core\Application;
 use PKP\plugins\Hook;
 use APP\template\TemplateManager;
-use PKP\linkAction\LinkAction;
-use PKP\linkAction\request\AjaxModal;
 use APP\pages\submission\SubmissionHandler;
 use PKP\log\event\PKPSubmissionEventLogEntry;
 use PKP\db\DAORegistry;
@@ -29,10 +27,11 @@ use PKP\core\JSONMessage;
 use PKP\install\Installer;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Mail;
+use APP\plugins\generic\plauditPreEndorsement\classes\settings\Actions;
+use APP\plugins\generic\plauditPreEndorsement\classes\settings\Manage;
 use APP\plugins\generic\plauditPreEndorsement\classes\OrcidClient;
 use APP\plugins\generic\plauditPreEndorsement\classes\endorsement\Endorsement;
 use APP\plugins\generic\plauditPreEndorsement\classes\components\forms\EndorsementForm;
-use APP\plugins\generic\plauditPreEndorsement\PlauditPreEndorsementSettingsForm;
 use APP\plugins\generic\plauditPreEndorsement\classes\mail\mailables\OrcidRequestEndorserAuthorization;
 use APP\plugins\generic\plauditPreEndorsement\classes\observers\listeners\SendEmailToEndorser;
 use APP\plugins\generic\plauditPreEndorsement\classes\SchemaBuilder;
@@ -318,50 +317,14 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
 
     public function getActions($request, $actionArgs)
     {
-        $router = $request->getRouter();
-        return array_merge(
-            array(
-                new LinkAction(
-                    'settings',
-                    new AjaxModal($router->url($request, null, null, 'manage', null, array('verb' => 'settings', 'plugin' => $this->getName(), 'category' => 'generic')), $this->getDisplayName()),
-                    __('manager.plugins.settings'),
-                    null
-                ),
-            ),
-            parent::getActions($request, $actionArgs)
-        );
+        $actions = new Actions($this);
+        return $actions->execute($request, $actionArgs, parent::getActions($request, $actionArgs));
     }
 
     public function manage($args, $request)
     {
-        $context = $request->getContext();
-        $contextId = ($context == null) ? 0 : $context->getId();
-
-        switch ($request->getUserVar('verb')) {
-            case 'settings':
-                $templateMgr = TemplateManager::getManager();
-                $templateMgr->registerPlugin('function', 'plugin_url', array($this, 'smartyPluginUrl'));
-                $apiOptions = [
-                    OrcidClient::ORCID_API_URL_PUBLIC => 'plugins.generic.plauditPreEndorsement.settings.orcidAPIPath.public',
-                    OrcidClient::ORCID_API_URL_PUBLIC_SANDBOX => 'plugins.generic.plauditPreEndorsement.settings.orcidAPIPath.publicSandbox',
-                    OrcidClient::ORCID_API_URL_MEMBER => 'plugins.generic.plauditPreEndorsement.settings.orcidAPIPath.member',
-                    OrcidClient::ORCID_API_URL_MEMBER_SANDBOX => 'plugins.generic.plauditPreEndorsement.settings.orcidAPIPath.memberSandbox'
-                ];
-                $templateMgr->assign('orcidApiUrls', $apiOptions);
-
-                $form = new PlauditPreEndorsementSettingsForm($this, $contextId);
-                if ($request->getUserVar('save')) {
-                    $form->readInputData();
-                    if ($form->validate()) {
-                        $form->execute();
-                        return new JSONMessage(true);
-                    }
-                } else {
-                    $form->initData();
-                }
-                return new JSONMessage(true, $form->fetch($request));
-        }
-        return parent::manage($args, $request);
+        $manage = new Manage($this);
+        return $manage->execute($args, $request);
     }
 
     public function userAccessingIsAuthor($submission): bool
