@@ -10,17 +10,24 @@ use Firebase\JWT\JWT;
 
 class EncryptLegacyCredentials extends Migration
 {
+    private const PLUGIN_NAME_SETTINGS = 'plauditpreendorsementplugin';
+    private const PLUGIN_CREDENTIALS_SETTINGS = [
+        'orcidClientId',
+        'orcidClientSecret',
+        'plauditAPISecret'
+    ];
+
     public function up(): void
     {
         $credentialSettings = $this->getCredentialSettings();
 
         if (!empty($credentialSettings)) {
-            $credentials = $this->getCredentials($credentialSettings);
+            $credentialsForContexts = $this->mapCredentialsForContexts($credentialSettings);
 
-            foreach ($credentials as $contextId => $setting) {
-                $orcidClientId = $setting['orcidClientId'];
-                $orcidClientSecret = $setting['orcidClientSecret'];
-                $plauditAPISecret = $setting['plauditAPISecret'];
+            foreach ($credentialsForContexts as $contextId => $credentials) {
+                $orcidClientId = $credentials['orcidClientId'];
+                $orcidClientSecret = $credentials['orcidClientSecret'];
+                $plauditAPISecret = $credentials['plauditAPISecret'];
 
                 try {
                     APIKeyEncryption::decryptString($orcidClientId);
@@ -41,15 +48,12 @@ class EncryptLegacyCredentials extends Migration
     private function getCredentialSettings()
     {
         return DB::table('plugin_settings')
-            ->whereIn('setting_name', [
-                'orcidClientId',
-                'orcidClientSecret',
-                'plauditAPISecret'
-            ])
+            ->where('plugin_name', self::PLUGIN_NAME_SETTINGS)
+            ->whereIn('setting_name', self::PLUGIN_CREDENTIALS_SETTINGS)
             ->get();
     }
 
-    private function getCredentials($credentialSettings)
+    private function mapCredentialsForContexts($credentialSettings)
     {
         $credentials = [];
         foreach ($credentialSettings as $credentialSetting) {
@@ -72,6 +76,7 @@ class EncryptLegacyCredentials extends Migration
 
             DB::table('plugin_settings')
                 ->where('context_id', $contextId)
+                ->where('plugin_name', self::PLUGIN_NAME_SETTINGS)
                 ->where('setting_name', $settingName)
                 ->update(['setting_value' => $encryptedValue]);
         }

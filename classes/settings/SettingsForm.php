@@ -1,18 +1,18 @@
 <?php
 
 /**
- * @file PlauditPreEndorsementSettingsForm.inc.php
+ * @file SettingsForm.inc.php
  *
  * Copyright (c) 2022 - 2024 Lepidus Tecnologia
  * Distributed under the GNU GPL v3. For full terms see the file docs/COPYING.
  *
- * @class PlauditPreEndorsementSettingsForm
+ * @class SettingsForm
  * @ingroup plugins_generic_plauditPreEndorsement
  *
  * @brief Form for site admins to modify Plaudit Pre-Endorsement plugin settings
  */
 
-namespace APP\plugins\generic\plauditPreEndorsement;
+namespace APP\plugins\generic\plauditPreEndorsement\classes\settings;
 
 use PKP\form\Form;
 use APP\template\TemplateManager;
@@ -25,7 +25,7 @@ use PKP\form\validation\FormValidatorCustom;
 use APP\plugins\generic\plauditPreEndorsement\classes\api\APIKeyEncryption;
 use APP\plugins\generic\plauditPreEndorsement\classes\OrcidCredentialsValidator;
 
-class PlauditPreEndorsementSettingsForm extends Form
+class SettingsForm extends Form
 {
     public const CONFIG_VARS = array(
         'orcidAPIPath' => 'string',
