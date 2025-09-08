@@ -26,6 +26,7 @@ use PKP\core\Core;
 use APP\plugins\generic\plauditPreEndorsement\classes\facades\Repo;
 use PKP\security\Role;
 use PKP\core\JSONMessage;
+use PKP\install\Installer;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Mail;
 use APP\plugins\generic\plauditPreEndorsement\classes\OrcidClient;
@@ -200,7 +201,6 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
         return new addEndorsementsTable();
     }
 
-
     private function getEndorsementStatusSuffix($endorsementStatus): string
     {
         $mapStatusToSuffix = [
@@ -292,6 +292,28 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
     public function getInstallEmailTemplatesFile()
     {
         return $this->getPluginPath() . '/emailTemplates.xml';
+    }
+
+    // Modification of Plugin::installEmailTemplates function
+    public function installEmailTemplates($hookName, $params)
+    {
+        $installer = &$params[0];
+        $result = &$params[1];
+
+        $locales = [];
+        foreach ($installer->installedLocales as $locale) {
+            if (file_exists($this->getPluginPath() . "/locale/{$locale}/emails.po")) {
+                $locales[] = $locale;
+            }
+        }
+        $this->addLocaleData();
+        $status = Repo::emailTemplate()->dao->installEmailTemplates($this->getInstallEmailTemplatesFile(), $locales, null, false);
+
+        if ($status === false) {
+            $installer->setError(Installer::INSTALLER_ERROR_DB, str_replace('{$file}', $this->getInstallEmailTemplatesFile(), __('installer.installParseEmailTemplatesFileError')));
+            $result = false;
+        }
+        return false;
     }
 
     public function getActions($request, $actionArgs)
