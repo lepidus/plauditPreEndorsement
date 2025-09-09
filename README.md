@@ -29,4 +29,3 @@ __This plugin is licensed under the GNU General Public License v3.0__
 __Copyright (c) 2022 - 2024 Lepidus Tecnologia__
 
 __Copyright (c) 2022 - 2024 SciELO__
-  
