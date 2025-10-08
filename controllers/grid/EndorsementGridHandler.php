@@ -107,10 +107,21 @@ class EndorsementGridHandler extends GridHandler
     {
         $submission = $this->getSubmission();
         $submissionId = $submission->getId();
-        $publication = $submission->getCurrentPublication();
+
+        $publications = $submission->getData('publications');
+        $publicationIds = [];
+
+        if (!empty($publications)) {
+            foreach ($publications as $publication) {
+                $publicationIds[] = $publication->getId();
+            }
+        } else {
+            return [];
+        }
+
         $endorsements = Repo::endorsement()->getCollector()
             ->filterByContextIds([$request->getContext()->getId()])
-            ->filterByPublicationIds([$publication->getId()])
+            ->filterByPublicationIds($publicationIds)
             ->getMany();
         return $endorsements->toArray();
     }
