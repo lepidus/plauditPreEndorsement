@@ -219,12 +219,19 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
         $output = &$params[2];
 
         $submission = $smarty->getTemplateVars('submission');
-        $publication = $submission->getCurrentPublication();
+        $publications = $submission->getData('publications');
+        $publicationIds = [];
+
+        if (!empty($publications)) {
+            foreach ($publications as $publication) {
+                $publicationIds[] = $publication->getId();
+            }
+        }
         $request = Application::get()->getRequest();
 
         $countEndorsers = Repo::endorsement()->getCollector()
             ->filterByContextIds([$request->getContext()->getId()])
-            ->filterByPublicationIds([$publication->getId()])
+            ->filterByPublicationIds($publicationIds)
             ->getCount();
 
         $tabBadge = (empty($countEndorsers) ? 'badge="0"' : 'badge=' . $countEndorsers);
