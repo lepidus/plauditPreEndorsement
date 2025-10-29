@@ -74,6 +74,8 @@ class EncryptLegacyCredentials extends Migration
         $encrypter = new APIKeyEncryption();
 
         foreach ($credentials as $settingName => $settingValue) {
+            $settingValue = $this->extractSettingValue($settingValue);
+
             $encryptedValue = $encrypter->encryptString($settingValue);
 
             DB::table('plugin_settings')
@@ -82,5 +84,15 @@ class EncryptLegacyCredentials extends Migration
                 ->where('setting_name', $settingName)
                 ->update(['setting_value' => $encryptedValue]);
         }
+    }
+
+    private function extractSettingValue($settingValue)
+    {
+        $jwtParts = explode('.', $settingValue);
+        if (count($jwtParts) == 3) {
+            return base64_decode($jwtParts[1]);
+        }
+
+        return $settingValue;
     }
 }
