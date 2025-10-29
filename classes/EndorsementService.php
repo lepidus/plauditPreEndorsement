@@ -57,7 +57,8 @@ class EndorsementService
     {
         $doi = $publication->getDoi();
         $plauditApiKeySecretSetting = $this->plugin->getSetting($this->contextId, 'plauditAPISecret');
-        $secretKey = $plauditApiKeySecretSetting ? APIKeyEncryption::decryptString($plauditApiKeySecretSetting) : null;
+        $encrypter = new APIKeyEncryption();
+        $secretKey = $plauditApiKeySecretSetting ? $encrypter->decryptString($plauditApiKeySecretSetting) : null;
 
         if (empty($doi)) {
             return 'plugins.generic.plauditPreEndorsement.log.failedEndorsementSending.emptyDoi';
@@ -87,10 +88,11 @@ class EndorsementService
         );
 
         $plauditClient = new PlauditClient();
+        $encrypter = new APIKeyEncryption();
 
         try {
             $plauditApiKeySecretSetting = $this->plugin->getSetting($this->contextId, 'plauditAPISecret');
-            $secretKey = APIKeyEncryption::decryptString($plauditApiKeySecretSetting);
+            $secretKey = $encrypter->decryptString($plauditApiKeySecretSetting);
             $response = $plauditClient->requestEndorsementCreation($endorsement, $publication, $secretKey);
             $newEndorsementStatus = $plauditClient->getEndorsementStatusByResponse($response, $publication, $endorsement);
         } catch (ClientException $exception) {

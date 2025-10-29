@@ -27,24 +27,26 @@ use APP\plugins\generic\plauditPreEndorsement\classes\OrcidCredentialsValidator;
 
 class SettingsForm extends Form
 {
-    public const CONFIG_VARS = array(
+    public const CONFIG_VARS = [
         'orcidAPIPath' => 'string',
         'orcidClientId' => 'string',
         'orcidClientSecret' => 'string',
         'plauditAPISecret' => 'string'
-    );
+    ];
 
     public $contextId;
     public $plugin;
     public $validator;
+    private $encrypter;
 
     public function __construct($plugin, $contextId)
     {
         $this->contextId = $contextId;
         $this->plugin = $plugin;
-        $orcidValidator = new OrcidCredentialsValidator($plugin);
-        $this->validator = $orcidValidator;
-        $template = APIKeyEncryption::secretConfigExists() ? 'settingsForm.tpl' : 'tokenError.tpl';
+        $this->validator = new OrcidCredentialsValidator($plugin);
+        $this->encrypter = new APIKeyEncryption();
+
+        $template = $this->encrypter->secretConfigExists() ? 'settingsForm.tpl' : 'tokenError.tpl';
         parent::__construct($plugin->getTemplateResource($template));
         $this->addCheck(new FormValidatorPost($this));
         $this->addCheck(new FormValidatorCSRF($this));
@@ -92,7 +94,7 @@ class SettingsForm extends Form
                 $plugin->updateSetting(
                     $contextId,
                     $configVar,
-                    APIKeyEncryption::encryptString($this->getData($configVar)),
+                    $this->encrypter->encryptString($this->getData($configVar)),
                     $type
                 );
             }

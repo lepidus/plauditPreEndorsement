@@ -18,11 +18,13 @@ class OrcidClient
 
     private $plugin;
     private $contextId;
+    private $encrypter;
 
     public function __construct($plugin, $contextId)
     {
         $this->plugin = $plugin;
         $this->contextId = $contextId;
+        $this->encrypter = new APIKeyEncryption();
     }
 
     public function getReadPublicAccessToken(): string
@@ -32,8 +34,8 @@ class OrcidClient
         $tokenUrl = $this->plugin->getSetting($this->contextId, 'orcidAPIPath') . 'oauth/token';
         $requestHeaders = ['Accept' => 'application/json'];
         $requestData = [
-            'client_id' => APIKeyEncryption::decryptString($this->plugin->getSetting($this->contextId, 'orcidClientId')),
-            'client_secret' => APIKeyEncryption::decryptString($this->plugin->getSetting($this->contextId, 'orcidClientSecret')),
+            'client_id' => $this->encrypter->decryptString($this->plugin->getSetting($this->contextId, 'orcidClientId')),
+            'client_secret' => $this->encrypter->decryptString($this->plugin->getSetting($this->contextId, 'orcidClientSecret')),
             'grant_type' => 'client_credentials',
             'scope' => '/read-public'
         ];
@@ -77,8 +79,8 @@ class OrcidClient
         $tokenUrl = $this->plugin->getSetting($this->contextId, 'orcidAPIPath') . 'oauth/token';
         $requestHeaders = ['Accept' => 'application/json'];
         $requestData = [
-            'client_id' => APIKeyEncryption::decryptString($this->plugin->getSetting($this->contextId, 'orcidClientId')),
-            'client_secret' => APIKeyEncryption::decryptString($this->plugin->getSetting($this->contextId, 'orcidClientSecret')),
+            'client_id' => $this->encrypter->decryptString($this->plugin->getSetting($this->contextId, 'orcidClientId')),
+            'client_secret' => $this->encrypter->decryptString($this->plugin->getSetting($this->contextId, 'orcidClientSecret')),
             'grant_type' => 'authorization_code',
             'code' => $code
         ];
@@ -150,7 +152,7 @@ class OrcidClient
 
         return $this->getOauthPath() . 'authorize?' . http_build_query(
             array(
-                'client_id' => APIKeyEncryption::decryptString($this->plugin->getSetting($this->contextId, 'orcidClientId')),
+                'client_id' => $this->encrypter->decryptString($this->plugin->getSetting($this->contextId, 'orcidClientId')),
                 'response_type' => 'code',
                 'scope' => $scope,
                 'redirect_uri' => $redirectUrl)

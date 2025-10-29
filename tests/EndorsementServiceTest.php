@@ -184,7 +184,8 @@ final class EndorsementServiceTest extends DatabaseTestCase
         $validateResult = $this->endorsementService->validateEndorsementSending($this->publication);
         $this->assertEquals('plugins.generic.plauditPreEndorsement.log.failedEndorsementSending.secretKey', $validateResult);
 
-        $secretKey = APIKeyEncryption::encryptString($this->secretKey);
+        $encrypter = new APIKeyEncryption();
+        $secretKey = $encrypter->encryptString($this->secretKey);
         $this->plugin->updateSetting($this->contextId, 'plauditAPISecret', $secretKey);
         $validateResult = $this->endorsementService->validateEndorsementSending($this->publication);
         $this->assertEquals('ok', $validateResult);

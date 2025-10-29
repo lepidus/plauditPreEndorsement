@@ -2,8 +2,9 @@
 
 namespace APP\plugins\generic\plauditPreEndorsement\classes\api;
 
-use Illuminate\Encryption\Encrypter;
 use Exception;
+use Illuminate\Encryption\Encrypter;
+use PKP\config\Config;
 
 class APIKeyEncryption
 {

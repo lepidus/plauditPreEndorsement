@@ -23,6 +23,7 @@ class EncryptLegacyCredentials extends Migration
 
         if (!empty($credentialSettings)) {
             $credentialsForContexts = $this->mapCredentialsForContexts($credentialSettings);
+            $encrypter = new APIKeyEncryption();
 
             foreach ($credentialsForContexts as $contextId => $credentials) {
                 $orcidClientId = $credentials['orcidClientId'];
@@ -30,7 +31,7 @@ class EncryptLegacyCredentials extends Migration
                 $plauditAPISecret = $credentials['plauditAPISecret'];
 
                 try {
-                    APIKeyEncryption::decryptString($orcidClientId);
+                    $encrypter->decryptString($orcidClientId);
                 } catch (\Exception $e) {
                     if ($e instanceof \UnexpectedValueException) {
                         $this->encryptCredentials($contextId, $orcidClientId, $orcidClientSecret, $plauditAPISecret);
@@ -70,9 +71,10 @@ class EncryptLegacyCredentials extends Migration
             'orcidClientSecret' => $orcidClientSecret,
             'plauditAPISecret' => $plauditAPISecret
         ];
+        $encrypter = new APIKeyEncryption();
 
         foreach ($credentials as $settingName => $settingValue) {
-            $encryptedValue = APIKeyEncryption::encryptString($settingValue);
+            $encryptedValue = $encrypter->encryptString($settingValue);
 
             DB::table('plugin_settings')
                 ->where('context_id', $contextId)
