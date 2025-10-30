@@ -2,51 +2,82 @@
 
 namespace APP\plugins\generic\plauditPreEndorsement\classes\api;
 
-use Firebase\JWT\JWT;
-use PKP\config\Config;
 use Exception;
+use Illuminate\Encryption\Encrypter;
+use PKP\config\Config;
 
 class APIKeyEncryption
 {
-    public static function secretConfigExists(): bool
+    private const ENCRYPTION_CIPHER = 'AES-256-CBC';
+    private const BASE64_PREFIX = 'base64:';
+
+    public function secretConfigExists(): bool
     {
         try {
-            self::getSecretFromConfig();
+            $this->getSecretFromConfig();
         } catch (Exception $e) {
             return false;
         }
         return true;
     }
 
-    private static function getSecretFromConfig(): string
+    private function getSecretFromConfig(): string
     {
         $secret = Config::getVar('security', 'api_key_secret');
         if ($secret === "") {
             throw new Exception("A secret must be set in the config file ('api_key_secret') so that keys can be encrypted and decrypted");
         }
-        return $secret;
+
+        return $this->normalizeSecret($secret);
     }
 
-    public static function encryptString(string $plainText): string
+    private function normalizeSecret(string $secret): string
     {
-        $secret = self::getSecretFromConfig();
-        return JWT::encode($plainText, $secret, 'HS256');
+        return hash('sha256', $secret, true);
     }
 
-    public static function decryptString(string $encryptedText)
+    public function textIsEncrypted(string $text): bool
     {
-        $secret = self::getSecretFromConfig();
-        try {
-            return JWT::decode($encryptedText, $secret, ['HS256']);
-        } catch (Exception $e) {
-            if ($e instanceof Firebase\JWT\SignatureInvalidException) {
-                throw new Exception(
-                    'The `api_key_secret` configuration is not the same as the one used to encrypt the key.',
-                    1
-                );
-            }
-
-            throw $e;
+        if (!str_starts_with($text, self::BASE64_PREFIX)) {
+            return false;
         }
+
+        try {
+            $this->decryptString($text);
+            return true;
+        } catch (Exception $e) {
+            return false;
+        }
+    }
+
+    public function encryptString(string $plainText): string
+    {
+        $secret = $this->getSecretFromConfig();
+        $encrypter = new Encrypter($secret, self::ENCRYPTION_CIPHER);
+
+        try {
+            $encryptedString = $encrypter->encrypt($plainText);
+        } catch (Exception $e) {
+            throw new Exception("Failed to encrypt string");
+        }
+
+        return self::BASE64_PREFIX . base64_encode($encryptedString);
+    }
+
+    public function decryptString(string $encryptedText): string
+    {
+        $secret = $this->getSecretFromConfig();
+        $encrypter = new Encrypter($secret, self::ENCRYPTION_CIPHER);
+
+        $encryptedText = str_replace(self::BASE64_PREFIX, '', $encryptedText);
+        $payload = base64_decode($encryptedText);
+
+        try {
+            $decryptedString = $encrypter->decrypt($payload);
+        } catch (Exception $e) {
+            throw new Exception("Failed to decrypt string");
+        }
+
+        return $decryptedString;
     }
 }
