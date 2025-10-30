@@ -90,7 +90,13 @@ class EncryptLegacyCredentials extends Migration
     {
         $jwtParts = explode('.', $settingValue);
         if (count($jwtParts) == 3) {
-            return base64_decode($jwtParts[1]);
+            $header = json_decode(base64_decode($jwtParts[0]), true);
+            if (!isset($header['alg']) || !isset($header['typ'])) {
+                return $settingValue;
+            }
+
+            $payload = base64_decode($jwtParts[1]);
+            return trim($payload, '"');
         }
 
         return $settingValue;
