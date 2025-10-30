@@ -22,20 +22,15 @@ class EncryptLegacyCredentials extends Migration
         $credentialSettings = $this->getCredentialSettings();
 
         if (!empty($credentialSettings)) {
-            $credentialsForContexts = $this->mapCredentialsForContexts($credentialSettings);
             $encrypter = new APIKeyEncryption();
 
-            foreach ($credentialsForContexts as $contextId => $credentials) {
-                $orcidClientId = $credentials['orcidClientId'];
-                $orcidClientSecret = $credentials['orcidClientSecret'];
-                $plauditAPISecret = $credentials['plauditAPISecret'];
+            foreach ($credentialSettings as $credentialSetting) {
+                $credentialSetting = get_object_vars($credentialSetting);
 
                 try {
-                    $encrypter->decryptString($orcidClientId);
+                    $encrypter->decryptString($credentialSetting['setting_value']);
                 } catch (\Exception $e) {
-                    if ($e instanceof \UnexpectedValueException) {
-                        $this->encryptCredentials($contextId, $orcidClientId, $orcidClientSecret, $plauditAPISecret);
-                    }
+                    $this->encryptCredential($credentialSetting);
                 }
             }
         }
@@ -54,36 +49,18 @@ class EncryptLegacyCredentials extends Migration
             ->get();
     }
 
-    private function mapCredentialsForContexts($credentialSettings)
+    private function encryptCredential($credentialSetting)
     {
-        $credentials = [];
-        foreach ($credentialSettings as $credentialSetting) {
-            $contextId = $credentialSetting->context_id;
-            $credentials[$contextId][$credentialSetting->setting_name] = $credentialSetting->setting_value;
-        }
-        return $credentials;
-    }
-
-    private function encryptCredentials($contextId, $orcidClientId, $orcidClientSecret, $plauditAPISecret)
-    {
-        $credentials = [
-            'orcidClientId' => $orcidClientId,
-            'orcidClientSecret' => $orcidClientSecret,
-            'plauditAPISecret' => $plauditAPISecret
-        ];
         $encrypter = new APIKeyEncryption();
 
-        foreach ($credentials as $settingName => $settingValue) {
-            $settingValue = $this->extractSettingValue($settingValue);
+        $settingValue = $this->extractSettingValue($credentialSetting['setting_value']);
+        $encryptedValue = $encrypter->encryptString($settingValue);
 
-            $encryptedValue = $encrypter->encryptString($settingValue);
-
-            DB::table('plugin_settings')
-                ->where('context_id', $contextId)
-                ->where('plugin_name', self::PLUGIN_NAME_SETTINGS)
-                ->where('setting_name', $settingName)
-                ->update(['setting_value' => $encryptedValue]);
-        }
+        DB::table('plugin_settings')
+            ->where('context_id', $credentialSetting['context_id'])
+            ->where('plugin_name', self::PLUGIN_NAME_SETTINGS)
+            ->where('setting_name', $credentialSetting['setting_name'])
+            ->update(['setting_value' => $encryptedValue]);
     }
 
     private function extractSettingValue($settingValue)
