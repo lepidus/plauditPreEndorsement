@@ -60,6 +60,14 @@ class EndorsementService
         $encrypter = new APIKeyEncryption();
         $secretKey = $plauditApiKeySecretSetting ? $encrypter->decryptString($plauditApiKeySecretSetting) : null;
 
+        $endorsementOrcid = $publication->getData('endorserOrcid');
+        foreach ($publication->getData('authors') as $author) {
+            if ($author->getData('orcid') && $author->getData('orcid') == $endorsementOrcid) {
+                Repo::endorsement()->delete($endorsement);
+                return 'plugins.generic.plauditPreEndorsement.log.endorsementRemoved.orcidFromAuthor';
+            }
+        }
+
         if (empty($doi)) {
             return 'plugins.generic.plauditPreEndorsement.log.failedEndorsementSending.emptyDoi';
         }
