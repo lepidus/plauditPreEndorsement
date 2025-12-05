@@ -42,7 +42,7 @@ class SendReadyEndorsements extends ScheduledTask
         $row = DB::table('publications AS p')
             ->leftJoin('submissions AS s', 'p.submission_id', '=', 's.submission_id')
             ->where('p.publication_id', $endorsement->getPublicationId())
-            ->get('s.status')
+            ->select('s.status')
             ->first();
         return $row ? $this->get($row->status) : null;
     }
