@@ -103,11 +103,11 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
         return false;
     }
 
-    public function writeOnActivityLog($submission, $message, $messageParams = array())
+    public function writeOnActivityLog($submissionId, $message, $messageParams = array())
     {
         $eventLogData = [
             'assocType' => Application::ASSOC_TYPE_SUBMISSION,
-            'assocId' => $submission->getId(),
+            'assocId' => $submissionId,
             'eventType' => PKPSubmissionEventLogEntry::SUBMISSION_LOG_METADATA_UPDATE,
             'message' => __($message, $messageParams),
             'isTranslated' => true,
@@ -165,7 +165,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
     public function addToSubmissionWizardTemplate($hookName, $params)
     {
         $smarty = $params[1];
-        $output = & $params[2];
+        $output = &$params[2];
 
         $output .= sprintf(
             '<template v-else-if="section.id === \'plauditPreEndorsement\'">%s</template>',
@@ -291,7 +291,11 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
 
             Repo::endorsement()->edit($endorsement, []);
 
-            $this->writeOnActivityLog($submission, 'plugins.generic.plauditPreEndorsement.log.sentEmailEndorser', ['endorserName' => $endorsementName, 'endorserEmail' => $endorsementEmail]);
+            $this->writeOnActivityLog(
+                $submission->getId(),
+                'plugins.generic.plauditPreEndorsement.log.sentEmailEndorser',
+                ['endorserName' => $endorsementName, 'endorserEmail' => $endorsementEmail]
+            );
         }
     }
 
@@ -353,7 +357,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
 
     public function setupGridHandler($hookName, $params)
     {
-        $component = & $params[0];
+        $component = &$params[0];
         if ($component == 'plugins.generic.plauditPreEndorsement.controllers.grid.EndorsementGridHandler') {
             define('PLAUDIT_PRE_ENDORSEMENT_PLUGIN_NAME', $this->getName());
             return true;

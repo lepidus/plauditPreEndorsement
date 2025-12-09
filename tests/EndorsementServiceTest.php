@@ -29,7 +29,7 @@ final class EndorsementServiceTest extends DatabaseTestCase
     private $endorsementOrcid = '0010-1010-1101-0001';
     private $endorsementGivenNameOrcid = 'Caio';
     private $endorsementFamilyNameOrcid = 'dos Anjos';
-    private $endorsementId;
+    private $endorsement;
 
     public function setUp(): void
     {
@@ -38,7 +38,7 @@ final class EndorsementServiceTest extends DatabaseTestCase
         $this->publication = $this->createPublication();
         $this->plugin = new PlauditPreEndorsementPlugin();
         $this->endorsementService = new EndorsementService($this->contextId, $this->plugin);
-        $this->endorsementId = $this->createEndorsement();
+        $this->endorsement = $this->createEndorsement();
     }
 
     public function tearDown(): void
@@ -62,10 +62,14 @@ final class EndorsementServiceTest extends DatabaseTestCase
             'publicationId' => $this->publication->getId(),
             'contextId' => $this->contextId,
             'name' => 'Dummy',
-            'email' => 'dummy@mailinator.com.br'
+            'email' => 'dummy@mailinator.com.br',
+            'orcid' => 'https://orcid.org/' . $this->endorsementOrcid,
         ];
         $endorsement = Repo::endorsement()->newDataObject($params);
-        return Repo::endorsement()->add($endorsement);
+        $endorsementId = Repo::endorsement()->add($endorsement);
+        $endorsement->setId($endorsementId);
+
+        return $endorsement;
     }
 
     private function createPublication(): Publication
@@ -81,6 +85,10 @@ final class EndorsementServiceTest extends DatabaseTestCase
 
         $submission = Repo::submission()->get($this->submissionId);
         $publication = $submission->getCurrentPublication();
+
+        $author = new Author();
+        $author->setData('orcid', 'https://orcid.org/' . $this->endorsementOrcid);
+        $publication->setData('authors', [$author]);
 
         return $publication;
     }
@@ -170,34 +178,37 @@ final class EndorsementServiceTest extends DatabaseTestCase
 
     public function testValidateEndorsementSending(): void
     {
-        $validateResult = $this->endorsementService->validateEndorsementSending($this->publication);
+        $validateResult = $this->endorsementService->validateEndorsementSending($this->endorsement, $this->publication);
+        $this->assertEquals('plugins.generic.plauditPreEndorsement.log.endorsementRemoved.orcidFromAuthor', $validateResult);
+
+        $this->endorsement->setOrcid('https://orcid.org/9999-8888-7777-6666');
+        $validateResult = $this->endorsementService->validateEndorsementSending($this->endorsement, $this->publication);
         $this->assertEquals('plugins.generic.plauditPreEndorsement.log.failedEndorsementSending.emptyDoi', $validateResult);
 
         $doiObject = new Doi();
         $doiObject->setData('doi', $this->doi);
         $this->publication->setData('doiObject', $doiObject);
-        $validateResult = $this->endorsementService->validateEndorsementSending($this->publication);
+        $validateResult = $this->endorsementService->validateEndorsementSending($this->endorsement, $this->publication);
         $this->assertEquals('plugins.generic.plauditPreEndorsement.log.failedEndorsementSending.doiNotIndexed', $validateResult);
 
         $mockCrossrefClient = $this->getMockCrossrefClient();
         $this->endorsementService->setCrossrefClient($mockCrossrefClient);
-        $validateResult = $this->endorsementService->validateEndorsementSending($this->publication);
+        $validateResult = $this->endorsementService->validateEndorsementSending($this->endorsement, $this->publication);
         $this->assertEquals('plugins.generic.plauditPreEndorsement.log.failedEndorsementSending.secretKey', $validateResult);
 
         $encrypter = new APIKeyEncryption();
         $secretKey = $encrypter->encryptString($this->secretKey);
         $this->plugin->updateSetting($this->contextId, 'plauditAPISecret', $secretKey);
-        $validateResult = $this->endorsementService->validateEndorsementSending($this->publication);
+        $validateResult = $this->endorsementService->validateEndorsementSending($this->endorsement, $this->publication);
         $this->assertEquals('ok', $validateResult);
     }
 
     public function testUpdateEndorsementName(): void
     {
-        $endorsement = Repo::endorsement()->get($this->endorsementId);
         $mockOrcidClient = $this->getMockOrcidClient();
         $this->endorsementService->setOrcidClient($mockOrcidClient);
 
-        $newEndorsement = $this->endorsementService->updateEndorsementNameFromOrcid($endorsement, $this->endorsementOrcid);
+        $newEndorsement = $this->endorsementService->updateEndorsementNameFromOrcid($this->endorsement, $this->endorsementOrcid);
         $expectedNewName = $this->endorsementGivenNameOrcid . ' ' . $this->endorsementFamilyNameOrcid;
 
         $this->assertEquals($expectedNewName, $newEndorsement->getName());

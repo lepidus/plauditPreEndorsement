@@ -211,3 +211,9 @@ msgstr "Tentativa de envio do endosso à Plaudit com DOI {$doi} e ORCID {$orcid}
 
 msgid "plugins.generic.plauditPreEndorsement.log.endorsementRemoved"
 msgstr "Um endosso de submissão foi removido: {$endorserName} ({$endorserEmail})"
+
+msgid "plugins.generic.plauditPreEndorsement.log.endorsementRemoved.orcidFromAuthor"
+msgstr "O endosso foi removido, pois o ORCID fornecido ({$orcid}) é de um dos autores da submissão."
+
+msgid "plugins.generic.plauditPreEndorsement.log.endorsementRemoved.emailFromAuthor"
+msgstr "O endosso foi removido, pois o e-mail fornecido ({$email}) é de um dos autores da submissão."
