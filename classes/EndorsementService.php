@@ -40,30 +40,33 @@ class EndorsementService
     public function sendEndorsement($endorsement, $needCheckMessageWasLoggedToday = false)
     {
         $publication = Repo::publication()->get($endorsement->getPublicationId());
-        $validationResult = $this->validateEndorsementSending($publication);
+        $validationResult = $this->validateEndorsementSending($endorsement, $publication);
 
         if ($validationResult == 'ok') {
             $this->sendEndorsementToPlaudit($endorsement, $publication);
         } else {
             $submissionId = $publication->getData('submissionId');
+            if ($validationResult == 'plugins.generic.plauditPreEndorsement.log.endorsementRemoved.orcidFromAuthor') {
+                Repo::endorsement()->delete($endorsement);
+            }
+
             if (!$needCheckMessageWasLoggedToday or !$this->messageWasAlreadyLoggedToday($submissionId, $validationResult)) {
                 $submission = Repo::submission()->get($submissionId);
-                $this->plugin->writeOnActivityLog($submission, $validationResult);
+                $this->plugin->writeOnActivityLog($submission->getId(), $validationResult, ['orcid' => $endorsement->getOrcid()]);
             }
         }
     }
 
-    public function validateEndorsementSending($publication): string
+    public function validateEndorsementSending($endorsement, $publication): string
     {
         $doi = $publication->getDoi();
         $plauditApiKeySecretSetting = $this->plugin->getSetting($this->contextId, 'plauditAPISecret');
         $encrypter = new APIKeyEncryption();
         $secretKey = $plauditApiKeySecretSetting ? $encrypter->decryptString($plauditApiKeySecretSetting) : null;
 
-        $endorsementOrcid = $publication->getData('endorserOrcid');
+        $endorsementOrcid = $endorsement->getOrcid();
         foreach ($publication->getData('authors') as $author) {
             if ($author->getData('orcid') && $author->getData('orcid') == $endorsementOrcid) {
-                Repo::endorsement()->delete($endorsement);
                 return 'plugins.generic.plauditPreEndorsement.log.endorsementRemoved.orcidFromAuthor';
             }
         }
@@ -87,7 +90,7 @@ class EndorsementService
     {
         $submission = Repo::submission()->get($publication->getData('submissionId'));
         $this->plugin->writeOnActivityLog(
-            $submission,
+            $submission->getId(),
             'plugins.generic.plauditPreEndorsement.log.attemptSendingEndorsement',
             [
                 'doi' => $publication->getDoi(),
@@ -108,7 +111,11 @@ class EndorsementService
             $responseCode = $response->getStatusCode();
             $responseBody = print_r($response->getBody()->getContents(), true);
 
-            $this->plugin->writeOnActivityLog($submission, 'plugins.generic.plauditPreEndorsement.log.failedSendingEndorsement', ['code' => $responseCode, 'body' => $responseBody]);
+            $this->plugin->writeOnActivityLog(
+                $submission->getId(),
+                'plugins.generic.plauditPreEndorsement.log.failedSendingEndorsement',
+                ['code' => $responseCode, 'body' => $responseBody]
+            );
             $newEndorsementStatus = Endorsement::STATUS_COULDNT_COMPLETE;
         }
 
