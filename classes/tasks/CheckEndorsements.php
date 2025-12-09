@@ -24,7 +24,6 @@ class CheckEndorsements extends ScheduledTask
             ->toArray();
 
         foreach ($endorsements as $endorsement) {
-            error_log('Checking endorsement ID: ' . $endorsement->getId());
             $authorsEmails = $this->getPublicationAuthorsEmails($endorsement->getPublicationId());
             if (in_array($endorsement->getEmail(), $authorsEmails)) {
                 $submissionId = $this->getSubmissionIdByEndorsement($endorsement);
@@ -38,13 +37,11 @@ class CheckEndorsements extends ScheduledTask
             }
 
             if ($endorsement->getStatus() == Endorsement::STATUS_CONFIRMED) {
-                error_log('Validating confirmed endorsement ID: ' . $endorsement->getId());
                 $endorsementService = new EndorsementService($context->getId(), $plugin);
                 $publication = Repo::publication()->get($endorsement->getPublicationId());
                 $validationMessage = $endorsementService->validateEndorsementSending($endorsement, $publication);
 
                 if ($validationMessage == 'plugins.generic.plauditPreEndorsement.log.endorsementRemoved.orcidFromAuthor') {
-                    error_log('Delete endorsement');
                     $submissionId = $this->getSubmissionIdByEndorsement($endorsement);
 
                     Repo::endorsement()->delete($endorsement);
