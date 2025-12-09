@@ -213,4 +213,7 @@ msgid "plugins.generic.plauditPreEndorsement.log.endorsementRemoved"
 msgstr "Se ha eliminado un endoso del envío: {$endorserName} ({$endorserEmail})"
 
 msgid "plugins.generic.plauditPreEndorsement.log.endorsementRemoved.orcidFromAuthor"
-msgstr "El endoso ha sido eliminado, ya que el ORCID proporcionado es de uno de los autores del envío."
+msgstr "El endoso ha sido eliminado, ya que el ORCID proporcionado ({$orcid}) es de uno de los autores del envío."
+
+msgid "plugins.generic.plauditPreEndorsement.log.endorsementRemoved.emailFromAuthor"
+msgstr "El endoso ha sido eliminado, ya que el correo electrónico proporcionado ({$email}) es de uno de los autores del envío."

@@ -3,6 +3,10 @@
 <!DOCTYPE scheduled_tasks SYSTEM "../../../lib/pkp/dtd/scheduledTasks.dtd">
 
 <scheduled_tasks>
+	<task class="APP\plugins\generic\plauditPreEndorsement\classes\tasks\CheckEndorsements">
+		<descr>Checks if any of the endorsements is from an author</descr>
+		<frequency minute="04"/>
+	</task>
 	<task class="APP\plugins\generic\plauditPreEndorsement\classes\tasks\SendReadyEndorsements">
 		<descr>Send the endorsement of published submissions when it is confirmed</descr>
 		<frequency minute="05"/>

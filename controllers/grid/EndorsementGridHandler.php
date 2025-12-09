@@ -198,7 +198,7 @@ class EndorsementGridHandler extends GridHandler
         $endorsement = Repo::endorsement()->get((int)$rowId, $context->getId());
         Repo::endorsement()->delete($endorsement);
         $this->plugin->writeOnActivityLog(
-            $submission,
+            $submission->getId(),
             'plugins.generic.plauditPreEndorsement.log.endorsementRemoved',
             ['endorserName' => $endorsement->getName(), 'endorserEmail' => $endorsement->getEmail()]
         );

@@ -44,6 +44,6 @@ class SendReadyEndorsements extends ScheduledTask
             ->where('p.publication_id', $endorsement->getPublicationId())
             ->select('s.status')
             ->first();
-        return $row ? $this->get($row->status) : null;
+        return $row ? $row->status : null;
     }
 }
