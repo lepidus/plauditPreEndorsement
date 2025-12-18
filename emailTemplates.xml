@@ -23,4 +23,11 @@
     subject="emails.endorserOrcidWithoutWorks.subject"
     body="emails.endorserOrcidWithoutWorks.body"
   />
+  <email
+    key="ENDORSEMENTED_CONFIRMED"
+    name="emails.endorsementConfirmed.name"
+    description="emails.endorsementConfirmed.description"
+    subject="emails.endorsementConfirmed.subject"
+    body="emails.endorsementConfirmed.body"
+  />
 </emails>
