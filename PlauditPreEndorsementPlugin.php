@@ -23,19 +23,16 @@ use PKP\db\DAORegistry;
 use PKP\core\Core;
 use APP\plugins\generic\plauditPreEndorsement\classes\facades\Repo;
 use PKP\security\Role;
-use PKP\core\JSONMessage;
-use PKP\install\Installer;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Mail;
 use APP\plugins\generic\plauditPreEndorsement\classes\settings\Actions;
 use APP\plugins\generic\plauditPreEndorsement\classes\settings\Manage;
 use APP\plugins\generic\plauditPreEndorsement\classes\OrcidClient;
 use APP\plugins\generic\plauditPreEndorsement\classes\endorsement\Endorsement;
-use APP\plugins\generic\plauditPreEndorsement\classes\components\forms\EndorsementForm;
 use APP\plugins\generic\plauditPreEndorsement\classes\mail\mailables\OrcidRequestEndorserAuthorization;
 use APP\plugins\generic\plauditPreEndorsement\classes\observers\listeners\SendEmailToEndorser;
 use APP\plugins\generic\plauditPreEndorsement\classes\SchemaBuilder;
-use APP\plugins\generic\plauditPreEndorsement\classes\migration\addEndorsementsTable;
+use APP\plugins\generic\plauditPreEndorsement\classes\migration\EndorsementSchemaMigration;
 use Illuminate\Database\Migrations\Migration;
 
 class PlauditPreEndorsementPlugin extends GenericPlugin
@@ -84,6 +81,16 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
     public function getDescription()
     {
         return __('plugins.generic.plauditPreEndorsement.description');
+    }
+
+    public function getInstallMigration(): Migration
+    {
+        return new EndorsementSchemaMigration();
+    }
+
+    public function getInstallEmailTemplatesFile()
+    {
+        return $this->getPluginPath() . '/emailTemplates.xml';
     }
 
     public function setupPreEndorsementHandler($hookName, $params)
@@ -195,11 +202,6 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
         return true;
     }
 
-    public function getInstallMigration(): Migration
-    {
-        return new addEndorsementsTable();
-    }
-
     private function getEndorsementStatusSuffix($endorsementStatus): string
     {
         $mapStatusToSuffix = [
@@ -297,33 +299,6 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
                 ['endorserName' => $endorsementName, 'endorserEmail' => $endorsementEmail]
             );
         }
-    }
-
-    public function getInstallEmailTemplatesFile()
-    {
-        return $this->getPluginPath() . '/emailTemplates.xml';
-    }
-
-    // Modification of Plugin::installEmailTemplates function
-    public function installEmailTemplates($hookName, $params)
-    {
-        $installer = &$params[0];
-        $result = &$params[1];
-
-        $locales = [];
-        foreach ($installer->installedLocales as $locale) {
-            if (file_exists($this->getPluginPath() . "/locale/{$locale}/emails.po")) {
-                $locales[] = $locale;
-            }
-        }
-        $this->addLocaleData();
-        $status = Repo::emailTemplate()->dao->installEmailTemplates($this->getInstallEmailTemplatesFile(), $locales, null, false);
-
-        if ($status === false) {
-            $installer->setError(Installer::INSTALLER_ERROR_DB, str_replace('{$file}', $this->getInstallEmailTemplatesFile(), __('installer.installParseEmailTemplatesFileError')));
-            $result = false;
-        }
-        return false;
     }
 
     public function getActions($request, $actionArgs)

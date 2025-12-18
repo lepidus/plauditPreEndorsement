@@ -6,7 +6,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 use PKP\install\DowngradeNotSupportedException;
 
-class MoveLegacyEndorsementsToEndorsementsTable extends Migration
+class LegacyEndorsementsMigration extends Migration
 {
     public function up(): void
     {
@@ -51,7 +51,8 @@ class MoveLegacyEndorsementsToEndorsementsTable extends Migration
     private function moveToEndorsementsTable($legacyEndorsements)
     {
         foreach ($legacyEndorsements as $publicationId => $settings) {
-            if (empty($settings['endorserName'])
+            if (
+                empty($settings['endorserName'])
                 || empty($settings['endorserEmail'])
                 || !isset($settings['endorsementStatus'])
             ) {

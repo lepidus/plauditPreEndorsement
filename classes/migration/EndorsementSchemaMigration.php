@@ -6,10 +6,8 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use PKP\install\DowngradeNotSupportedException;
-use APP\plugins\generic\plauditPreEndorsement\classes\migration\upgrade\MoveLegacyEndorsementsToEndorsementsTable;
-use APP\plugins\generic\plauditPreEndorsement\classes\migration\upgrade\EncryptLegacyCredentials;
 
-class addEndorsementsTable extends Migration
+class EndorsementSchemaMigration extends Migration
 {
     public function up(): void
     {
@@ -39,11 +37,6 @@ class addEndorsementsTable extends Migration
 
                 $table->unique(['context_id', 'publication_id', 'email'], 'endorsement_pkey');
             });
-        }
-
-        foreach ([MoveLegacyEndorsementsToEndorsementsTable::class, EncryptLegacyCredentials::class] as $class) {
-            $migration = new $class();
-            $migration->up();
         }
     }
 
