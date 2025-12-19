@@ -9,10 +9,10 @@ use APP\template\TemplateManager;
 use Illuminate\Support\Facades\Mail;
 use APP\plugins\generic\plauditPreEndorsement\classes\endorsement\Endorsement;
 use APP\plugins\generic\plauditPreEndorsement\classes\facades\Repo;
+use APP\plugins\generic\plauditPreEndorsement\classes\mail\mailables\EndorsementConfirmed;
 use APP\plugins\generic\plauditPreEndorsement\classes\mail\mailables\EndorserOrcidWithoutWorks;
 use APP\plugins\generic\plauditPreEndorsement\classes\EndorsementService;
 use APP\plugins\generic\plauditPreEndorsement\classes\OrcidClient;
-use APP\plugins\generic\plauditPreEndorsement\PlauditPreEndorsementPlugin;
 
 class PlauditPreEndorsementHandler extends Handler
 {
@@ -82,8 +82,8 @@ class PlauditPreEndorsementHandler extends Handler
             $endorsementService->updateEndorsementNameFromOrcid($endorsement, $orcid);
 
             $this->setConfirmedEndorsement($endorsement, $orcidUri);
-            $this->logMessageAndDisplayTemplate($submission, $request, 'plugins.generic.plauditPreEndorsement.log.endorsementConfirmed', ['orcid' => $orcidUri]);
             $this->sendEndorsementConfirmedEmail($submission, $publication, $endorsement, $request->getContext());
+            $this->logMessageAndDisplayTemplate($submission, $request, 'plugins.generic.plauditPreEndorsement.log.endorsementConfirmed', ['orcid' => $orcidUri]);
 
             if ($publication->getData('status') == Submission::STATUS_PUBLISHED) {
                 $endorsementService->sendEndorsement($publication);
@@ -98,7 +98,7 @@ class PlauditPreEndorsementHandler extends Handler
         $plugin = PluginRegistry::getPlugin('generic', 'plauditpreendorsementplugin');
         $templatePath = $plugin->getTemplateResource('orcidVerify.tpl');
 
-        $plugin->writeOnActivityLog($submission, $message, $data);
+        $plugin->writeOnActivityLog($submission->getId(), $message, $data);
 
         $templateMgr = TemplateManager::getManager($request);
         $templateMgr->assign($data);
