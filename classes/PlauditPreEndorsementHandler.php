@@ -81,8 +81,9 @@ class PlauditPreEndorsementHandler extends Handler
 
             $endorsementService->updateEndorsementNameFromOrcid($endorsement, $orcid);
 
-            $this->setConfirmedEndorsementPublication($endorsement, $orcidUri);
+            $this->setConfirmedEndorsement($endorsement, $orcidUri);
             $this->logMessageAndDisplayTemplate($submission, $request, 'plugins.generic.plauditPreEndorsement.log.endorsementConfirmed', ['orcid' => $orcidUri]);
+            $this->sendEndorsementConfirmedEmail($submission, $publication, $endorsement, $request->getContext());
 
             if ($publication->getData('status') == Submission::STATUS_PUBLISHED) {
                 $endorsementService->sendEndorsement($publication);
@@ -104,7 +105,7 @@ class PlauditPreEndorsementHandler extends Handler
         $templateMgr->display($templatePath);
     }
 
-    private function setConfirmedEndorsementPublication($endorsement, $orcidUri)
+    private function setConfirmedEndorsement($endorsement, $orcidUri)
     {
         $endorsement->setEmailToken(null);
         $endorsement->setOrcid($orcidUri);
@@ -140,6 +141,36 @@ class PlauditPreEndorsementHandler extends Handler
         $email = new EndorserOrcidWithoutWorks($context, $submission, $emailParams);
         $email->from($context->getData('contactEmail'), $context->getData('contactName'));
         $email->to([['name' => $primaryAuthor->getFullName(), 'email' => $primaryAuthor->getEmail()]]);
+        $email->subject($emailTemplate->getLocalizedData('subject'));
+        $email->body($emailTemplate->getLocalizedData('body'));
+
+        Mail::send($email);
+    }
+
+    private function sendEndorsementConfirmedEmail($submission, $publication, $endorsement, $context)
+    {
+        $emailTemplate = Repo::emailTemplate()->getByKey(
+            $context->getId(),
+            'ENDORSEMENT_CONFIRMED'
+        );
+
+        $primaryAuthor = $publication->getPrimaryAuthor();
+        if (!isset($primaryAuthor)) {
+            $authors = $publication->getData('authors');
+            $primaryAuthor = $authors->first();
+        }
+
+        $emailParams = [
+            'endorserName' => htmlspecialchars($endorsement->getName()),
+            'endorserOrcid' => htmlspecialchars($endorsement->getOrcid())
+        ];
+
+        $email = new EndorsementConfirmed($context, $submission, $emailParams);
+        $email->from($context->getData('contactEmail'), $context->getData('contactName'));
+        $email->to([
+            ['name' => $emailParams['endorserName'], 'email' => $endorsement->getEmail()],
+            ['name' => $primaryAuthor->getFullName(), 'email' => $primaryAuthor->getEmail()]
+        ]);
         $email->subject($emailTemplate->getLocalizedData('subject'));
         $email->body($emailTemplate->getLocalizedData('body'));
 

@@ -24,7 +24,7 @@
     body="emails.endorserOrcidWithoutWorks.body"
   />
   <email
-    key="ENDORSEMENTED_CONFIRMED"
+    key="ENDORSEMENT_CONFIRMED"
     name="emails.endorsementConfirmed.name"
     description="emails.endorsementConfirmed.description"
     subject="emails.endorsementConfirmed.subject"
