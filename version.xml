@@ -13,7 +13,7 @@
 	<application>plauditPreEndorsement</application>
 	<type>plugins.generic</type>
 	<lazy-load>0</lazy-load>
-	<release>2.1.1.0</release>
-	<date>2025-12-09</date>
+	<release>2.1.2.0</release>
+	<date>2025-12-19</date>
   <class>PlauditPreEndorsementPlugin</class>
 </version>

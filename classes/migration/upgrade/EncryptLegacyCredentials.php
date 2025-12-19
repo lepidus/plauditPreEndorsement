@@ -6,7 +6,6 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 use PKP\install\DowngradeNotSupportedException;
 use APP\plugins\generic\plauditPreEndorsement\classes\api\APIKeyEncryption;
-use Firebase\JWT\JWT;
 
 class EncryptLegacyCredentials extends Migration
 {
