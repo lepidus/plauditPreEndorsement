@@ -30,4 +30,11 @@
     subject="emails.endorsementConfirmed.subject"
     body="emails.endorsementConfirmed.body"
   />
+  <email
+    key="ENDORSEMENT_DECLINED"
+    name="emails.endorsementDeclined.name"
+    description="emails.endorsementDeclined.description"
+    subject="emails.endorsementDeclined.subject"
+    body="emails.endorsementDeclined.body"
+  />
 </emails>

@@ -95,3 +95,24 @@ msgstr ""
 "<br>\n"
 "Si tiene alguna pregunta, por favor contáctenos: {$contactEmail}<br/>\n"
 ""
+
+
+msgid "emails.endorsementDeclined.name"
+msgstr "Notificación de endoso rechazado"
+
+msgid "emails.endorsementDeclined.description"
+msgstr "Plantilla de correo electrónico utilizada para notificar al contacto principal del envío sobre el rechazo del endoso."
+
+msgid "emails.endorsementDeclined.subject"
+msgstr "Endoso rechazado"
+
+msgid "emails.endorsementDeclined.body"
+msgstr ""
+"Estimado/a<br>\n"
+"<br>\n"
+"El endoso al manuscrito \"{$submissionTitle}\" fue rechazado por el endosante {$endorserName}.<br>\n"
+"<br>\n"
+"Acceda a lo envío en el servidor {$contextName} para añadir un nuevo endosante o eliminar el endoso en cuestión.<br>\n"
+"<br>\n"
+"Si tiene alguna pregunta, póngase en contacto con nosotros: {$contactEmail}<br/>\n"
+""

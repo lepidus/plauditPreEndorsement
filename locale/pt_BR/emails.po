@@ -95,3 +95,24 @@ msgstr ""
 "<br>\n"
 "Caso ainda tenha alguma dúvida, entre em contato conosco: {$contactEmail}<br/>\n"
 ""
+
+
+msgid "emails.endorsementDeclined.name"
+msgstr "Notificação de endosso recusado"
+
+msgid "emails.endorsementDeclined.description"
+msgstr "Modelo de e-mail usado para notificar o e contato principal da submissão sobre a recusa do endosso."
+
+msgid "emails.endorsementDeclined.subject"
+msgstr "Endosso recusado"
+
+msgid "emails.endorsementDeclined.body"
+msgstr ""
+"Prezado(a)<br>\n"
+"<br>\n"
+"O endosso ao manuscrito \"{$submissionTitle}\" foi recusado pelo(a) endossador(a) {$endorserName}.<br>\n"
+"<br>\n"
+"Acesse a submissão no servidor {$contextName} para adicionar um(a) novo(a) endossador(a) ou remover o endosso em questão.<br>\n"
+"<br>\n"
+"Caso ainda tenha alguma dúvida, entre em contato conosco: {$contactEmail}<br/>\n"
+""
