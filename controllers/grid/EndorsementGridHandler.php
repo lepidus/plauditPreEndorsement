@@ -4,10 +4,10 @@ namespace APP\plugins\generic\plauditPreEndorsement\controllers\grid;
 
 use PKP\controllers\grid\GridHandler;
 use APP\core\Application;
+use APP\notification\Notification;
 use PKP\controllers\grid\GridColumn;
 use PKP\core\JSONMessage;
 use PKP\db\DAO;
-use PKP\db\DAORegistry;
 use PKP\linkAction\LinkAction;
 use PKP\linkAction\request\AjaxModal;
 use PKP\security\authorization\SubmissionAccessPolicy;
@@ -16,7 +16,6 @@ use APP\plugins\generic\plauditPreEndorsement\controllers\grid\form\EndorsementF
 use PKP\plugins\PluginRegistry;
 use APP\plugins\generic\plauditPreEndorsement\classes\facades\Repo;
 use APP\plugins\generic\plauditPreEndorsement\classes\EndorsementService;
-use GuzzleHttp\Exception\ClientException;
 use APP\notification\NotificationManager;
 
 class EndorsementGridHandler extends GridHandler
@@ -33,7 +32,7 @@ class EndorsementGridHandler extends GridHandler
         $this->plugin = PluginRegistry::getPlugin('generic', PLAUDIT_PRE_ENDORSEMENT_PLUGIN_NAME);
     }
 
-    public static function setPlugin($plugin)
+    public function setPlugin($plugin)
     {
         $this->plugin = $plugin;
     }
@@ -144,8 +143,8 @@ class EndorsementGridHandler extends GridHandler
         $notificationManager = new NotificationManager();
         $notificationManager->createTrivialNotification(
             $user->getId(),
-            NOTIFICATION_TYPE_SUCCESS,
-            array('contents' => __('plugins.generic.plauditPreEndorsement.sendEndorsementToPlauditNotification'))
+            Notification::NOTIFICATION_TYPE_SUCCESS,
+            ['contents' => __('plugins.generic.plauditPreEndorsement.sendEndorsementToPlauditNotification')]
         );
 
         $json = new JSONMessage(true);

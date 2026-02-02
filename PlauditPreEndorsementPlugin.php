@@ -51,7 +51,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
             Event::subscribe(new SendEmailToEndorser());
 
             Hook::add('TemplateManager::display', [$this, 'addToSubmissionWizardSteps']);
-            Hook::add('Template::SubmissionWizard::Section', array($this, 'addToSubmissionWizardTemplate'));
+            Hook::add('Template::SubmissionWizard::Section', [$this, 'addToSubmissionWizardTemplate']);
             Hook::add('Template::SubmissionWizard::Section::Review', [$this, 'addToReviewSubmissionWizardTemplate']);
             Hook::add('Schema::get::endorsement', [$this, 'addEndorsementSchema']);
 
@@ -66,7 +66,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
             $templateMgr->addJavaScript(
                 'EndorsementGridHandler',
                 $request->getBaseUrl() . '/' . $this->getPluginPath() . '/js/EndorsementGridHandler.js',
-                array('contexts' => 'backend')
+                ['contexts' => 'backend']
             );
         }
 
@@ -110,7 +110,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
         return false;
     }
 
-    public function writeOnActivityLog($submissionId, $message, $messageParams = array())
+    public function writeOnActivityLog($submissionId, $message, $messageParams = [])
     {
         $eventLogData = [
             'assocType' => Application::ASSOC_TYPE_SUBMISSION,
@@ -261,15 +261,25 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
 
             $endorsementEmailToken = md5(microtime() . $endorsementEmail);
             $orcidClient = new OrcidClient($this, $context->getId());
-            $oauthUrl = $orcidClient->buildOAuthUrl(
-                [
-                    'token' => $endorsementEmailToken,
-                    'state' => $publication->getId(),
-                    'endorsementId' => $endorsement->getId()
-                ]
+            $redirectParams = [
+                'token' => $endorsementEmailToken,
+                'state' => $publication->getId(),
+                'endorsementId' => $endorsement->getId()
+            ];
+            $oauthUrl = $orcidClient->buildOAuthUrl($redirectParams);
+            $endorsementDeclineUrl = $request->getDispatcher()->url(
+                $request,
+                Application::ROUTE_PAGE,
+                null,
+                self::HANDLER_PAGE,
+                'declineEndorsement',
+                null,
+                $redirectParams
             );
+
             $emailParams = [
                 'orcidOauthUrl' => $oauthUrl,
+                'endorsementDeclineUrl' => $endorsementDeclineUrl,
                 'endorserName' => htmlspecialchars($endorsementName),
             ];
 
@@ -316,7 +326,7 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
     public function userAccessingIsAuthor($submission): bool
     {
         $currentUser = Application::get()->getRequest()->getUser();
-        $currentUserAssignedRoles = array();
+        $currentUserAssignedRoles = [];
         if ($currentUser) {
             $stageAssignmentDao = DAORegistry::getDAO('StageAssignmentDAO');
             $stageAssignmentsResult = $stageAssignmentDao->getBySubmissionAndUserIdAndStageId($submission->getId(), $currentUser->getId(), $submission->getData('stageId'));
