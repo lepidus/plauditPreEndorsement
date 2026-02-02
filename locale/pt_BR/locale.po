@@ -56,8 +56,8 @@ msgstr "Confirmado pelo(a) endossador(a)"
 msgid "plugins.generic.plauditPreEndorsement.endorsementNotConfirmed"
 msgstr "Aguardando confirmação"
 
-msgid "plugins.generic.plauditPreEndorsement.endorsementDenied"
-msgstr "Acesso ao ORCID negado"
+msgid "plugins.generic.plauditPreEndorsement.endorsementDeclined"
+msgstr "Recusado pelo(a) endossador(a)"
 
 msgid "plugins.generic.plauditPreEndorsement.endorsementCouldntComplete"
 msgstr "Erro no envio à Plaudit"
