@@ -172,6 +172,15 @@ msgid "plugins.generic.plauditPreEndorsement.failure.contact"
 msgstr "If the problem persists, contact the server manager by the e-mail address <a href=\"mailto:{$contactEmail}\">{$contactEmail}</a>,"
 " providing your name, ORCID iD, and details of your submission"
 
+msgid "plugins.generic.plauditPreEndorsement.endorsementDecline.title"
+msgstr "Endorsement Decline"
+
+msgid "plugins.generic.plauditPreEndorsement.endorsementDecline.success"
+msgstr "You have successfully declined to endorse this submission. The submitting author has been notified."
+
+msgid "plugins.generic.plauditPreEndorsement.endorsementDecline.invalidToken"
+msgstr "An error occurred during the endorsement declining. Please, check if the email used is the last one sent for endorsement request."
+
 
 msgid "plugins.generic.plauditPreEndorsement.log.sentEmailEndorser"
 msgstr "An endorsement confirmation e-mail has been sent to {$endorserName} ({$endorserEmail})"
@@ -196,6 +205,9 @@ msgstr "The endorsement has not been confirmed, as the ORCID provided is from on
 
 msgid "plugins.generic.plauditPreEndorsement.log.endorsementConfirmed"
 msgstr "The endorsement has been confirmed by the endorser and its ORCID has been stored in the submission"
+
+msgid "plugins.generic.plauditPreEndorsement.log.endorsementDeclined"
+msgstr "The endorsement has been declined by the endorser"
 
 msgid "plugins.generic.plauditPreEndorsement.log.failedEndorsementSending.emptyDoi"
 msgstr "The sending of the endorsement to Plaudit couldn't be done, as the submission doesn't have a DOI assigned"

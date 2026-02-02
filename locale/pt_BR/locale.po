@@ -172,6 +172,15 @@ msgid "plugins.generic.plauditPreEndorsement.failure.contact"
 msgstr "Se o problema persistir, entre em contato com o administrador do servidor pelo e-mail <a href=\"mailto:{$contactEmail}\">{$contactEmail}</a>,"
 " informando seu nome, ORCID ID e detalhes da submissão"
 
+msgid "plugins.generic.plauditPreEndorsement.endorsementDecline.title"
+msgstr "Recusa de Endosso"
+
+msgid "plugins.generic.plauditPreEndorsement.endorsementDecline.success"
+msgstr "Você recusou com sucesso o endosso desta submissão. O autor da submissão foi notificado."
+
+msgid "plugins.generic.plauditPreEndorsement.endorsementDecline.invalidToken"
+msgstr "Ocorreu um erro durante a recusa do endosso. Por favor, verifique se o e-mail utilizado é o último enviado para solicitação de endosso."
+
 
 msgid "plugins.generic.plauditPreEndorsement.log.sentEmailEndorser"
 msgstr "Foi enviado um e-mail de confirmação de endosso para {$endorserName} ({$endorserEmail})"
@@ -196,6 +205,9 @@ msgstr "O endosso não foi confirmado, pois o ORCID informado é de um dos autor
 
 msgid "plugins.generic.plauditPreEndorsement.log.endorsementConfirmed"
 msgstr "O endosso foi confirmado pelo(a) endossador(a) e seu ORCID foi salvo na submissão"
+
+msgid "plugins.generic.plauditPreEndorsement.log.endorsementDeclined"
+msgstr "O endosso foi rejeitado pelo(a) endossador(a)"
 
 msgid "plugins.generic.plauditPreEndorsement.log.failedEndorsementSending.emptyDoi"
 msgstr "O envio do endosso à Plaudit não pôde ser realizado, pois a submissão não tem um DOI atribuído"

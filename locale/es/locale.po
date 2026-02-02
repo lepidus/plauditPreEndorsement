@@ -172,6 +172,15 @@ msgid "plugins.generic.plauditPreEndorsement.failure.contact"
 msgstr "Si el problema persiste, comuníquese con el administrador del servidor por correo electrónico en <a href=\"mailto:{$contactEmail}\">{$contactEmail}</a>,"
 " indicando su nombre, ORCID ID y detalles de envío"
 
+msgid "plugins.generic.plauditPreEndorsement.endorsementDecline.title"
+msgstr "Rechazo de Respaldo"
+
+msgid "plugins.generic.plauditPreEndorsement.endorsementDecline.success"
+msgstr "Ha rechazado correctamente el endoso de esto envío. Se ha notificado al autor del envío."
+
+msgid "plugins.generic.plauditPreEndorsement.endorsementDecline.invalidToken"
+msgstr "Se ha producido un error al rechazar el endoso. Por favor, comprueba que el correo electrónico utilizado es el último enviado para solicitar el endoso."
+
 
 msgid "plugins.generic.plauditPreEndorsement.log.sentEmailEndorser"
 msgstr "Se ha enviado un correo electrónico de confirmación de endoso a {$endorserName} ({$endorserEmail})"
@@ -196,6 +205,9 @@ msgstr "El endoso no ha sido confirmado, ya que el ORCID facilitado es el de uno
 
 msgid "plugins.generic.plauditPreEndorsement.log.endorsementConfirmed"
 msgstr "El endoso ha sido confirmado por el endosante y su ORCID se ha guardado en el envío"
+
+msgid "plugins.generic.plauditPreEndorsement.log.endorsementDeclined"
+msgstr "El endoso ha sido rechazado por el endosante"
 
 msgid "plugins.generic.plauditPreEndorsement.log.failedEndorsementSending.emptyDoi"
 msgstr "No se pudo realizar el envío del endoso a Plaudit porque el envío no tiene un DOI asignado"
