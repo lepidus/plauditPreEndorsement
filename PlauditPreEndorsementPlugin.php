@@ -29,6 +29,7 @@ use APP\plugins\generic\plauditPreEndorsement\classes\settings\Actions;
 use APP\plugins\generic\plauditPreEndorsement\classes\settings\Manage;
 use APP\plugins\generic\plauditPreEndorsement\classes\OrcidClient;
 use APP\plugins\generic\plauditPreEndorsement\classes\endorsement\Endorsement;
+use APP\plugins\generic\plauditPreEndorsement\classes\mail\builders\OrcidRequestMailBuilder;
 use APP\plugins\generic\plauditPreEndorsement\classes\mail\mailables\OrcidRequestEndorserAuthorization;
 use APP\plugins\generic\plauditPreEndorsement\classes\observers\listeners\SendEmailToEndorser;
 use APP\plugins\generic\plauditPreEndorsement\classes\SchemaBuilder;
@@ -247,68 +248,20 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
 
     public function sendEmailToEndorser($publication, $endorsement, $endorsementChanged = false)
     {
-        $request = Application::get()->getRequest();
-        $context = $request->getContext();
-        $endorsementName = $endorsement->getName();
-        $endorsementEmail = $endorsement->getEmail();
+        $orcidRequestMailBuilder = new OrcidRequestMailBuilder();
+        $email = $orcidRequestMailBuilder
+            ->setEndorsement($endorsement)
+            ->setPublication($publication)
+            ->buildEmailParams()
+            ->build(['endorsementChanged' => $endorsementChanged]);
 
-        if (!is_null($context) && !empty($endorsementEmail)) {
-            $submission = Repo::submission()->get($publication->getData('submissionId'));
-            $emailTemplate = Repo::emailTemplate()->getByKey(
-                $context->getId(),
-                'ORCID_REQUEST_ENDORSER_AUTHORIZATION'
-            );
+        Mail::send($email);
 
-            $endorsementEmailToken = md5(microtime() . $endorsementEmail);
-            $orcidClient = new OrcidClient($this, $context->getId());
-            $redirectParams = [
-                'token' => $endorsementEmailToken,
-                'state' => $publication->getId(),
-                'endorsementId' => $endorsement->getId()
-            ];
-            $oauthUrl = $orcidClient->buildOAuthUrl($redirectParams);
-            $endorsementDeclineUrl = $request->getDispatcher()->url(
-                $request,
-                Application::ROUTE_PAGE,
-                null,
-                self::HANDLER_PAGE,
-                'declineEndorsement',
-                null,
-                $redirectParams
-            );
-
-            $emailParams = [
-                'orcidOauthUrl' => $oauthUrl,
-                'endorsementDeclineUrl' => $endorsementDeclineUrl,
-                'endorserName' => htmlspecialchars($endorsementName),
-            ];
-
-            $email = new OrcidRequestEndorserAuthorization($context, $submission, $emailParams);
-            $email->from($context->getData('contactEmail'), $context->getData('contactName'));
-            $email->to([['name' => $endorsementName, 'email' => $endorsementEmail]]);
-            $email->subject($emailTemplate->getLocalizedData('subject'));
-            $email->body($emailTemplate->getLocalizedData('body'));
-
-            Mail::send($email);
-
-            if (is_null($endorsement->getEmailCount()) || $endorsementChanged) {
-                $endorsementEmailCount = 0;
-            } else {
-                $endorsementEmailCount = $endorsement->getEmailCount();
-            }
-
-            $endorsement->setEmailToken($endorsementEmailToken);
-            $endorsement->setStatus(Endorsement::STATUS_NOT_CONFIRMED);
-            $endorsement->setEmailCount($endorsementEmailCount + 1);
-
-            Repo::endorsement()->edit($endorsement, []);
-
-            $this->writeOnActivityLog(
-                $submission->getId(),
-                'plugins.generic.plauditPreEndorsement.log.sentEmailEndorser',
-                ['endorserName' => $endorsementName, 'endorserEmail' => $endorsementEmail]
-            );
-        }
+        $this->writeOnActivityLog(
+            $publication->getData('submissionId'),
+            'plugins.generic.plauditPreEndorsement.log.sentEmailEndorser',
+            ['endorserName' => $endorsement->getName(), 'endorserEmail' => $endorsement->getEmail()]
+        );
     }
 
     public function getActions($request, $actionArgs)
