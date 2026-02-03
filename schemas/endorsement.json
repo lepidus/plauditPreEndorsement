@@ -13,22 +13,35 @@
         "type": "integer"
       }, 
       "name": {
-        "type": "string"
+        "type": "string",
+        "description": "The name of the endorser"
       },
       "email": {
-        "type": "string"
+        "type": "string",
+        "description": "The email address of the endorser"
       },
       "status": {
-        "type": "integer"
+        "type": "integer",
+        "description": "Describes the state of the endorsement. Check Endorsement class."
       },
       "orcid": {
-        "type": "string"
+        "type": "string",
+        "description": "The ORCID of the endorser"
       },
       "emailToken": {
-        "type": "string"
+        "type": "string",
+        "description": "Token used to validate the endorser's identity"
       },
       "emailCount": {
-        "type": "integer"
+        "type": "integer",
+        "description": "The number of confirmation emails sent to the endorser"
+      },
+      "lastEmailDate": {
+        "type": "string",
+        "description": "The date of the last confirmation email sent to the endorser",
+        "validation": [
+          "date_format:Y-m-d"
+        ]
       }
     }
 }
