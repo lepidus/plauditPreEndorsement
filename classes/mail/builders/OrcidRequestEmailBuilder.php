@@ -92,9 +92,11 @@ class OrcidRequestEmailBuilder implements EmailBuilder
             $endorsementEmailCount = $this->endorsement->getEmailCount();
         }
 
+        $today = new \DateTime();
         $this->endorsement->setEmailToken($this->emailParams['endorsementEmailToken']);
         $this->endorsement->setStatus(Endorsement::STATUS_NOT_CONFIRMED);
         $this->endorsement->setEmailCount($endorsementEmailCount + 1);
+        $this->endorsement->setLastEmailDate($today->format('Y-m-d'));
 
         Repo::endorsement()->edit($this->endorsement, []);
     }

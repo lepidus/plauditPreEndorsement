@@ -94,4 +94,14 @@ class Endorsement extends \PKP\core\DataObject
     {
         $this->setData("emailCount", $emailCount);
     }
+
+    public function getLastEmailDate(): ?string
+    {
+        return $this->getData("lastEmailDate");
+    }
+
+    public function setLastEmailDate(string $lastEmailDate)
+    {
+        $this->setData("lastEmailDate", $lastEmailDate);
+    }
 }
