@@ -12,6 +12,8 @@ use APP\plugins\generic\plauditPreEndorsement\classes\endorsement\Endorsement;
 
 class CheckEndorsements extends ScheduledTask
 {
+    private const ORCID_REQUEST_INTERVAL_DAYS = 3;
+
     public function executeActions()
     {
         PluginRegistry::loadCategory('generic');
@@ -37,24 +39,40 @@ class CheckEndorsements extends ScheduledTask
             }
 
             if ($endorsement->getStatus() == Endorsement::STATUS_CONFIRMED) {
-                $endorsementService = new EndorsementService($context->getId(), $plugin);
-                $publication = Repo::publication()->get($endorsement->getPublicationId());
-                $validationMessage = $endorsementService->validateEndorsementSending($endorsement, $publication);
+                $this->checkEndorsementOrcid($endorsement, $context, $plugin);
+            }
 
-                if ($validationMessage == 'plugins.generic.plauditPreEndorsement.log.endorsementRemoved.orcidFromAuthor') {
-                    $submissionId = $this->getSubmissionIdByEndorsement($endorsement);
-
-                    Repo::endorsement()->delete($endorsement);
-                    $plugin->writeOnActivityLog(
-                        $submissionId,
-                        'plugins.generic.plauditPreEndorsement.log.endorsementRemoved.orcidFromAuthor',
-                        ['orcid' => $endorsement->getOrcid()]
-                    );
-                }
+            if ($endorsement->getStatus() == Endorsement::STATUS_NOT_CONFIRMED) {
+                $this->checkOrcidRequestMessage($endorsement);
             }
         }
 
         return true;
+    }
+
+    private function checkEndorsementOrcid($endorsement, $context, $plugin)
+    {
+        $endorsementService = new EndorsementService($context->getId(), $plugin);
+        $publication = Repo::publication()->get($endorsement->getPublicationId());
+        $validationMessage = $endorsementService->validateEndorsementSending($endorsement, $publication);
+
+        if ($validationMessage == 'plugins.generic.plauditPreEndorsement.log.endorsementRemoved.orcidFromAuthor') {
+            $submissionId = $this->getSubmissionIdByEndorsement($endorsement);
+
+            Repo::endorsement()->delete($endorsement);
+            $plugin->writeOnActivityLog(
+                $submissionId,
+                'plugins.generic.plauditPreEndorsement.log.endorsementRemoved.orcidFromAuthor',
+                ['orcid' => $endorsement->getOrcid()]
+            );
+        }
+    }
+
+    private function checkOrcidRequestMessage($endorsement)
+    {
+        $today = (new \DateTime())->format('Y-m-d');
+
+        // check if submission isn't posted or if today isn't its daySubmitted
     }
 
     private function getPublicationAuthorsEmails($publicationId)
