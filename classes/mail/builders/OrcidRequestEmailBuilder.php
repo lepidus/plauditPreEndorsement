@@ -16,7 +16,7 @@ class OrcidRequestEmailBuilder implements EmailBuilder
 {
     private $endorsement;
     private $publication;
-    private $mailParams;
+    private $emailParams;
 
     public function setEndorsement(Endorsement $endorsement): EmailBuilder
     {
@@ -53,7 +53,7 @@ class OrcidRequestEmailBuilder implements EmailBuilder
             $redirectParams
         );
 
-        $this->mailParams = [
+        $this->emailParams = [
             'endorsementEmailToken' => $endorsementEmailToken,
             'orcidOauthUrl' => $oauthUrl,
             'endorsementDeclineUrl' => $endorsementDeclineUrl,
@@ -73,15 +73,15 @@ class OrcidRequestEmailBuilder implements EmailBuilder
             'ORCID_REQUEST_ENDORSER_AUTHORIZATION'
         );
 
-        $mail = new OrcidRequestEndorserAuthorization($context, $submission, $this->mailParams);
-        $mail->from($context->getData('contactEmail'), $context->getData('contactName'));
-        $mail->to([['name' => $this->endorsement->getName(), 'email' => $this->endorsement->getEmail()]]);
-        $mail->subject($emailTemplate->getLocalizedData('subject'));
-        $mail->body($emailTemplate->getLocalizedData('body'));
+        $email = new OrcidRequestEndorserAuthorization($context, $submission, $this->emailParams);
+        $email->from($context->getData('contactEmail'), $context->getData('contactName'));
+        $email->to([['name' => $this->endorsement->getName(), 'email' => $this->endorsement->getEmail()]]);
+        $email->subject($emailTemplate->getLocalizedData('subject'));
+        $email->body($emailTemplate->getLocalizedData('body'));
 
         $this->updateEndorsement($args['endorsementChanged']);
 
-        return $mail;
+        return $email;
     }
 
     private function updateEndorsement($endorsementChanged)
@@ -92,7 +92,7 @@ class OrcidRequestEmailBuilder implements EmailBuilder
             $endorsementEmailCount = $this->endorsement->getEmailCount();
         }
 
-        $this->endorsement->setEmailToken($this->mailParams['endorsementEmailToken']);
+        $this->endorsement->setEmailToken($this->emailParams['endorsementEmailToken']);
         $this->endorsement->setStatus(Endorsement::STATUS_NOT_CONFIRMED);
         $this->endorsement->setEmailCount($endorsementEmailCount + 1);
 
