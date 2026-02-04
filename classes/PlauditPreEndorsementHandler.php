@@ -9,9 +9,11 @@ use APP\template\TemplateManager;
 use Illuminate\Support\Facades\Mail;
 use APP\plugins\generic\plauditPreEndorsement\classes\endorsement\Endorsement;
 use APP\plugins\generic\plauditPreEndorsement\classes\facades\Repo;
-use APP\plugins\generic\plauditPreEndorsement\classes\mail\mailables\EndorsementConfirmed;
-use APP\plugins\generic\plauditPreEndorsement\classes\mail\builders\OrcidWithoutWorksEmailBuilder;
-use APP\plugins\generic\plauditPreEndorsement\classes\mail\builders\EndorsementConfirmedEmailBuilder;
+use APP\plugins\generic\plauditPreEndorsement\classes\mail\builders\{
+    EndorsementConfirmedEmailBuilder,
+    EndorsementDeclinedEmailBuilder,
+    OrcidWithoutWorksEmailBuilder
+};
 use APP\plugins\generic\plauditPreEndorsement\classes\EndorsementService;
 use APP\plugins\generic\plauditPreEndorsement\classes\OrcidClient;
 
@@ -58,7 +60,7 @@ class PlauditPreEndorsementHandler extends Handler
 
             if (!$endorsementService->checkEndorserHasWorksListed($orcid)) {
                 $this->logMessageAndDisplayTemplate($submission, $request, 'orcidVerify', 'plugins.generic.plauditPreEndorsement.log.endorserOrcidWithoutWorks', ['errorType' => 'emptyWorks']);
-                $this->sendEndorserOrcidWorksEmail($submission, $publication, $endorsement);
+                $this->sendEmail(new OrcidWithoutWorksEmailBuilder(), $submission, $publication, $endorsement);
                 return;
             }
 
@@ -70,7 +72,7 @@ class PlauditPreEndorsementHandler extends Handler
             $endorsementService->updateEndorsementNameFromOrcid($endorsement, $orcid);
 
             $this->setConfirmedEndorsement($endorsement, $orcidUri);
-            $this->sendEndorsementConfirmedEmail($submission, $publication, $endorsement);
+            $this->sendEmail(new EndorsementConfirmedEmailBuilder(), $submission, $publication, $endorsement);
             $this->logMessageAndDisplayTemplate($submission, $request, 'orcidVerify', 'plugins.generic.plauditPreEndorsement.log.endorsementConfirmed', ['orcid' => $orcidUri]);
 
             if ($publication->getData('status') == Submission::STATUS_PUBLISHED) {
@@ -91,6 +93,7 @@ class PlauditPreEndorsementHandler extends Handler
         }
 
         $this->setDeclinedEndorsement($endorsement);
+        $this->sendEmail(new EndorsementDeclinedEmailBuilder(), $submission, $publication, $endorsement);
         $this->logMessageAndDisplayTemplate($submission, $request, 'endorsementDeclined', 'plugins.generic.plauditPreEndorsement.log.endorsementDeclined');
     }
 
@@ -136,22 +139,9 @@ class PlauditPreEndorsementHandler extends Handler
         Repo::endorsement()->edit($endorsement, []);
     }
 
-    private function sendEndorserOrcidWorksEmail($submission, $publication, $endorsement)
+    private function sendEmail($emailBuilder, $submission, $publication, $endorsement)
     {
-        $orcidWorksEmailBuilder = new OrcidWithoutWorksEmailBuilder();
-        $email = $orcidWorksEmailBuilder
-            ->setEndorsement($endorsement)
-            ->setPublication($publication)
-            ->buildEmailParams()
-            ->build(['submission' => $submission]);
-
-        Mail::send($email);
-    }
-
-    private function sendEndorsementConfirmedEmail($submission, $publication, $endorsement)
-    {
-        $endorsementConfirmedEmailBuilder = new EndorsementConfirmedEmailBuilder();
-        $email = $endorsementConfirmedEmailBuilder
+        $email = $emailBuilder
             ->setEndorsement($endorsement)
             ->setPublication($publication)
             ->buildEmailParams()
