@@ -38,6 +38,23 @@ class EndorsementSchemaMigration extends Migration
                 $table->unique(['context_id', 'publication_id', 'email'], 'endorsement_pkey');
             });
         }
+
+        if (!Schema::hasTable('endorsement_settings')) {
+            Schema::create('endorsement_settings', function (Blueprint $table) {
+                $table->bigIncrements('endorsement_setting_id');
+                $table->bigInteger('endorsement_id');
+                $table->string('locale', 14)->default('');
+                $table->string('setting_name', 255);
+                $table->longText('setting_value')->nullable();
+
+                $table->foreign('endorsement_id')
+                    ->references('endorsement_id')
+                    ->on('endorsements')
+                    ->onDelete('cascade');
+                $table->index(['endorsement_id'], 'endorsement_settings_id');
+                $table->unique(['endorsement_id', 'locale', 'setting_name'], 'endorsement_settings_pkey');
+            });
+        }
     }
 
     public function down(): void
