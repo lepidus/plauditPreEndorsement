@@ -9,28 +9,28 @@ use PKP\mail\Mailable;
 use APP\plugins\generic\plauditPreEndorsement\classes\endorsement\Endorsement;
 use APP\plugins\generic\plauditPreEndorsement\classes\facades\Repo;
 use APP\plugins\generic\plauditPreEndorsement\classes\OrcidClient;
-use APP\plugins\generic\plauditPreEndorsement\classes\mail\builders\MailBuilder;
+use APP\plugins\generic\plauditPreEndorsement\classes\mail\builders\EmailBuilder;
 use APP\plugins\generic\plauditPreEndorsement\classes\mail\mailables\OrcidRequestEndorserAuthorization;
 
-class OrcidRequestMailBuilder implements MailBuilder
+class OrcidRequestEmailBuilder implements EmailBuilder
 {
     private $endorsement;
     private $publication;
     private $mailParams;
 
-    public function setEndorsement(Endorsement $endorsement): MailBuilder
+    public function setEndorsement(Endorsement $endorsement): EmailBuilder
     {
         $this->endorsement = $endorsement;
         return $this;
     }
 
-    public function setPublication(Publication $publication): MailBuilder
+    public function setPublication(Publication $publication): EmailBuilder
     {
         $this->publication = $publication;
         return $this;
     }
 
-    public function buildEmailParams(): MailBuilder
+    public function buildEmailParams(): EmailBuilder
     {
         $request = Application::get()->getRequest();
         $plugin = PluginRegistry::getPlugin('generic', 'plauditpreendorsementplugin');

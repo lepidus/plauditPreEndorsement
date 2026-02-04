@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @file plugins/generic/plaudit/PlauditPreEndorsementPlugin.inc.php
+ * @file plugins/generic/plauditPreEndorsement/PlauditPreEndorsementPlugin.inc.php
  *
  * Copyright (c) 2022 - 2024 Lepidus Tecnologia
  * Distributed under the GNU GPL v3. For full terms see LICENSE or https://www.gnu.org/licenses/gpl-3.0.txt.
@@ -27,10 +27,8 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Mail;
 use APP\plugins\generic\plauditPreEndorsement\classes\settings\Actions;
 use APP\plugins\generic\plauditPreEndorsement\classes\settings\Manage;
-use APP\plugins\generic\plauditPreEndorsement\classes\OrcidClient;
 use APP\plugins\generic\plauditPreEndorsement\classes\endorsement\Endorsement;
-use APP\plugins\generic\plauditPreEndorsement\classes\mail\builders\OrcidRequestMailBuilder;
-use APP\plugins\generic\plauditPreEndorsement\classes\mail\mailables\OrcidRequestEndorserAuthorization;
+use APP\plugins\generic\plauditPreEndorsement\classes\mail\builders\OrcidRequestEmailBuilder;
 use APP\plugins\generic\plauditPreEndorsement\classes\observers\listeners\SendEmailToEndorser;
 use APP\plugins\generic\plauditPreEndorsement\classes\SchemaBuilder;
 use APP\plugins\generic\plauditPreEndorsement\classes\migration\EndorsementSchemaMigration;
@@ -248,8 +246,8 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
 
     public function sendEmailToEndorser($publication, $endorsement, $endorsementChanged = false)
     {
-        $orcidRequestMailBuilder = new OrcidRequestMailBuilder();
-        $email = $orcidRequestMailBuilder
+        $orcidRequestEmailBuilder = new OrcidRequestEmailBuilder();
+        $email = $orcidRequestEmailBuilder
             ->setEndorsement($endorsement)
             ->setPublication($publication)
             ->buildEmailParams()
