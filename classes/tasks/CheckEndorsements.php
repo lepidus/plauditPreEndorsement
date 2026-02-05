@@ -5,10 +5,13 @@ namespace APP\plugins\generic\plauditPreEndorsement\classes\tasks;
 use PKP\scheduledTask\ScheduledTask;
 use PKP\plugins\PluginRegistry;
 use APP\core\Application;
+use APP\submission\Submission;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use APP\plugins\generic\plauditPreEndorsement\classes\facades\Repo;
 use APP\plugins\generic\plauditPreEndorsement\classes\EndorsementService;
 use APP\plugins\generic\plauditPreEndorsement\classes\endorsement\Endorsement;
+use APP\plugins\generic\plauditPreEndorsement\classes\mail\builders\OrcidWithoutWorksEmailBuilder;
 
 class CheckEndorsements extends ScheduledTask
 {
@@ -72,7 +75,42 @@ class CheckEndorsements extends ScheduledTask
     {
         $today = (new \DateTime())->format('Y-m-d');
 
-        // check if submission isn't posted or if today isn't its daySubmitted
+        $submissionData = $this->getSubmissionDataByEndorsement($endorsement);
+        if (is_null($submissionData)) {
+            return;
+        }
+
+        $submissionStatus = (int) $submissionData['status'];
+        $dateSubmitted = (new \DateTime($submissionData['date_submitted']))->format('Y-m-d');
+        if ($submissionStatus != Submission::STATUS_QUEUED || $dateSubmitted == $today) {
+            return;
+        }
+
+        $lastEmailDate = $endorsement->getLastEmailDate();
+        if (!empty($lastEmailDate)) {
+            $daysSinceLastEmail = (int) (new \DateTime($lastEmailDate))
+                ->diff(new \DateTime($today))
+                ->format('%a');
+
+            if ($daysSinceLastEmail < self::ORCID_REQUEST_INTERVAL_DAYS) {
+                return;
+            }
+        }
+
+
+        $publication = Repo::publication()->get($endorsement->getPublicationId());
+        $submission = Repo::submission()->get($publication->getData('submissionId'));
+
+        $email = (new OrcidWithoutWorksEmailBuilder())
+            ->setEndorsement($endorsement)
+            ->setPublication($publication)
+            ->buildEmailParams()
+            ->build(['submission' => $submission]);
+
+        Mail::send($email);
+
+        $endorsement->setLastEmailDate($today);
+        Repo::endorsement()->edit($endorsement, []);
     }
 
     private function getPublicationAuthorsEmails($publicationId)
@@ -98,5 +136,17 @@ class CheckEndorsements extends ScheduledTask
             ->first();
 
         return $row ? $row->submission_id : null;
+    }
+
+    private function getSubmissionDataByEndorsement($endorsement)
+    {
+        $publicationId = $endorsement->getPublicationId();
+        $row = DB::table('publications AS p')
+            ->leftJoin('submissions AS s', 's.submission_id', '=', 'p.submission_id')
+            ->where('p.publication_id', $publicationId)
+            ->select('s.status', 's.date_submitted')
+            ->first();
+
+        return $row ? get_object_vars($row) : null;
     }
 }
