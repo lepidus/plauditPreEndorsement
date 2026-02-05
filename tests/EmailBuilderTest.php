@@ -6,8 +6,16 @@ use APP\submission\Submission;
 use APP\publication\Publication;
 use APP\author\Author;
 use APP\plugins\generic\plauditPreEndorsement\classes\endorsement\Endorsement;
-use APP\plugins\generic\plauditPreEndorsement\classes\mail\builders\EndorsementConfirmedEmailBuilder;
-use APP\plugins\generic\plauditPreEndorsement\classes\mail\mailables\EndorsementConfirmed;
+use APP\plugins\generic\plauditPreEndorsement\classes\mail\builders\{
+    EndorsementConfirmedEmailBuilder,
+    EndorsementDeclinedEmailBuilder,
+    OrcidWithoutWorksEmailBuilder
+};
+use APP\plugins\generic\plauditPreEndorsement\classes\mail\mailables\{
+    EndorsementConfirmed,
+    EndorsementDeclined,
+    EndorserOrcidWithoutWorks
+};
 use APP\plugins\generic\plauditPreEndorsement\PlauditPreEndorsementPlugin;
 use PHPUnit\Framework\TestCase;
 
@@ -92,6 +100,7 @@ class EmailBuilderTest extends TestCase
         $this->assertInstanceOf(EndorsementConfirmed::class, $email);
 
         $emailTo = $email->to;
+        $this->assertCount(2, $emailTo);
         $this->assertEquals($this->endorsement->getName(), $emailTo[0]['name']);
         $this->assertEquals($this->endorsement->getEmail(), $emailTo[0]['address']);
         $this->assertEquals($this->author->getFullName(), $emailTo[1]['name']);
@@ -103,5 +112,49 @@ class EmailBuilderTest extends TestCase
         $this->assertEquals($this->endorsement->getOrcid(), $emailParams['endorserOrcid']);
 
         $this->assertEquals(__('emails.endorsementConfirmed.subject'), $email->subject);
+    }
+
+    public function testBuildEndorsementDeclinedEmail()
+    {
+        $emailBuilder = new EndorsementDeclinedEmailBuilder();
+        $email = $emailBuilder->setEndorsement($this->endorsement)
+            ->setPublication($this->publication)
+            ->buildEmailParams()
+            ->build(['submission' => $this->submission]);
+
+        $this->assertInstanceOf(EndorsementDeclined::class, $email);
+
+        $emailTo = $email->to;
+        $this->assertCount(1, $emailTo);
+        $this->assertEquals($this->author->getFullName(), $emailTo[0]['name']);
+        $this->assertEquals($this->author->getEmail(), $emailTo[0]['address']);
+
+        $emailParams = $email->viewData;
+        $this->assertEquals($this->author->getFullName(), $emailParams['authorName']);
+        $this->assertEquals($this->endorsement->getName(), $emailParams['endorserName']);
+
+        $this->assertEquals(__('emails.endorsementDeclined.subject'), $email->subject);
+    }
+
+    public function testBuildOrcidWithoutWorksEmail()
+    {
+        $emailBuilder = new OrcidWithoutWorksEmailBuilder();
+        $email = $emailBuilder->setEndorsement($this->endorsement)
+            ->setPublication($this->publication)
+            ->buildEmailParams()
+            ->build(['submission' => $this->submission]);
+
+        $this->assertInstanceOf(EndorserOrcidWithoutWorks::class, $email);
+
+        $emailTo = $email->to;
+        $this->assertCount(1, $emailTo);
+        $this->assertEquals($this->author->getFullName(), $emailTo[0]['name']);
+        $this->assertEquals($this->author->getEmail(), $emailTo[0]['address']);
+
+        $emailParams = $email->viewData;
+        $this->assertEquals($this->author->getFullName(), $emailParams['authorName']);
+        $this->assertEquals($this->endorsement->getName(), $emailParams['endorserName']);
+
+        $this->assertEquals(__('emails.endorserOrcidWithoutWorks.subject'), $email->subject);
     }
 }

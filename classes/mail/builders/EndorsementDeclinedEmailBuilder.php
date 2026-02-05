@@ -47,8 +47,8 @@ class EndorsementDeclinedEmailBuilder implements EmailBuilder
 
     public function build(array $args = []): Mailable
     {
-        $context = Application::get()->getRequest()->getContext();
         $submission = $args['submission'];
+        $context = Application::get()->getContextDAO()->getById($submission->getData('contextId'));
 
         $emailTemplate = Repo::emailTemplate()->getByKey(
             $context->getId(),

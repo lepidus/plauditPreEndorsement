@@ -38,7 +38,7 @@ class OrcidWithoutWorksEmailBuilder implements EmailBuilder
         }
 
         $this->emailParams = [
-            'authorName' => $this->primaryAuthor->getLocalizedGivenName(),
+            'authorName' => htmlspecialchars($this->primaryAuthor->getFullName()),
             'endorserName' => htmlspecialchars($this->endorsement->getName())
         ];
 
@@ -47,8 +47,8 @@ class OrcidWithoutWorksEmailBuilder implements EmailBuilder
 
     public function build(array $args = []): Mailable
     {
-        $context = Application::get()->getRequest()->getContext();
         $submission = $args['submission'];
+        $context = Application::get()->getContextDAO()->getById($submission->getData('contextId'));
 
         $emailTemplate = Repo::emailTemplate()->getByKey(
             $context->getId(),
