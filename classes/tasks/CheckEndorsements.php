@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Mail;
 use APP\plugins\generic\plauditPreEndorsement\classes\facades\Repo;
 use APP\plugins\generic\plauditPreEndorsement\classes\EndorsementService;
 use APP\plugins\generic\plauditPreEndorsement\classes\endorsement\Endorsement;
-use APP\plugins\generic\plauditPreEndorsement\classes\mail\builders\OrcidWithoutWorksEmailBuilder;
+use APP\plugins\generic\plauditPreEndorsement\classes\mail\builders\OrcidRequestEmailBuilder;
 
 class CheckEndorsements extends ScheduledTask
 {
@@ -97,15 +97,12 @@ class CheckEndorsements extends ScheduledTask
             }
         }
 
-
         $publication = Repo::publication()->get($endorsement->getPublicationId());
-        $submission = Repo::submission()->get($publication->getData('submissionId'));
-
-        $email = (new OrcidWithoutWorksEmailBuilder())
+        $email = (new OrcidRequestEmailBuilder())
             ->setEndorsement($endorsement)
             ->setPublication($publication)
             ->buildEmailParams()
-            ->build(['submission' => $submission]);
+            ->build(['endorsementChanged' => false]);
 
         Mail::send($email);
 
