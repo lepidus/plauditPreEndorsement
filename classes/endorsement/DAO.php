@@ -13,6 +13,7 @@ class DAO extends EntityDAO
 
     public $schema = 'endorsement';
     public $table = 'endorsements';
+    public $settingsTable = 'endorsement_settings';
     public $primaryKeyColumn = 'endorsement_id';
     public $primaryTableColumns = [
         'id' => 'endorsement_id',

@@ -9,8 +9,11 @@ use APP\template\TemplateManager;
 use Illuminate\Support\Facades\Mail;
 use APP\plugins\generic\plauditPreEndorsement\classes\endorsement\Endorsement;
 use APP\plugins\generic\plauditPreEndorsement\classes\facades\Repo;
-use APP\plugins\generic\plauditPreEndorsement\classes\mail\mailables\EndorsementConfirmed;
-use APP\plugins\generic\plauditPreEndorsement\classes\mail\mailables\EndorserOrcidWithoutWorks;
+use APP\plugins\generic\plauditPreEndorsement\classes\mail\builders\{
+    EndorsementConfirmedEmailBuilder,
+    EndorsementDeclinedEmailBuilder,
+    OrcidWithoutWorksEmailBuilder
+};
 use APP\plugins\generic\plauditPreEndorsement\classes\EndorsementService;
 use APP\plugins\generic\plauditPreEndorsement\classes\OrcidClient;
 
@@ -57,7 +60,7 @@ class PlauditPreEndorsementHandler extends Handler
 
             if (!$endorsementService->checkEndorserHasWorksListed($orcid)) {
                 $this->logMessageAndDisplayTemplate($submission, $request, 'orcidVerify', 'plugins.generic.plauditPreEndorsement.log.endorserOrcidWithoutWorks', ['errorType' => 'emptyWorks']);
-                $this->sendEndorserOrcidWorksEmail($submission, $publication, $endorsement, $request->getContext());
+                $this->sendEmail(new OrcidWithoutWorksEmailBuilder(), $submission, $publication, $endorsement);
                 return;
             }
 
@@ -69,7 +72,7 @@ class PlauditPreEndorsementHandler extends Handler
             $endorsementService->updateEndorsementNameFromOrcid($endorsement, $orcid);
 
             $this->setConfirmedEndorsement($endorsement, $orcidUri);
-            $this->sendEndorsementConfirmedEmail($submission, $publication, $endorsement, $request->getContext());
+            $this->sendEmail(new EndorsementConfirmedEmailBuilder(), $submission, $publication, $endorsement);
             $this->logMessageAndDisplayTemplate($submission, $request, 'orcidVerify', 'plugins.generic.plauditPreEndorsement.log.endorsementConfirmed', ['orcid' => $orcidUri]);
 
             if ($publication->getData('status') == Submission::STATUS_PUBLISHED) {
@@ -90,6 +93,7 @@ class PlauditPreEndorsementHandler extends Handler
         }
 
         $this->setDeclinedEndorsement($endorsement);
+        $this->sendEmail(new EndorsementDeclinedEmailBuilder(), $submission, $publication, $endorsement);
         $this->logMessageAndDisplayTemplate($submission, $request, 'endorsementDeclined', 'plugins.generic.plauditPreEndorsement.log.endorsementDeclined');
     }
 
@@ -135,59 +139,13 @@ class PlauditPreEndorsementHandler extends Handler
         Repo::endorsement()->edit($endorsement, []);
     }
 
-    private function sendEndorserOrcidWorksEmail($submission, $publication, $endorsement, $context)
+    private function sendEmail($emailBuilder, $submission, $publication, $endorsement)
     {
-        $emailTemplate = Repo::emailTemplate()->getByKey(
-            $context->getId(),
-            'ENDORSER_ORCID_WITHOUT_WORKS'
-        );
-
-        $primaryAuthor = $publication->getPrimaryAuthor();
-        if (!isset($primaryAuthor)) {
-            $authors = $publication->getData('authors');
-            $primaryAuthor = $authors->first();
-        }
-
-        $emailParams = [
-            'authorName' => $primaryAuthor->getLocalizedGivenName(),
-            'endorserName' => htmlspecialchars($endorsement->getName())
-        ];
-
-        $email = new EndorserOrcidWithoutWorks($context, $submission, $emailParams);
-        $email->from($context->getData('contactEmail'), $context->getData('contactName'));
-        $email->to([['name' => $primaryAuthor->getFullName(), 'email' => $primaryAuthor->getEmail()]]);
-        $email->subject($emailTemplate->getLocalizedData('subject'));
-        $email->body($emailTemplate->getLocalizedData('body'));
-
-        Mail::send($email);
-    }
-
-    private function sendEndorsementConfirmedEmail($submission, $publication, $endorsement, $context)
-    {
-        $emailTemplate = Repo::emailTemplate()->getByKey(
-            $context->getId(),
-            'ENDORSEMENT_CONFIRMED'
-        );
-
-        $primaryAuthor = $publication->getPrimaryAuthor();
-        if (!isset($primaryAuthor)) {
-            $authors = $publication->getData('authors');
-            $primaryAuthor = $authors->first();
-        }
-
-        $emailParams = [
-            'endorserName' => htmlspecialchars($endorsement->getName()),
-            'endorserOrcid' => htmlspecialchars($endorsement->getOrcid())
-        ];
-
-        $email = new EndorsementConfirmed($context, $submission, $emailParams);
-        $email->from($context->getData('contactEmail'), $context->getData('contactName'));
-        $email->to([
-            ['name' => $emailParams['endorserName'], 'email' => $endorsement->getEmail()],
-            ['name' => $primaryAuthor->getFullName(), 'email' => $primaryAuthor->getEmail()]
-        ]);
-        $email->subject($emailTemplate->getLocalizedData('subject'));
-        $email->body($emailTemplate->getLocalizedData('body'));
+        $email = $emailBuilder
+            ->setEndorsement($endorsement)
+            ->setPublication($publication)
+            ->buildEmailParams()
+            ->build(['submission' => $submission]);
 
         Mail::send($email);
     }

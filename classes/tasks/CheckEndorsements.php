@@ -5,13 +5,18 @@ namespace APP\plugins\generic\plauditPreEndorsement\classes\tasks;
 use PKP\scheduledTask\ScheduledTask;
 use PKP\plugins\PluginRegistry;
 use APP\core\Application;
+use APP\submission\Submission;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use APP\plugins\generic\plauditPreEndorsement\classes\facades\Repo;
 use APP\plugins\generic\plauditPreEndorsement\classes\EndorsementService;
 use APP\plugins\generic\plauditPreEndorsement\classes\endorsement\Endorsement;
+use APP\plugins\generic\plauditPreEndorsement\classes\mail\builders\OrcidRequestEmailBuilder;
 
 class CheckEndorsements extends ScheduledTask
 {
+    private const ORCID_REQUEST_INTERVAL_DAYS = 3;
+
     public function executeActions()
     {
         PluginRegistry::loadCategory('generic');
@@ -37,24 +42,72 @@ class CheckEndorsements extends ScheduledTask
             }
 
             if ($endorsement->getStatus() == Endorsement::STATUS_CONFIRMED) {
-                $endorsementService = new EndorsementService($context->getId(), $plugin);
-                $publication = Repo::publication()->get($endorsement->getPublicationId());
-                $validationMessage = $endorsementService->validateEndorsementSending($endorsement, $publication);
+                $this->checkEndorsementOrcid($endorsement, $context, $plugin);
+            }
 
-                if ($validationMessage == 'plugins.generic.plauditPreEndorsement.log.endorsementRemoved.orcidFromAuthor') {
-                    $submissionId = $this->getSubmissionIdByEndorsement($endorsement);
-
-                    Repo::endorsement()->delete($endorsement);
-                    $plugin->writeOnActivityLog(
-                        $submissionId,
-                        'plugins.generic.plauditPreEndorsement.log.endorsementRemoved.orcidFromAuthor',
-                        ['orcid' => $endorsement->getOrcid()]
-                    );
-                }
+            if ($endorsement->getStatus() == Endorsement::STATUS_NOT_CONFIRMED) {
+                $this->checkOrcidRequestMessage($endorsement);
             }
         }
 
         return true;
+    }
+
+    private function checkEndorsementOrcid($endorsement, $context, $plugin)
+    {
+        $endorsementService = new EndorsementService($context->getId(), $plugin);
+        $publication = Repo::publication()->get($endorsement->getPublicationId());
+        $validationMessage = $endorsementService->validateEndorsementSending($endorsement, $publication);
+
+        if ($validationMessage == 'plugins.generic.plauditPreEndorsement.log.endorsementRemoved.orcidFromAuthor') {
+            $submissionId = $this->getSubmissionIdByEndorsement($endorsement);
+
+            Repo::endorsement()->delete($endorsement);
+            $plugin->writeOnActivityLog(
+                $submissionId,
+                'plugins.generic.plauditPreEndorsement.log.endorsementRemoved.orcidFromAuthor',
+                ['orcid' => $endorsement->getOrcid()]
+            );
+        }
+    }
+
+    private function checkOrcidRequestMessage($endorsement)
+    {
+        $today = (new \DateTime())->format('Y-m-d');
+
+        $submissionData = $this->getSubmissionDataByEndorsement($endorsement);
+        if (is_null($submissionData)) {
+            return;
+        }
+
+        $submissionStatus = (int) $submissionData['status'];
+        $dateSubmitted = (new \DateTime($submissionData['date_submitted']))->format('Y-m-d');
+        if ($submissionStatus != Submission::STATUS_QUEUED || $dateSubmitted == $today) {
+            return;
+        }
+
+        $lastEmailDate = $endorsement->getLastEmailDate();
+        if (!empty($lastEmailDate)) {
+            $daysSinceLastEmail = (int) (new \DateTime($lastEmailDate))
+                ->diff(new \DateTime($today))
+                ->format('%a');
+
+            if ($daysSinceLastEmail < self::ORCID_REQUEST_INTERVAL_DAYS) {
+                return;
+            }
+        }
+
+        $publication = Repo::publication()->get($endorsement->getPublicationId());
+        $email = (new OrcidRequestEmailBuilder())
+            ->setEndorsement($endorsement)
+            ->setPublication($publication)
+            ->buildEmailParams()
+            ->build(['endorsementChanged' => false]);
+
+        Mail::send($email);
+
+        $endorsement->setLastEmailDate($today);
+        Repo::endorsement()->edit($endorsement, []);
     }
 
     private function getPublicationAuthorsEmails($publicationId)
@@ -80,5 +133,17 @@ class CheckEndorsements extends ScheduledTask
             ->first();
 
         return $row ? $row->submission_id : null;
+    }
+
+    private function getSubmissionDataByEndorsement($endorsement)
+    {
+        $publicationId = $endorsement->getPublicationId();
+        $row = DB::table('publications AS p')
+            ->leftJoin('submissions AS s', 's.submission_id', '=', 'p.submission_id')
+            ->where('p.publication_id', $publicationId)
+            ->select('s.status', 's.date_submitted')
+            ->first();
+
+        return $row ? get_object_vars($row) : null;
     }
 }
