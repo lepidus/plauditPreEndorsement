@@ -38,6 +38,7 @@ class EndorsementConfirmedEmailBuilder implements EmailBuilder
         }
 
         $this->emailParams = [
+            'authorName' => htmlspecialchars($this->primaryAuthor->getFullName()),
             'endorserName' => htmlspecialchars($this->endorsement->getName()),
             'endorserOrcid' => htmlspecialchars($this->endorsement->getOrcid())
         ];
@@ -47,8 +48,8 @@ class EndorsementConfirmedEmailBuilder implements EmailBuilder
 
     public function build(array $args = []): Mailable
     {
-        $context = Application::get()->getRequest()->getContext();
         $submission = $args['submission'];
+        $context = Application::get()->getContextDAO()->getById($submission->getData('contextId'));
 
         $emailTemplate = Repo::emailTemplate()->getByKey(
             $context->getId(),
