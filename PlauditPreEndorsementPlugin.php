@@ -17,9 +17,7 @@ use PKP\plugins\GenericPlugin;
 use APP\core\Application;
 use PKP\plugins\Hook;
 use APP\template\TemplateManager;
-use APP\pages\submission\SubmissionHandler;
 use PKP\log\event\PKPSubmissionEventLogEntry;
-use PKP\db\DAORegistry;
 use PKP\core\Core;
 use APP\plugins\generic\plauditPreEndorsement\classes\facades\Repo;
 use PKP\security\Role;
@@ -32,9 +30,19 @@ use APP\plugins\generic\plauditPreEndorsement\classes\mail\builders\OrcidRequest
 use APP\plugins\generic\plauditPreEndorsement\classes\observers\listeners\SendEmailToEndorser;
 use APP\plugins\generic\plauditPreEndorsement\classes\SchemaBuilder;
 use APP\plugins\generic\plauditPreEndorsement\classes\migration\EndorsementSchemaMigration;
+use APP\plugins\generic\plauditPreEndorsement\classes\tasks\CheckEndorsements;
+use APP\plugins\generic\plauditPreEndorsement\classes\tasks\SendReadyEndorsements;
 use Illuminate\Database\Migrations\Migration;
+use PKP\plugins\interfaces\HasTaskScheduler;
+use PKP\scheduledTask\PKPScheduler;
+use PKP\stageAssignment\StageAssignment;
+use PKP\core\PKPBaseController;
+use PKP\handler\APIHandler;
+use Illuminate\Http\Request as IlluminateRequest;
+use Illuminate\Http\Response;
+use Illuminate\Http\JsonResponse;
 
-class PlauditPreEndorsementPlugin extends GenericPlugin
+class PlauditPreEndorsementPlugin extends GenericPlugin implements HasTaskScheduler
 {
     public const HANDLER_PAGE = 'pre-endorsement-handler';
 
@@ -50,26 +58,46 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
             Event::subscribe(new SendEmailToEndorser());
 
             Hook::add('TemplateManager::display', [$this, 'addToSubmissionWizardSteps']);
-            Hook::add('Template::SubmissionWizard::Section', [$this, 'addToSubmissionWizardTemplate']);
-            Hook::add('Template::SubmissionWizard::Section::Review', [$this, 'addToReviewSubmissionWizardTemplate']);
             Hook::add('Schema::get::endorsement', [$this, 'addEndorsementSchema']);
 
-            Hook::add('Template::Workflow::Publication', [$this, 'addEndorsementFieldsToWorkflow']);
             Hook::add('LoadHandler', [$this, 'setupPreEndorsementHandler']);
-            Hook::add('AcronPlugin::parseCronTab', [$this, 'addEndorsementTasksToCrontab']);
-            Hook::add('LoadComponentHandler', [$this, 'setupGridHandler']);
 
-            $templateMgr = TemplateManager::getManager();
+            $this->addEndorsementApiRoutes();
+
             $request = Application::get()->getRequest();
+            $templateMgr = TemplateManager::getManager($request);
 
             $templateMgr->addJavaScript(
-                'EndorsementGridHandler',
-                $request->getBaseUrl() . '/' . $this->getPluginPath() . '/js/EndorsementGridHandler.js',
-                ['contexts' => 'backend']
+                'PlauditPreEndorsement',
+                $request->getBaseUrl() . '/' . $this->getPluginPath() . '/public/build/build.iife.js',
+                [
+                    'inline' => false,
+                    'contexts' => ['backend'],
+                    'priority' => TemplateManager::STYLE_SEQUENCE_LAST,
+                ]
+            );
+
+            $templateMgr->addStyleSheet(
+                'plauditPreEndorsementStyles',
+                $request->getBaseUrl() . '/' . $this->getPluginPath() . '/public/build/build.css',
+                ['contexts' => ['backend']]
             );
         }
 
         return $success;
+    }
+
+    public function registerSchedules(PKPScheduler $scheduler): void
+    {
+        $scheduler->addSchedule(new CheckEndorsements())
+            ->everyFourMinutes()
+            ->name(CheckEndorsements::class)
+            ->withoutOverlapping();
+
+        $scheduler->addSchedule(new SendReadyEndorsements())
+            ->everyFiveMinutes()
+            ->name(SendReadyEndorsements::class)
+            ->withoutOverlapping();
     }
 
     public function getDisplayName()
@@ -94,18 +122,12 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
 
     public function setupPreEndorsementHandler($hookName, $params)
     {
-        $page = $params[0];
+        $page =& $params[0];
+        $handler =& $params[3];
         if ($this->getEnabled() && $page == self::HANDLER_PAGE) {
-            define('HANDLER_CLASS', 'APP\plugins\generic\plauditPreEndorsement\classes\PlauditPreEndorsementHandler');
+            $handler = new \APP\plugins\generic\plauditPreEndorsement\classes\PlauditPreEndorsementHandler();
             return true;
         }
-        return false;
-    }
-
-    public function addEndorsementTasksToCrontab($hookName, $params)
-    {
-        $taskFilesPath = &$params[0];
-        $taskFilesPath[] = $this->getPluginPath() . DIRECTORY_SEPARATOR . 'scheduledTasks.xml';
         return false;
     }
 
@@ -149,13 +171,14 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
         $templateMgr = $params[0];
 
         $steps = $templateMgr->getState('steps');
-        $steps = array_map(function ($step) {
+        $steps = array_map(function ($step) use ($submission) {
             if ($step['id'] === 'details') {
                 $step['sections'][] = [
                     'id' => 'plauditPreEndorsement',
                     'name' => __('plugins.generic.plauditPreEndorsement.endorsement'),
                     'description' => __('plugins.generic.plauditPreEndorsement.endorsement.description'),
-                    'type' => SubmissionHandler::SECTION_TYPE_TEMPLATE,
+                    'component' => 'EndorsementWizardSection',
+                    'props' => ['submissionId' => $submission->getId()],
                 ];
             }
             return $step;
@@ -165,31 +188,16 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
             'steps' => $steps,
         ]);
 
-        return false;
-    }
-
-    public function addToSubmissionWizardTemplate($hookName, $params)
-    {
-        $smarty = $params[1];
-        $output = &$params[2];
-
-        $output .= sprintf(
-            '<template v-else-if="section.id === \'plauditPreEndorsement\'">%s</template>',
-            $smarty->fetch($this->getTemplateResource('endorsementComponent.tpl'))
-        );
-
-        return false;
-    }
-
-    public function addToReviewSubmissionWizardTemplate($hookName, $params)
-    {
-        $step = $params[0]['step'];
-        $templateMgr = $params[1];
-        $output = &$params[2];
-
-        if ($step == 'details') {
-            $output .= $templateMgr->fetch($this->getTemplateResource('endorsementComponent.tpl'));
-        }
+        $reviewSteps = $templateMgr->getTemplateVars('reviewSteps') ?: [];
+        $reviewSteps[] = [
+            'id' => 'plauditPreEndorsementReview',
+            'component' => 'EndorsementWizardReview',
+            'props' => [
+                'submissionId' => $submission->getId(),
+                'title' => __('plugins.generic.plauditPreEndorsement.endorsement'),
+            ],
+        ];
+        $templateMgr->assign('reviewSteps', $reviewSteps);
 
         return false;
     }
@@ -199,49 +207,6 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
         $schema = &$params[0];
         $schema = SchemaBuilder::get('endorsement');
         return true;
-    }
-
-    private function getEndorsementStatusSuffix($endorsementStatus): string
-    {
-        $mapStatusToSuffix = [
-            Endorsement::STATUS_NOT_CONFIRMED => 'NotConfirmed',
-            Endorsement::STATUS_CONFIRMED => 'Confirmed',
-            Endorsement::STATUS_DENIED => 'Denied',
-            Endorsement::STATUS_COMPLETED => 'Completed',
-            Endorsement::STATUS_COULDNT_COMPLETE => 'CouldntComplete'
-        ];
-
-        return $mapStatusToSuffix[$endorsementStatus] ?? "";
-    }
-
-    public function addEndorsementFieldsToWorkflow($hookName, $params)
-    {
-        $smarty = &$params[1];
-        $output = &$params[2];
-
-        $submission = $smarty->getTemplateVars('submission');
-        $publications = $submission->getData('publications');
-        $publicationIds = [];
-
-        if (!empty($publications)) {
-            foreach ($publications as $publication) {
-                $publicationIds[] = $publication->getId();
-            }
-        }
-        $request = Application::get()->getRequest();
-
-        $countEndorsers = Repo::endorsement()->getCollector()
-            ->filterByContextIds([$request->getContext()->getId()])
-            ->filterByPublicationIds($publicationIds)
-            ->getCount();
-
-        $tabBadge = (empty($countEndorsers) ? 'badge="0"' : 'badge=' . $countEndorsers);
-        $output .= sprintf(
-            '<tab id="plauditPreEndorsement" %s label="%s">%s</tab>',
-            $tabBadge,
-            __('plugins.generic.plauditPreEndorsement.preEndorsement'),
-            $smarty->fetch($this->getTemplateResource('endorsementComponent.tpl'))
-        );
     }
 
     public function sendEmailToEndorser($publication, $endorsement, $endorsementChanged = false)
@@ -277,27 +242,37 @@ class PlauditPreEndorsementPlugin extends GenericPlugin
     public function userAccessingIsAuthor($submission): bool
     {
         $currentUser = Application::get()->getRequest()->getUser();
-        $currentUserAssignedRoles = [];
-        if ($currentUser) {
-            $stageAssignmentDao = DAORegistry::getDAO('StageAssignmentDAO');
-            $stageAssignmentsResult = $stageAssignmentDao->getBySubmissionAndUserIdAndStageId($submission->getId(), $currentUser->getId(), $submission->getData('stageId'));
-
-            while ($stageAssignment = $stageAssignmentsResult->next()) {
-                $userGroup = Repo::userGroup()->get($stageAssignment->getUserGroupId(), $submission->getData('contextId'));
-                $currentUserAssignedRoles[] = (int) $userGroup->getRoleId();
-            }
+        if (!$currentUser) {
+            return false;
         }
 
-        return $currentUserAssignedRoles[0] == Role::ROLE_ID_AUTHOR;
+        return StageAssignment::withSubmissionIds([$submission->getId()])
+            ->withRoleIds([Role::ROLE_ID_AUTHOR])
+            ->withUserId($currentUser->getId())
+            ->get()
+            ->isNotEmpty();
     }
 
-    public function setupGridHandler($hookName, $params)
+    private function addEndorsementApiRoutes(): void
     {
-        $component = &$params[0];
-        if ($component == 'plugins.generic.plauditPreEndorsement.controllers.grid.EndorsementGridHandler') {
-            define('PLAUDIT_PRE_ENDORSEMENT_PLUGIN_NAME', $this->getName());
-            return true;
-        }
-        return false;
+        Hook::add('Dispatcher::dispatch', function (string $hookName, array $params): bool {
+            $request = $params[0];
+            $router = $request->getRouter();
+
+            if (!($router instanceof \PKP\core\APIRouter)) {
+                return Hook::CONTINUE;
+            }
+
+            if (!str_contains($request->getRequestPath(), 'api/v1/endorsements')) {
+                return Hook::CONTINUE;
+            }
+
+            $handler = new APIHandler(
+                new \APP\plugins\generic\plauditPreEndorsement\classes\api\v1\EndorsementController()
+            );
+            $router->setHandler($handler);
+            $handler->runRoutes();
+            exit;
+        });
     }
 }

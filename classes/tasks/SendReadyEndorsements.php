@@ -13,7 +13,7 @@ use APP\plugins\generic\plauditPreEndorsement\classes\endorsement\Endorsement;
 
 class SendReadyEndorsements extends ScheduledTask
 {
-    public function executeActions()
+    protected function executeActions(): bool
     {
         PluginRegistry::loadCategory('generic');
         $plugin = PluginRegistry::getPlugin('generic', 'plauditpreendorsementplugin');

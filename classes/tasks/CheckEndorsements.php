@@ -17,7 +17,7 @@ class CheckEndorsements extends ScheduledTask
 {
     private const ORCID_REQUEST_INTERVAL_DAYS = 3;
 
-    public function executeActions()
+    protected function executeActions(): bool
     {
         PluginRegistry::loadCategory('generic');
         $plugin = PluginRegistry::getPlugin('generic', 'plauditpreendorsementplugin');

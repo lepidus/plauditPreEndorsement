@@ -229,3 +229,48 @@ msgstr "O endosso foi removido, pois o ORCID fornecido ({$orcid}) é de um dos a
 
 msgid "plugins.generic.plauditPreEndorsement.log.endorsementRemoved.emailFromAuthor"
 msgstr "O endosso foi removido, pois o e-mail fornecido ({$email}) é de um dos autores da submissão."
+
+msgid "plugins.generic.plauditPreEndorsement.addEndorsement"
+msgstr "Adicionar Endosso"
+
+msgid "plugins.generic.plauditPreEndorsement.editEndorsement"
+msgstr "Editar Endosso"
+
+msgid "plugins.generic.plauditPreEndorsement.confirmDelete"
+msgstr "Tem certeza que deseja remover o endosso de {$name}?"
+
+msgid "plugins.generic.plauditPreEndorsement.endorsementStatusNotConfirmed"
+msgstr "Aguardando confirmação"
+
+msgid "plugins.generic.plauditPreEndorsement.endorsementStatusConfirmed"
+msgstr "Confirmado pelo endossante"
+
+msgid "plugins.generic.plauditPreEndorsement.endorsementStatusDenied"
+msgstr "Recusado pelo endossante"
+
+msgid "plugins.generic.plauditPreEndorsement.endorsementStatusCompleted"
+msgstr "Enviado à Plaudit"
+
+msgid "plugins.generic.plauditPreEndorsement.endorsementStatusCouldntComplete"
+msgstr "Erro ao enviar à Plaudit"
+
+msgid "plugins.generic.plauditPreEndorsement.sendEndorsement"
+msgstr "Enviar à Plaudit"
+
+msgid "plugins.generic.plauditPreEndorsement.endorserNameRequired"
+msgstr "Por favor, informe o nome do endossante"
+
+msgid "plugins.generic.plauditPreEndorsement.endorserEmailInvalid"
+msgstr "Por favor, informe um e-mail válido para o endossante"
+
+msgid "plugins.generic.plauditPreEndorsement.endorserEmailDuplicate"
+msgstr "O endereço de e-mail selecionado já está em uso por outro usuário."
+
+msgid "plugins.generic.plauditPreEndorsement.endorserEmailIsAuthor"
+msgstr "O endosso não pode ser dado por nenhum dos autores do manuscrito"
+
+msgid "plugins.generic.plauditPreEndorsement.log.endorsementAdded"
+msgstr "Um endosso de submissão foi adicionado: {$endorserName} ({$endorserEmail})"
+
+msgid "plugins.generic.plauditPreEndorsement.log.invalidToken.decline"
+msgstr "O token usado durante a recusa do endosso não é válido"

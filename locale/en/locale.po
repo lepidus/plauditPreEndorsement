@@ -229,3 +229,48 @@ msgstr "The endorsement has been removed, as the ORCID provided ({$orcid}) is fr
 
 msgid "plugins.generic.plauditPreEndorsement.log.endorsementRemoved.emailFromAuthor"
 msgstr "The endorsement has been removed, as the email provided ({$email}) is from one of the authors of the submission."
+
+msgid "plugins.generic.plauditPreEndorsement.addEndorsement"
+msgstr "Add Endorsement"
+
+msgid "plugins.generic.plauditPreEndorsement.editEndorsement"
+msgstr "Edit Endorsement"
+
+msgid "plugins.generic.plauditPreEndorsement.confirmDelete"
+msgstr "Are you sure you want to remove the endorsement of {$name}?"
+
+msgid "plugins.generic.plauditPreEndorsement.endorsementStatusNotConfirmed"
+msgstr "Awaiting confirmation"
+
+msgid "plugins.generic.plauditPreEndorsement.endorsementStatusConfirmed"
+msgstr "Confirmed by endorser"
+
+msgid "plugins.generic.plauditPreEndorsement.endorsementStatusDenied"
+msgstr "Declined by endorser"
+
+msgid "plugins.generic.plauditPreEndorsement.endorsementStatusCompleted"
+msgstr "Sent to Plaudit"
+
+msgid "plugins.generic.plauditPreEndorsement.endorsementStatusCouldntComplete"
+msgstr "Error sending to Plaudit"
+
+msgid "plugins.generic.plauditPreEndorsement.sendEndorsement"
+msgstr "Send to Plaudit"
+
+msgid "plugins.generic.plauditPreEndorsement.endorserNameRequired"
+msgstr "Please enter the endorser's name"
+
+msgid "plugins.generic.plauditPreEndorsement.endorserEmailInvalid"
+msgstr "Please enter a valid endorser e-mail"
+
+msgid "plugins.generic.plauditPreEndorsement.endorserEmailDuplicate"
+msgstr "The selected email address is already in use by another user."
+
+msgid "plugins.generic.plauditPreEndorsement.endorserEmailIsAuthor"
+msgstr "The endorsement cannot be given by any of the authors of the manuscript"
+
+msgid "plugins.generic.plauditPreEndorsement.log.endorsementAdded"
+msgstr "A submission endorsement has been added: {$endorserName} ({$endorserEmail})"
+
+msgid "plugins.generic.plauditPreEndorsement.log.invalidToken.decline"
+msgstr "The token used during the endorsement decline is not valid"
