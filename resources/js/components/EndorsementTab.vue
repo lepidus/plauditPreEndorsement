@@ -59,7 +59,7 @@
                 v-if="canSendManually(endorsement)"
                 @click="sendManually(endorsement)"
               >
-                {{ t("plugins.generic.plauditPreEndorsement.sendEndorsement") }}
+                {{ t("plugins.generic.plauditPreEndorsement.sendEndorsementToPlaudit") }}
               </pkp-button>
             </td>
           </tr>
@@ -120,11 +120,11 @@ async function loadEndorsements() {
 
 function getStatusLabel(status) {
   const labels = {
-    [STATUS_NOT_CONFIRMED]: t("plugins.generic.plauditPreEndorsement.endorsementStatusNotConfirmed"),
-    [STATUS_CONFIRMED]: t("plugins.generic.plauditPreEndorsement.endorsementStatusConfirmed"),
-    [STATUS_DENIED]: t("plugins.generic.plauditPreEndorsement.endorsementStatusDenied"),
-    [STATUS_COMPLETED]: t("plugins.generic.plauditPreEndorsement.endorsementStatusCompleted"),
-    [STATUS_COULDNT_COMPLETE]: t("plugins.generic.plauditPreEndorsement.endorsementStatusCouldntComplete"),
+    [STATUS_NOT_CONFIRMED]: t("plugins.generic.plauditPreEndorsement.endorsementNotConfirmed"),
+    [STATUS_CONFIRMED]: t("plugins.generic.plauditPreEndorsement.endorsementConfirmed"),
+    [STATUS_DENIED]: t("plugins.generic.plauditPreEndorsement.endorsementDeclined"),
+    [STATUS_COMPLETED]: t("plugins.generic.plauditPreEndorsement.endorsementCompleted"),
+    [STATUS_COULDNT_COMPLETE]: t("plugins.generic.plauditPreEndorsement.endorsementCouldntComplete"),
   };
   return labels[status] || t("common.unknownError");
 }
@@ -167,9 +167,7 @@ function openEditModal(endorsement) {
 function confirmDelete(endorsement) {
   openDialog({
     title: t("common.delete"),
-    message: t("plugins.generic.plauditPreEndorsement.confirmDelete", {
-      name: endorsement.name,
-    }),
+    message: t("plugins.generic.plauditPreEndorsement.removalConfirmationMessage"),
     actions: [
       {
         label: t("common.yes"),

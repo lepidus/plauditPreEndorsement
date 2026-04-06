@@ -281,7 +281,7 @@ class EndorsementController extends PKPBaseController
         }
 
         if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $errors['email'] = [__('plugins.generic.plauditPreEndorsement.endorserEmailInvalid')];
+            $errors['email'] = [__('plugins.generic.plauditPreEndorsement.endorsementEmailInvalid')];
         }
 
         if (!empty($email)) {
@@ -296,7 +296,7 @@ class EndorsementController extends PKPBaseController
                 $authors = $publication->getData('authors');
                 foreach ($authors as $author) {
                     if ($author->getData('email') === $email) {
-                        $errors['email'] = [__('plugins.generic.plauditPreEndorsement.endorserEmailIsAuthor')];
+                        $errors['email'] = [__('plugins.generic.plauditPreEndorsement.endorsementFromAuthor')];
                         break;
                     }
                 }

@@ -99,9 +99,7 @@ function openEditModal(endorsement) {
 function confirmDelete(endorsement) {
   openDialog({
     title: t("common.delete"),
-    message: t("plugins.generic.plauditPreEndorsement.confirmDelete", {
-      name: endorsement.name,
-    }),
+    message: t("plugins.generic.plauditPreEndorsement.removalConfirmationMessage"),
     actions: [
       {
         label: t("common.yes"),

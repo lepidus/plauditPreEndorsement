@@ -75,7 +75,7 @@ msgid "plugins.generic.plauditPreEndorsement.preEndorsement"
 msgstr "Aprobación previa"
 
 msgid "plugins.generic.plauditPreEndorsement.sendEndorsementToPlaudit"
-msgstr "Enviar endoso a Plaudit"
+msgstr "Enviar a Plaudit"
 
 msgid "plugins.generic.plauditPreEndorsement.sendEndorsementToPlauditNotification"
 msgstr "Intento de envío del endoso a Plaudit completado. Puede verificar el estado del endosador o ver el Registro de actividad para más detalles."
@@ -236,38 +236,11 @@ msgstr "Agregar Endoso"
 msgid "plugins.generic.plauditPreEndorsement.editEndorsement"
 msgstr "Editar Endoso"
 
-msgid "plugins.generic.plauditPreEndorsement.confirmDelete"
-msgstr "¿Está seguro de que desea eliminar el endoso de {$name}?"
-
-msgid "plugins.generic.plauditPreEndorsement.endorsementStatusNotConfirmed"
-msgstr "Esperando confirmación"
-
-msgid "plugins.generic.plauditPreEndorsement.endorsementStatusConfirmed"
-msgstr "Confirmado por el endosante"
-
-msgid "plugins.generic.plauditPreEndorsement.endorsementStatusDenied"
-msgstr "Rechazado por el endosante"
-
-msgid "plugins.generic.plauditPreEndorsement.endorsementStatusCompleted"
-msgstr "Enviado a Plaudit"
-
-msgid "plugins.generic.plauditPreEndorsement.endorsementStatusCouldntComplete"
-msgstr "Error al enviar a Plaudit"
-
-msgid "plugins.generic.plauditPreEndorsement.sendEndorsement"
-msgstr "Enviar a Plaudit"
-
 msgid "plugins.generic.plauditPreEndorsement.endorserNameRequired"
 msgstr "Por favor, ingrese el nombre del endosante"
 
-msgid "plugins.generic.plauditPreEndorsement.endorserEmailInvalid"
-msgstr "Por favor, ingrese un correo electrónico válido para el endosante"
-
 msgid "plugins.generic.plauditPreEndorsement.endorserEmailDuplicate"
 msgstr "La dirección de correo electrónico seleccionada ya está en uso por otro usuario."
-
-msgid "plugins.generic.plauditPreEndorsement.endorserEmailIsAuthor"
-msgstr "El endoso no puede ser dado por ninguno de los autores del manuscrito"
 
 msgid "plugins.generic.plauditPreEndorsement.log.endorsementAdded"
 msgstr "Se ha agregado un endoso de envío: {$endorserName} ({$endorserEmail})"
