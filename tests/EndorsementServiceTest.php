@@ -39,6 +39,9 @@ final class EndorsementServiceTest extends DatabaseTestCase
         $this->plugin = new PlauditPreEndorsementPlugin();
         $this->endorsementService = new EndorsementService($this->contextId, $this->plugin);
         $this->endorsement = $this->createEndorsement();
+
+        $pluginSettingsDao = DAORegistry::getDAO('PluginSettingsDAO');
+        $pluginSettingsDao->deleteSetting($this->contextId, $this->plugin->getName(), 'plauditAPISecret');
     }
 
     public function tearDown(): void
