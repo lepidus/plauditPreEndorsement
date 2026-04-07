@@ -122,8 +122,8 @@ class PlauditPreEndorsementPlugin extends GenericPlugin implements HasTaskSchedu
 
     public function setupPreEndorsementHandler($hookName, $params)
     {
-        $page =& $params[0];
-        $handler =& $params[3];
+        $page = & $params[0];
+        $handler = & $params[3];
         if ($this->getEnabled() && $page == self::HANDLER_PAGE) {
             $handler = new \APP\plugins\generic\plauditPreEndorsement\classes\PlauditPreEndorsementHandler();
             return true;
