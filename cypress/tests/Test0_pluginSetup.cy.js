@@ -1,8 +1,7 @@
 describe('Plaudit Pre-endorsement - Plugin setup', function () {
     it('Enables Plaudit Pre-endorsement plugin', function () {
 		cy.login('dbarnes', null, 'publicknowledge');
-
-		cy.contains('a', 'Website').click();
+		cy.visit('index.php/publicknowledge/management/settings/website');
 
 		cy.get('#plugins-button').click();
 
@@ -14,7 +13,7 @@ describe('Plaudit Pre-endorsement - Plugin setup', function () {
 		const dummyPlauditApiSecret = 'dummy_plaudit_api_secret';
 
 		cy.login('dbarnes', null, 'publicknowledge');
-		cy.contains('a', 'Website').click();
+		cy.visit('index.php/publicknowledge/management/settings/website');
 
 		cy.waitJQuery();
 		cy.get('#plugins-button').click();
