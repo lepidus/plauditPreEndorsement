@@ -21,8 +21,8 @@
         </thead>
         <tbody>
           <tr v-for="endorsement in endorsements" :key="endorsement.id">
-            <td>{{ endorsement.name }}</td>
-            <td>{{ endorsement.email }}</td>
+            <td :title="endorsement.name" class="endorsementWizardTruncate">{{ truncate(endorsement.name) }}</td>
+            <td :title="endorsement.email" class="endorsementWizardTruncate">{{ truncate(endorsement.email) }}</td>
             <td class="endorsementWizardItemActions">
               <pkp-button @click="openEditModal(endorsement)">
                 {{ t("common.edit") }}
@@ -60,6 +60,15 @@ const props = defineProps({
     required: true,
   },
 });
+
+const MAX_DISPLAY_LENGTH = 40;
+function truncate(value) {
+  if (!value) return "";
+  const str = String(value);
+  return str.length > MAX_DISPLAY_LENGTH
+    ? str.substring(0, MAX_DISPLAY_LENGTH) + "…"
+    : str;
+}
 
 const endorsements = ref([]);
 const isLoading = ref(true);
@@ -153,6 +162,14 @@ onMounted(() => {
   text-align: left;
   padding: 0.5rem;
   border-bottom: 1px solid #ddd;
+}
+
+.endorsementWizardTable td.endorsementWizardTruncate {
+  max-width: 20rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  word-break: break-all;
 }
 
 .endorsementWizardTable th {

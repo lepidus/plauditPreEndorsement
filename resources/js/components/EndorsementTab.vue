@@ -32,13 +32,13 @@
         <tbody>
           <tr v-for="endorsement in endorsements" :key="endorsement.id">
             <td>
-              <span>{{ endorsement.name }}</span>
+              <span :title="endorsement.name">{{ truncate(endorsement.name) }}</span>
               <span v-if="endorsement.orcid" class="endorsementOrcid">
                 <a :href="endorsement.orcid" target="_blank">{{ endorsement.orcid }}</a>
               </span>
             </td>
             <td>
-              <span>{{ endorsement.email }}</span>
+              <span :title="endorsement.email">{{ truncate(endorsement.email) }}</span>
               <span v-if="endorsement.emailCount" class="endorsementEmailCount">
                 ({{ endorsement.emailCount }})
               </span>
@@ -84,6 +84,15 @@ const { useModal } = pkp.modules.useModal;
 
 const { t } = useLocalize();
 const { openDialog, openSideModal } = useModal();
+
+const MAX_DISPLAY_LENGTH = 40;
+function truncate(value) {
+  if (!value) return "";
+  const str = String(value);
+  return str.length > MAX_DISPLAY_LENGTH
+    ? str.substring(0, MAX_DISPLAY_LENGTH) + "…"
+    : str;
+}
 
 const STATUS_NOT_CONFIRMED = 0;
 const STATUS_CONFIRMED = 1;

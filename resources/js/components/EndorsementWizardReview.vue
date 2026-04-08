@@ -9,7 +9,7 @@
     <div v-else>
       <ul v-if="endorsements.length > 0" class="endorsementReviewList">
         <li v-for="endorsement in endorsements" :key="endorsement.id">
-          <strong>{{ endorsement.name }}</strong> — {{ endorsement.email }}
+          <strong :title="endorsement.name">{{ truncate(endorsement.name) }}</strong> — <span :title="endorsement.email">{{ truncate(endorsement.email) }}</span>
         </li>
       </ul>
       <p v-else class="endorsementReviewEmpty">
@@ -38,6 +38,15 @@ const props = defineProps({
     default: "",
   },
 });
+
+const MAX_DISPLAY_LENGTH = 40;
+function truncate(value) {
+  if (!value) return "";
+  const str = String(value);
+  return str.length > MAX_DISPLAY_LENGTH
+    ? str.substring(0, MAX_DISPLAY_LENGTH) + "…"
+    : str;
+}
 
 const endorsements = ref([]);
 const isLoading = ref(true);
