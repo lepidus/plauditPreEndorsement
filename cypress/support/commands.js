@@ -1,7 +1,7 @@
 Cypress.Commands.add('findSubmission', function(view, title) {
     const viewMap = {
         myQueue: 'mySubmissions',
-        active: 'editorialDashboard',
+        active: 'editorial?currentViewId=active',
     };
     const dashboardView = viewMap[view] || view;
 
