@@ -1,26 +1,40 @@
 <template>
-  <div class="endorsementWizardReview">
-    <h3>{{ title }}</h3>
-
-    <div v-if="isLoading" class="endorsementReviewLoading">
-      <PkpSpinner />
+  <div class="submissionWizard__reviewPanel">
+    <div class="submissionWizard__reviewPanel__header">
+      <h3 :id="headingId">{{ title }}</h3>
+      <pkp-button
+        :aria-describedby="headingId"
+        class="submissionWizard__reviewPanel__edit"
+        @click="editStep"
+      >
+        {{ t("common.edit") }}
+      </pkp-button>
     </div>
-
-    <div v-else>
-      <ul v-if="endorsements.length > 0" class="endorsementReviewList">
-        <li v-for="endorsement in endorsements" :key="endorsement.id">
-          <strong :title="endorsement.name">{{ truncate(endorsement.name) }}</strong> — <span :title="endorsement.email">{{ truncate(endorsement.email) }}</span>
-        </li>
-      </ul>
-      <p v-else class="endorsementReviewEmpty">
-        {{ t("common.none") }}
-      </p>
+    <div class="submissionWizard__reviewPanel__body">
+      <div v-if="isLoading" class="submissionWizard__reviewPanel__item">
+        <PkpSpinner />
+      </div>
+      <template v-else>
+        <div
+          v-if="endorsements.length > 0"
+          v-for="endorsement in endorsements"
+          :key="endorsement.id"
+          class="submissionWizard__reviewPanel__item"
+        >
+          <strong :title="endorsement.name">{{ truncate(endorsement.name) }}</strong>
+          —
+          <span :title="endorsement.email">{{ truncate(endorsement.email) }}</span>
+        </div>
+        <div v-if="endorsements.length === 0" class="submissionWizard__reviewPanel__item">
+          {{ t("common.none") }}
+        </div>
+      </template>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, getCurrentInstance } from "vue";
 
 const { useLocalize } = pkp.modules.useLocalize;
 const { useUrl } = pkp.modules.useUrl;
@@ -37,7 +51,13 @@ const props = defineProps({
     type: String,
     default: "",
   },
+  stepId: {
+    type: String,
+    default: "details",
+  },
 });
+
+const headingId = `review-plauditPreEndorsement-${props.submissionId}`;
 
 const MAX_DISPLAY_LENGTH = 40;
 function truncate(value) {
@@ -66,40 +86,19 @@ async function loadEndorsements() {
   }
 }
 
+const instance = getCurrentInstance();
+function editStep() {
+  let parent = instance && instance.proxy ? instance.proxy.$parent : null;
+  while (parent) {
+    if (typeof parent.openStep === "function") {
+      parent.openStep(props.stepId);
+      return;
+    }
+    parent = parent.$parent;
+  }
+}
+
 onMounted(() => {
   loadEndorsements();
 });
 </script>
-
-<style scoped>
-.endorsementWizardReview {
-  margin: 1rem 0;
-}
-
-.endorsementWizardReview h3 {
-  margin: 0 0 0.5rem 0;
-  font-size: 1rem;
-  font-weight: 600;
-}
-
-.endorsementReviewLoading {
-  display: flex;
-  justify-content: center;
-  padding: 1rem;
-}
-
-.endorsementReviewList {
-  margin: 0;
-  padding-left: 1.5rem;
-}
-
-.endorsementReviewList li {
-  margin: 0.25rem 0;
-}
-
-.endorsementReviewEmpty {
-  color: #999;
-  font-style: italic;
-  margin: 0;
-}
-</style>
