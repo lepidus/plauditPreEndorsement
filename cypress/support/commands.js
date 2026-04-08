@@ -1,7 +1,12 @@
-Cypress.Commands.add('findSubmission', function(tab, title) {
-	cy.get('#' + tab + '-button').click();
-    cy.get('.listPanel__itemSubtitle:visible:contains("' + title + '")').first()
-        .parent().parent().within(() => {
-            cy.get('.pkpButton:contains("View")').click();
-        });
+Cypress.Commands.add('findSubmission', function(view, title) {
+    const viewMap = {
+        myQueue: 'mySubmissions',
+        active: 'editorialDashboard',
+    };
+    const dashboardView = viewMap[view] || view;
+
+    cy.visit('index.php/publicknowledge/dashboard/' + dashboardView);
+    cy.contains('table tr', title).within(() => {
+        cy.get('button').contains(/Complete submission|View/).click({force: true});
+    });
 });

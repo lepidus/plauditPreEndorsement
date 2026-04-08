@@ -104,28 +104,25 @@ async function submitForm() {
     : `endorsements/${props.submissionId}`;
 
   const { apiUrl } = useUrl(urlPath);
-  const { data, fetch: fetchSave } = useFetch(apiUrl, {
+  const { isSuccess, validationError, fetch: fetchSave } = useFetch(apiUrl, {
     method: isEdit ? "PUT" : "POST",
     body: { name: name.value, email: email.value },
+    expectValidationError: true,
   });
 
-  try {
-    await fetchSave();
+  await fetchSave();
 
-    if (data.value?.errors) {
-      errors.value = data.value.errors;
-      isSaving.value = false;
-      return;
-    }
+  if (validationError.value?.errors) {
+    errors.value = validationError.value.errors;
+    isSaving.value = false;
+    return;
+  }
 
+  if (isSuccess.value) {
     props.onSaved();
     closeModal();
-  } catch (e) {
-    if (e?.data?.errors) {
-      errors.value = e.data.errors;
-    }
-    isSaving.value = false;
   }
+  isSaving.value = false;
 }
 
 

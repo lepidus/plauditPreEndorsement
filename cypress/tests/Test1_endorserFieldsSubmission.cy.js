@@ -50,7 +50,8 @@ describe("Plaudit Pre-Endorsement Plugin - Endorser fields in submission wizard"
 
     it("Checks endorsement fields and validates endorser email", function() {
         cy.login('ckwantes', null, 'publicknowledge');
-        cy.get('div#myQueue a:contains("New Submission")').click();
+        cy.visit('index.php/publicknowledge/dashboard/mySubmissions');
+        cy.contains('Start A New Submission').click();
 
         beginSubmission(submissionData);
 
@@ -60,51 +61,51 @@ describe("Plaudit Pre-Endorsement Plugin - Endorser fields in submission wizard"
         cy.contains('button', 'Add').click();
         cy.get('input#endorserName').clear().type(endorsers.invalidEmail.name, {delay: 0});
         cy.get('input#endorserEmail').clear().type(endorsers.invalidEmail.email, {delay: 0});
-        cy.contains('button', 'Save').click();
+        cy.get('[data-cy="active-modal"]').contains('button', 'Save').click();
         cy.contains('Please enter a valid endorser e-mail');
     });
 
     it("Validates endorser is not an author of the submission", function() {
         cy.login('ckwantes', null, 'publicknowledge');
-        cy.findSubmission('myQueue', submissionData.title);
+        cy.findSubmission('myQueue', 'Kwantes');
 
         cy.contains('button', 'Add').click();
         cy.get('input#endorserName').clear().type(endorsers.isAuthor.name, {delay: 0});
         cy.get('input#endorserEmail').clear().type(endorsers.isAuthor.email, {delay: 0});
-        cy.contains('button', 'Save').click();
+        cy.get('[data-cy="active-modal"]').contains('button', 'Save').click();
 
         cy.contains('The endorsement cannot be given by any of the authors of the manuscript');
     });
 
     it("Add correct endorsements", function() {
         cy.login('ckwantes', null, 'publicknowledge');
-        cy.findSubmission('myQueue', submissionData.title);
+        cy.findSubmission('myQueue', 'Kwantes');
 
         cy.contains('button', 'Add').click();
         cy.get('input#endorserName').clear().type(endorsers.firstEndorsement.name, {delay: 0});
         cy.get('input#endorserEmail').clear().type(endorsers.firstEndorsement.email, {delay: 0});
-        cy.contains('button', 'Save').click();
+        cy.get('[data-cy="active-modal"]').contains('button', 'Save').click();
 
         cy.contains('button', 'Add').click();
         cy.get('input#endorserName').clear().type(endorsers.secondEndorsement.name, {delay: 0});
         cy.get('input#endorserEmail').clear().type(endorsers.secondEndorsement.email, {delay: 0});
-        cy.contains('button', 'Save').click();
+        cy.get('[data-cy="active-modal"]').contains('button', 'Save').click();
     });
 
     it("Validates endorsement email exists", function() {
         cy.login('ckwantes', null, 'publicknowledge');
-        cy.findSubmission('myQueue', submissionData.title);
+        cy.findSubmission('myQueue', 'Kwantes');
 
         cy.contains('button', 'Add').click();
         cy.get('input#endorserName').clear().type(endorsers.firstEndorsement.name, {delay: 0});
         cy.get('input#endorserEmail').clear().type(endorsers.firstEndorsement.email, {delay: 0});
-        cy.contains('button', 'Save').click();
+        cy.get('[data-cy="active-modal"]').contains('button', 'Save').click();
         cy.contains('The selected email address is already in use by another user.');
     });
 
     it("Finishes submission with correct endorsements", function() {
         cy.login('ckwantes', null, 'publicknowledge');
-        cy.findSubmission('myQueue', submissionData.title);
+        cy.findSubmission('myQueue', 'Kwantes');
         cy.setTinyMceContent('titleAbstract-abstract-control-en', submissionData.abstract);
 
         cy.contains('button', 'Continue').click();
@@ -116,8 +117,8 @@ describe("Plaudit Pre-Endorsement Plugin - Endorser fields in submission wizard"
         cy.contains('button', 'Continue').click();
         cy.contains('button', 'Continue').click();
 
-        cy.contains('button', 'Submit').click();
-        cy.get('.modal__panel:visible').within(() => {
+        cy.get('.submissionWizard__footer button').contains('Submit').click();
+        cy.get('[data-cy="dialog"]').within(() => {
             cy.contains('button', 'Submit').click();
         });
         cy.waitJQuery();
