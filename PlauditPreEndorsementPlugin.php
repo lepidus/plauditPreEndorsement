@@ -3,7 +3,7 @@
 /**
  * @file plugins/generic/plauditPreEndorsement/PlauditPreEndorsementPlugin.inc.php
  *
- * Copyright (c) 2022 - 2024 Lepidus Tecnologia
+ * Copyright (c) 2022 - 2026 Lepidus Tecnologia
  * Distributed under the GNU GPL v3. For full terms see LICENSE or https://www.gnu.org/licenses/gpl-3.0.txt.
  *
  * @class PlauditPreEndorsementPlugin
