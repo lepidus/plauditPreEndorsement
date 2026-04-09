@@ -20,19 +20,32 @@ pkp.registry.storeExtend("workflow", (piniaContext) => {
   const { t } = useLocalize();
 
   workflowStore.extender.extendFn("getMenuItems", (menuItems) => {
-    return [
-      ...menuItems,
-      {
-        key: "plauditPreEndorsement",
-        label: t("plugins.generic.plauditPreEndorsement.preEndorsement"),
-        state: { primaryMenuItem: "plauditPreEndorsement" },
-      },
-    ];
+    return menuItems.map((menuItem) => {
+      if (menuItem.key === "publication" && menuItem.items) {
+        return {
+          ...menuItem,
+          items: [
+            ...menuItem.items,
+            {
+              key: "publication_plauditPreEndorsement",
+              label: t("plugins.generic.plauditPreEndorsement.preEndorsement"),
+              state: {
+                primaryMenuItem: "publication",
+                secondaryMenuItem: "plauditPreEndorsement",
+                title: t("plugins.generic.plauditPreEndorsement.preEndorsement"),
+              },
+            },
+          ],
+        };
+      }
+      return menuItem;
+    });
   });
 
   workflowStore.extender.extendFn("getPrimaryItems", (primaryItems, args) => {
     if (
-      args?.selectedMenuState?.primaryMenuItem === "plauditPreEndorsement"
+      args?.selectedMenuState?.primaryMenuItem === "publication" &&
+      args?.selectedMenuState?.secondaryMenuItem === "plauditPreEndorsement"
     ) {
       return [
         {
