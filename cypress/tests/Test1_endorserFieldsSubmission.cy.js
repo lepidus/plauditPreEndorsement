@@ -3,7 +3,7 @@ import '../support/commands.js';
 function beginSubmission(submissionData) {
     cy.get('input[name="locale"][value="en"]').click();
     cy.setTinyMceContent('startSubmission-title-control', submissionData.title);
-    
+
     cy.get('input[name="submissionRequirements"]').check();
     cy.get('input[name="privacyConsent"]').check();
     cy.contains('button', 'Begin Submission').click();
@@ -13,7 +13,7 @@ describe("Plaudit Pre-Endorsement Plugin - Endorser fields in submission wizard"
     let submissionData;
     let dummyPdf;
     let endorsers;
-    
+
     before(function() {
         Cypress.config('defaultCommandTimeout', 4000);
         submissionData = {
@@ -47,69 +47,67 @@ describe("Plaudit Pre-Endorsement Plugin - Endorser fields in submission wizard"
             },
         };
     });
-    
+
     it("Checks endorsement fields and validates endorser email", function() {
         cy.login('ckwantes', null, 'publicknowledge');
-        cy.get('div#myQueue a:contains("New Submission")').click();
+        cy.visit('index.php/publicknowledge/dashboard/mySubmissions');
+        cy.contains('Start A New Submission').click();
 
         beginSubmission(submissionData);
-        
+
         cy.contains('h2', 'Endorsement');
         cy.contains('Do you have the endorsement of an experienced researcher in the field of knowledge of the manuscript?');
-        cy.contains('If yes, please provide the name and e-mail address of the endorsing researcher. Endorsements can significantly speed up the moderation process.');
-        cy.contains('The endorsement cannot be given by one of the authors of the manuscript.');
 
-        cy.get('a[id^="component-plugins-generic-plauditpreendorsement-controllers-grid-endorsementgrid-addEndorsement-button-"]').contains("Add").click(); 
-        cy.get('input[name="endorserName"]').clear().type(endorsers.invalidEmail.name, {delay: 0});
-        cy.get('input[name="endorserEmail"]').clear().type(endorsers.invalidEmail.email, {delay: 0});
-        cy.get('form[id="endorsementForm"]').find('button[id^="submitFormButton-"]').click();
-        cy.contains('Errors occurred processing this form');
+        cy.contains('button', 'Add').click();
+        cy.get('input#endorserName').clear().type(endorsers.invalidEmail.name, {delay: 0});
+        cy.get('input#endorserEmail').clear().type(endorsers.invalidEmail.email, {delay: 0});
+        cy.get('[data-cy="active-modal"]').contains('button', 'Save').click();
         cy.contains('Please enter a valid endorser e-mail');
     });
 
     it("Validates endorser is not an author of the submission", function() {
         cy.login('ckwantes', null, 'publicknowledge');
-        cy.findSubmission('myQueue', submissionData.title);
-        
-        cy.get('a[id^="component-plugins-generic-plauditpreendorsement-controllers-grid-endorsementgrid-addEndorsement-button-"]').contains("Add").click(); 
-        cy.get('input[name="endorserName"]').clear().type(endorsers.isAuthor.name, {delay: 0});
-        cy.get('input[name="endorserEmail"]').clear().type(endorsers.isAuthor.email, {delay: 0});
-        cy.get('form[id="endorsementForm"]').find('button[id^="submitFormButton-"]').click();
-        
+        cy.findSubmission('myQueue', 'Kwantes');
+
+        cy.contains('button', 'Add').click();
+        cy.get('input#endorserName').clear().type(endorsers.isAuthor.name, {delay: 0});
+        cy.get('input#endorserEmail').clear().type(endorsers.isAuthor.email, {delay: 0});
+        cy.get('[data-cy="active-modal"]').contains('button', 'Save').click();
+
         cy.contains('The endorsement cannot be given by any of the authors of the manuscript');
     });
 
     it("Add correct endorsements", function() {
         cy.login('ckwantes', null, 'publicknowledge');
-        cy.findSubmission('myQueue', submissionData.title);
-        
-        cy.get('a[id^="component-plugins-generic-plauditpreendorsement-controllers-grid-endorsementgrid-addEndorsement-button-"]').contains("Add").click(); 
-        cy.get('input[name="endorserName"]').clear().type(endorsers.firstEndorsement.name, {delay: 0});
-        cy.get('input[name="endorserEmail"]').clear().type(endorsers.firstEndorsement.email, {delay: 0});
-        cy.get('form[id="endorsementForm"]').find('button[id^="submitFormButton-"]').click();
-        cy.get('a[id^="component-plugins-generic-plauditpreendorsement-controllers-grid-endorsementgrid-addEndorsement-button-"]').contains("Add").click(); 
-        cy.get('input[name="endorserName"]').clear().type(endorsers.secondEndorsement.name, {delay: 0});
-        cy.get('input[name="endorserEmail"]').clear().type(endorsers.secondEndorsement.email, {delay: 0});
-        cy.get('form[id="endorsementForm"]').find('button[id^="submitFormButton-"]').click();
+        cy.findSubmission('myQueue', 'Kwantes');
+
+        cy.contains('button', 'Add').click();
+        cy.get('input#endorserName').clear().type(endorsers.firstEndorsement.name, {delay: 0});
+        cy.get('input#endorserEmail').clear().type(endorsers.firstEndorsement.email, {delay: 0});
+        cy.get('[data-cy="active-modal"]').contains('button', 'Save').click();
+
+        cy.contains('button', 'Add').click();
+        cy.get('input#endorserName').clear().type(endorsers.secondEndorsement.name, {delay: 0});
+        cy.get('input#endorserEmail').clear().type(endorsers.secondEndorsement.email, {delay: 0});
+        cy.get('[data-cy="active-modal"]').contains('button', 'Save').click();
     });
 
     it("Validates endorsement email exists", function() {
         cy.login('ckwantes', null, 'publicknowledge');
-        cy.findSubmission('myQueue', submissionData.title);
-        
-        cy.get('a[id^="component-plugins-generic-plauditpreendorsement-controllers-grid-endorsementgrid-addEndorsement-button-"]').contains("Add").click(); 
-        cy.get('input[name="endorserName"]').clear().type(endorsers.firstEndorsement.name, {delay: 0});
-        cy.get('input[name="endorserEmail"]').clear().type(endorsers.firstEndorsement.email, {delay: 0});
-        cy.get('form[id="endorsementForm"]').find('button[id^="submitFormButton-"]').click();
-        cy.contains('Errors occurred processing this form');
+        cy.findSubmission('myQueue', 'Kwantes');
+
+        cy.contains('button', 'Add').click();
+        cy.get('input#endorserName').clear().type(endorsers.firstEndorsement.name, {delay: 0});
+        cy.get('input#endorserEmail').clear().type(endorsers.firstEndorsement.email, {delay: 0});
+        cy.get('[data-cy="active-modal"]').contains('button', 'Save').click();
         cy.contains('The selected email address is already in use by another user.');
     });
 
     it("Finishes submission with correct endorsements", function() {
         cy.login('ckwantes', null, 'publicknowledge');
-        cy.findSubmission('myQueue', submissionData.title);
+        cy.findSubmission('myQueue', 'Kwantes');
         cy.setTinyMceContent('titleAbstract-abstract-control-en', submissionData.abstract);
-        
+
         cy.contains('button', 'Continue').click();
         cy.get('h2').contains('Upload Files');
 		cy.get('h2').contains('Files');
@@ -118,9 +116,9 @@ describe("Plaudit Pre-Endorsement Plugin - Endorser fields in submission wizard"
         cy.contains('button', 'Continue').click();
         cy.contains('button', 'Continue').click();
         cy.contains('button', 'Continue').click();
-        
-        cy.contains('button', 'Submit').click();
-        cy.get('.modal__panel:visible').within(() => {
+
+        cy.get('.submissionWizard__footer button').contains('Submit').click();
+        cy.get('[data-cy="dialog"]').within(() => {
             cy.contains('button', 'Submit').click();
         });
         cy.waitJQuery();

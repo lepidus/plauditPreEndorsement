@@ -17,9 +17,10 @@ use APP\plugins\generic\plauditPreEndorsement\classes\mail\mailables\{
     EndorserOrcidWithoutWorks
 };
 use APP\plugins\generic\plauditPreEndorsement\PlauditPreEndorsementPlugin;
-use PHPUnit\Framework\TestCase;
+use APP\plugins\generic\plauditPreEndorsement\classes\facades\Repo;
+use PKP\tests\PKPTestCase;
 
-class EmailBuilderTest extends TestCase
+class EmailBuilderTest extends PKPTestCase
 {
     private $submission;
     private $publication;
@@ -29,9 +30,17 @@ class EmailBuilderTest extends TestCase
     public function setUp(): void
     {
         parent::setUp();
+        $this->mockRequest();
         $this->initializePluginLocaleData();
         $this->createSubmission();
         $this->createEndorsement();
+    }
+
+    private function getExpectedSubject(string $templateKey): string
+    {
+        $contextId = $this->submission->getData('contextId');
+        $template = Repo::emailTemplate()->getByKey($contextId, $templateKey);
+        return $template->getLocalizedData('subject');
     }
 
     private function initializePluginLocaleData(): void
@@ -111,7 +120,7 @@ class EmailBuilderTest extends TestCase
         $this->assertEquals($this->endorsement->getName(), $emailParams['endorserName']);
         $this->assertEquals($this->endorsement->getOrcid(), $emailParams['endorserOrcid']);
 
-        $this->assertEquals(__('emails.endorsementConfirmed.subject'), $email->subject);
+        $this->assertEquals($this->getExpectedSubject('ENDORSEMENT_CONFIRMED'), $email->subject);
     }
 
     public function testBuildEndorsementDeclinedEmail()
@@ -133,7 +142,7 @@ class EmailBuilderTest extends TestCase
         $this->assertEquals($this->author->getFullName(), $emailParams['authorName']);
         $this->assertEquals($this->endorsement->getName(), $emailParams['endorserName']);
 
-        $this->assertEquals(__('emails.endorsementDeclined.subject'), $email->subject);
+        $this->assertEquals($this->getExpectedSubject('ENDORSEMENT_DECLINED'), $email->subject);
     }
 
     public function testBuildOrcidWithoutWorksEmail()
@@ -155,6 +164,6 @@ class EmailBuilderTest extends TestCase
         $this->assertEquals($this->author->getFullName(), $emailParams['authorName']);
         $this->assertEquals($this->endorsement->getName(), $emailParams['endorserName']);
 
-        $this->assertEquals(__('emails.endorserOrcidWithoutWorks.subject'), $email->subject);
+        $this->assertEquals($this->getExpectedSubject('ENDORSER_ORCID_WITHOUT_WORKS'), $email->subject);
     }
 }

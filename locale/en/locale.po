@@ -78,7 +78,7 @@ msgid "plugins.generic.plauditPreEndorsement.endorserEmailCount.many"
 msgstr "{$numEmails} endorsement confirmation e-mails have been sent to the endorser"
 
 msgid "plugins.generic.plauditPreEndorsement.sendEndorsementToPlaudit"
-msgstr "Send endorsement to Plaudit"
+msgstr "Send to Plaudit"
 
 msgid "plugins.generic.plauditPreEndorsement.removeEndorsement"
 msgstr "Remove endorsement"
@@ -229,3 +229,30 @@ msgstr "The endorsement has been removed, as the ORCID provided ({$orcid}) is fr
 
 msgid "plugins.generic.plauditPreEndorsement.log.endorsementRemoved.emailFromAuthor"
 msgstr "The endorsement has been removed, as the email provided ({$email}) is from one of the authors of the submission."
+
+msgid "plugins.generic.plauditPreEndorsement.addEndorsement"
+msgstr "Add Endorsement"
+
+msgid "plugins.generic.plauditPreEndorsement.editEndorsement"
+msgstr "Edit Endorsement"
+
+msgid "plugins.generic.plauditPreEndorsement.endorserNameRequired"
+msgstr "Please enter the endorser's name"
+
+msgid "plugins.generic.plauditPreEndorsement.endorserEmailDuplicate"
+msgstr "The selected email address is already in use by another user."
+
+msgid "plugins.generic.plauditPreEndorsement.log.endorsementAdded"
+msgstr "A submission endorsement has been added: {$endorserName} ({$endorserEmail})"
+
+msgid "plugins.generic.plauditPreEndorsement.log.invalidToken.decline"
+msgstr "The token used during the endorsement decline is not valid"
+
+msgid "plugins.generic.plauditPreEndorsement.api.submissionNotFound"
+msgstr "Submission not found."
+
+msgid "plugins.generic.plauditPreEndorsement.api.endorsementNotFound"
+msgstr "Endorsement not found."
+
+msgid "plugins.generic.plauditPreEndorsement.api.endorsementDeleted"
+msgstr "Endorsement deleted."
