@@ -10,33 +10,12 @@ This plugin is compatible with the following PKP applications:
 
 - OPS 3.5.0-x
 
-## Requirements
-
-- PHP 8.1+
-- Node.js 18+ (for building frontend assets)
-
 ## Installation
 
 1. Enter the administration area of your OPS website through the __Dashboard__.
 2. Navigate to `Website Settings` > `Plugins` > `Installed Plugins` > `Upload a new plugin`.
 3. Under __Upload file__ select the file __plauditPreEndorsement.tar.gz__, downloaded from the latest release.
 4. Click __Save__ and the plugin will be installed on your website.
-
-## Building Frontend Assets
-
-If installing from source, you must build the frontend assets:
-
-```bash
-cd plugins/generic/plauditPreEndorsement
-npm install
-npm run build
-```
-
-For development with hot reload:
-
-```bash
-npm run dev
-```
 
 ## Setting
 
@@ -56,16 +35,6 @@ After completing this configuration, the plugin is ready for use.
 - **ORCID Verification**: Endorsers receive email with ORCID OAuth link for identity verification
 - **Plaudit Integration**: Confirmed endorsements are automatically sent to Plaudit API when the submission is published
 - **Scheduled Tasks**: Automatic re-sending of ORCID requests and endorsement submission to Plaudit
-
-## API Endpoints
-
-The plugin exposes the following REST API endpoints under `/api/v1/endorsements/`:
-
-- `GET {submissionId}` - List endorsements for a submission
-- `POST {submissionId}` - Add a new endorsement
-- `PUT {submissionId}/{endorsementId}` - Update an endorsement
-- `DELETE {submissionId}/{endorsementId}` - Delete an endorsement
-- `POST {submissionId}/{endorsementId}/send` - Manually send an endorsement to Plaudit
 
 ## Limitations
 
