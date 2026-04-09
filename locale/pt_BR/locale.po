@@ -247,3 +247,12 @@ msgstr "Um endosso de submissão foi adicionado: {$endorserName} ({$endorserEmai
 
 msgid "plugins.generic.plauditPreEndorsement.log.invalidToken.decline"
 msgstr "O token usado durante a recusa do endosso não é válido"
+
+msgid "plugins.generic.plauditPreEndorsement.api.submissionNotFound"
+msgstr "Submissão não encontrada."
+
+msgid "plugins.generic.plauditPreEndorsement.api.endorsementNotFound"
+msgstr "Endosso não encontrado."
+
+msgid "plugins.generic.plauditPreEndorsement.api.endorsementDeleted"
+msgstr "Endosso removido."

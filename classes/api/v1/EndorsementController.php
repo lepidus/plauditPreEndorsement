@@ -11,12 +11,20 @@ use Illuminate\Support\Facades\Route;
 use PKP\core\PKPBaseController;
 use PKP\plugins\PluginRegistry;
 use PKP\security\Role;
+use PKP\stageAssignment\StageAssignment;
 use APP\plugins\generic\plauditPreEndorsement\classes\facades\Repo;
 use APP\plugins\generic\plauditPreEndorsement\classes\endorsement\Endorsement;
 use APP\plugins\generic\plauditPreEndorsement\classes\EndorsementService;
 
 class EndorsementController extends PKPBaseController
 {
+    private const EDITORIAL_ROLES = [
+        Role::ROLE_ID_SITE_ADMIN,
+        Role::ROLE_ID_MANAGER,
+        Role::ROLE_ID_SUB_EDITOR,
+        Role::ROLE_ID_ASSISTANT,
+    ];
+
     public function getHandlerPath(): string
     {
         return 'endorsements';
@@ -27,13 +35,7 @@ class EndorsementController extends PKPBaseController
         return [
             'has.user',
             'has.context',
-            self::roleAuthorizer([
-                Role::ROLE_ID_SITE_ADMIN,
-                Role::ROLE_ID_MANAGER,
-                Role::ROLE_ID_SUB_EDITOR,
-                Role::ROLE_ID_ASSISTANT,
-                Role::ROLE_ID_AUTHOR,
-            ]),
+            self::roleAuthorizer(array_merge(self::EDITORIAL_ROLES, [Role::ROLE_ID_AUTHOR])),
         ];
     }
 
@@ -57,30 +59,23 @@ class EndorsementController extends PKPBaseController
 
     public function getEndorsements(IlluminateRequest $request): JsonResponse
     {
-        $submission = $this->getValidatedSubmission($request);
+        $submission = $this->getAuthorizedSubmission($request);
         if ($submission instanceof JsonResponse) {
             return $submission;
         }
 
-        $contextId = $this->getContextId();
-        $publications = $submission->getData('publications');
-        $publicationIds = [];
-
-        if (!empty($publications)) {
-            foreach ($publications as $publication) {
-                $publicationIds[] = $publication->getId();
-            }
-        }
+        $publicationIds = $this->collectPublicationIds($submission);
 
         $endorsements = Repo::endorsement()->getCollector()
-            ->filterByContextIds([$contextId])
+            ->filterByContextIds([$this->getContextId()])
             ->filterByPublicationIds($publicationIds)
             ->getMany()
             ->toArray();
 
-        $items = array_map(function (Endorsement $endorsement) {
-            return $this->endorsementToArray($endorsement);
-        }, $endorsements);
+        $items = array_map(
+            fn (Endorsement $endorsement) => $this->endorsementToArray($endorsement),
+            $endorsements
+        );
 
         return response()->json([
             'items' => array_values($items),
@@ -90,24 +85,23 @@ class EndorsementController extends PKPBaseController
 
     public function addEndorsement(IlluminateRequest $request): JsonResponse
     {
-        $submission = $this->getValidatedSubmission($request);
+        $submission = $this->getAuthorizedSubmission($request);
         if ($submission instanceof JsonResponse) {
             return $submission;
         }
 
-        $contextId = $this->getContextId();
         $publication = $submission->getCurrentPublication();
 
         $name = $request->input('name');
         $email = $request->input('email');
 
-        $errors = $this->validateEndorsementData($name, $email, $contextId, $submission->getId(), $publication->getId());
+        $errors = $this->validateEndorsementData($name, $email, $publication, $this->getContextId());
         if (!empty($errors)) {
             return response()->json(['errors' => $errors], Response::HTTP_BAD_REQUEST);
         }
 
         $endorsement = Repo::endorsement()->newDataObject([
-            'contextId' => $contextId,
+            'contextId' => $this->getContextId(),
             'name' => $name,
             'email' => $email,
             'publicationId' => $publication->getId(),
@@ -130,40 +124,38 @@ class EndorsementController extends PKPBaseController
 
     public function editEndorsement(IlluminateRequest $request): JsonResponse
     {
-        $submission = $this->getValidatedSubmission($request);
+        $submission = $this->getAuthorizedSubmission($request);
         if ($submission instanceof JsonResponse) {
             return $submission;
         }
 
-        $contextId = $this->getContextId();
-        $endorsementId = (int) $request->route('endorsementId');
-        $endorsement = Repo::endorsement()->get($endorsementId, $contextId);
-
-        if (!$endorsement) {
-            return response()->json(
-                ['error' => 'Endorsement not found'],
-                Response::HTTP_NOT_FOUND
-            );
+        $endorsement = $this->getEndorsementForSubmission($request, $submission);
+        if ($endorsement instanceof JsonResponse) {
+            return $endorsement;
         }
 
         $name = $request->input('name');
         $email = $request->input('email');
 
-        $errors = $this->validateEndorsementData($name, $email, $contextId, $submission->getId(), $endorsement->getPublicationId(), $endorsementId);
+        $publication = $submission->getCurrentPublication();
+        $errors = $this->validateEndorsementData(
+            $name,
+            $email,
+            $publication,
+            $this->getContextId(),
+            $endorsement->getId()
+        );
         if (!empty($errors)) {
             return response()->json(['errors' => $errors], Response::HTTP_BAD_REQUEST);
         }
 
         $endorserChanged = ($email != $endorsement->getEmail());
-        $params = ['name' => $name, 'email' => $email];
-        Repo::endorsement()->edit($endorsement, $params);
+        Repo::endorsement()->edit($endorsement, ['name' => $name, 'email' => $email]);
 
-        $publication = $submission->getCurrentPublication();
-        $updatedEndorsement = Repo::endorsement()->get($endorsementId, $contextId);
+        $updatedEndorsement = Repo::endorsement()->get($endorsement->getId(), $this->getContextId());
 
         if (!$submission->getData('submissionProgress')) {
-            $plugin = $this->getPlugin();
-            $plugin->sendEmailToEndorser($publication, $updatedEndorsement, $endorserChanged);
+            $this->getPlugin()->sendEmailToEndorser($publication, $updatedEndorsement, $endorserChanged);
         }
 
         return response()->json($this->endorsementToArray($updatedEndorsement), Response::HTTP_OK);
@@ -171,20 +163,14 @@ class EndorsementController extends PKPBaseController
 
     public function deleteEndorsement(IlluminateRequest $request): JsonResponse
     {
-        $submission = $this->getValidatedSubmission($request);
+        $submission = $this->getAuthorizedSubmission($request);
         if ($submission instanceof JsonResponse) {
             return $submission;
         }
 
-        $contextId = $this->getContextId();
-        $endorsementId = (int) $request->route('endorsementId');
-        $endorsement = Repo::endorsement()->get($endorsementId, $contextId);
-
-        if (!$endorsement) {
-            return response()->json(
-                ['error' => 'Endorsement not found'],
-                Response::HTTP_NOT_FOUND
-            );
+        $endorsement = $this->getEndorsementForSubmission($request, $submission);
+        if ($endorsement instanceof JsonResponse) {
+            return $endorsement;
         }
 
         Repo::endorsement()->delete($endorsement);
@@ -195,57 +181,122 @@ class EndorsementController extends PKPBaseController
             ['endorserName' => $endorsement->getName(), 'endorserEmail' => $endorsement->getEmail()]
         );
 
-        return response()->json(['message' => 'Endorsement deleted'], Response::HTTP_OK);
+        return response()->json([
+            'message' => __('plugins.generic.plauditPreEndorsement.api.endorsementDeleted'),
+        ], Response::HTTP_OK);
     }
 
     public function sendEndorsement(IlluminateRequest $request): JsonResponse
     {
-        $submission = $this->getValidatedSubmission($request);
+        $submission = $this->getAuthorizedSubmission($request, editorialOnly: true);
         if ($submission instanceof JsonResponse) {
             return $submission;
         }
 
-        $contextId = $this->getContextId();
-        $endorsementId = (int) $request->route('endorsementId');
-        $endorsement = Repo::endorsement()->get($endorsementId, $contextId);
-
-        if (!$endorsement) {
-            return response()->json(
-                ['error' => 'Endorsement not found'],
-                Response::HTTP_NOT_FOUND
-            );
+        $endorsement = $this->getEndorsementForSubmission($request, $submission);
+        if ($endorsement instanceof JsonResponse) {
+            return $endorsement;
         }
 
         $plugin = $this->getPlugin();
-        $endorsementService = new EndorsementService($contextId, $plugin);
-        $endorsementService->sendEndorsement($endorsement);
+        (new EndorsementService($this->getContextId(), $plugin))->sendEndorsement($endorsement);
 
         return response()->json([
             'message' => __('plugins.generic.plauditPreEndorsement.sendEndorsementToPlauditNotification'),
         ], Response::HTTP_OK);
     }
 
-    private function getValidatedSubmission(IlluminateRequest $request): Submission|JsonResponse
+    /**
+     * Loads the submission from the route and enforces access control:
+     * - must exist and belong to the current context
+     * - editorial roles pass through
+     * - authors must have a stage assignment on this submission
+     * - if $editorialOnly is true, authors are rejected outright
+     */
+    private function getAuthorizedSubmission(IlluminateRequest $request, bool $editorialOnly = false): Submission|JsonResponse
     {
         $submissionId = (int) $request->route('submissionId');
         $submission = \APP\facades\Repo::submission()->get($submissionId);
 
-        if (!$submission) {
+        if (!$submission || (int) $submission->getData('contextId') !== $this->getContextId()) {
             return response()->json(
-                ['error' => 'Submission not found'],
+                ['error' => __('plugins.generic.plauditPreEndorsement.api.submissionNotFound')],
                 Response::HTTP_NOT_FOUND
             );
         }
 
-        $contextId = $this->getContextId();
-        if ((int) $submission->getData('contextId') !== $contextId) {
+        $user = Application::get()->getRequest()->getUser();
+        if (!$user) {
             return response()->json(
-                ['error' => 'Submission not found in this context'],
-                Response::HTTP_NOT_FOUND
+                ['error' => __('api.403.unauthorized')],
+                Response::HTTP_FORBIDDEN
+            );
+        }
+
+        $userRoles = (array) ($this->getAuthorizedContextObject(Application::ASSOC_TYPE_USER_ROLES) ?? []);
+        $hasEditorialRole = !empty(array_intersect($userRoles, self::EDITORIAL_ROLES));
+
+        if ($hasEditorialRole) {
+            return $submission;
+        }
+
+        if ($editorialOnly) {
+            return response()->json(
+                ['error' => __('api.403.unauthorized')],
+                Response::HTTP_FORBIDDEN
+            );
+        }
+
+        $isAssignedAuthor = StageAssignment::withSubmissionIds([$submission->getId()])
+            ->withRoleIds([Role::ROLE_ID_AUTHOR])
+            ->withUserId($user->getId())
+            ->get()
+            ->isNotEmpty();
+
+        if (!$isAssignedAuthor) {
+            return response()->json(
+                ['error' => __('api.403.unauthorized')],
+                Response::HTTP_FORBIDDEN
             );
         }
 
         return $submission;
+    }
+
+    /**
+     * Loads the endorsement from the route and verifies it belongs to one of
+     * the submission's publications — prevents cross-submission access.
+     */
+    private function getEndorsementForSubmission(IlluminateRequest $request, Submission $submission): Endorsement|JsonResponse
+    {
+        $endorsementId = (int) $request->route('endorsementId');
+        $endorsement = Repo::endorsement()->get($endorsementId, $this->getContextId());
+
+        if (!$endorsement) {
+            return response()->json(
+                ['error' => __('plugins.generic.plauditPreEndorsement.api.endorsementNotFound')],
+                Response::HTTP_NOT_FOUND
+            );
+        }
+
+        if (!in_array($endorsement->getPublicationId(), $this->collectPublicationIds($submission), true)) {
+            return response()->json(
+                ['error' => __('plugins.generic.plauditPreEndorsement.api.endorsementNotFound')],
+                Response::HTTP_NOT_FOUND
+            );
+        }
+
+        return $endorsement;
+    }
+
+    private function collectPublicationIds(Submission $submission): array
+    {
+        $publications = $submission->getData('publications') ?: [];
+        $ids = [];
+        foreach ($publications as $publication) {
+            $ids[] = $publication->getId();
+        }
+        return $ids;
     }
 
     private function getContextId(): int
@@ -272,7 +323,7 @@ class EndorsementController extends PKPBaseController
         ];
     }
 
-    private function validateEndorsementData(?string $name, ?string $email, int $contextId, int $submissionId, int $publicationId, ?int $excludeId = null): array
+    private function validateEndorsementData(?string $name, ?string $email, $publication, int $contextId, ?int $excludeId = null): array
     {
         $errors = [];
 
@@ -282,24 +333,23 @@ class EndorsementController extends PKPBaseController
 
         if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $errors['email'] = [__('plugins.generic.plauditPreEndorsement.endorsementEmailInvalid')];
+            return $errors;
         }
 
-        if (!empty($email)) {
-            $existingEndorsement = Repo::endorsement()->getByEmail($email, $publicationId, $contextId);
-            if ($existingEndorsement && $existingEndorsement->getId() !== $excludeId) {
-                $errors['email'] = [__('plugins.generic.plauditPreEndorsement.endorserEmailDuplicate')];
-            }
+        $existingEndorsement = Repo::endorsement()->getByEmail($email, $publication->getId(), $contextId);
+        if ($existingEndorsement && $existingEndorsement->getId() !== $excludeId) {
+            $errors['email'] = [__('plugins.generic.plauditPreEndorsement.endorserEmailDuplicate')];
+            return $errors;
+        }
 
-            $submission = \APP\facades\Repo::submission()->get($submissionId);
-            if ($submission) {
-                $publication = $submission->getCurrentPublication();
-                $authors = $publication->getData('authors');
-                foreach ($authors as $author) {
-                    if ($author->getData('email') === $email) {
-                        $errors['email'] = [__('plugins.generic.plauditPreEndorsement.endorsementFromAuthor')];
-                        break;
-                    }
-                }
+        $authors = \APP\facades\Repo::author()->getCollector()
+            ->filterByPublicationIds([$publication->getId()])
+            ->getMany();
+
+        foreach ($authors as $author) {
+            if ($author->getData('email') === $email) {
+                $errors['email'] = [__('plugins.generic.plauditPreEndorsement.endorsementFromAuthor')];
+                break;
             }
         }
 

@@ -5,7 +5,7 @@
       <pkp-button
         :aria-describedby="headingId"
         class="submissionWizard__reviewPanel__edit"
-        @click="editStep"
+        @click="onEdit"
       >
         {{ t("common.edit") }}
       </pkp-button>
@@ -16,7 +16,6 @@
       </div>
       <template v-else>
         <div
-          v-if="endorsements.length > 0"
           v-for="endorsement in endorsements"
           :key="endorsement.id"
           class="submissionWizard__reviewPanel__item"
@@ -34,12 +33,11 @@
 </template>
 
 <script setup>
-import { ref, onMounted, getCurrentInstance } from "vue";
+import { onMounted } from "vue";
+import { truncate } from "../utils/truncate.js";
+import { useEndorsements } from "../composables/useEndorsements.js";
 
 const { useLocalize } = pkp.modules.useLocalize;
-const { useUrl } = pkp.modules.useUrl;
-const { useFetch } = pkp.modules.useFetch;
-
 const { t } = useLocalize();
 
 const props = defineProps({
@@ -57,48 +55,17 @@ const props = defineProps({
   },
 });
 
+const emit = defineEmits(["edit-step"]);
+
 const headingId = `review-plauditPreEndorsement-${props.submissionId}`;
 
-const MAX_DISPLAY_LENGTH = 40;
-function truncate(value) {
-  if (!value) return "";
-  const str = String(value);
-  return str.length > MAX_DISPLAY_LENGTH
-    ? str.substring(0, MAX_DISPLAY_LENGTH) + "…"
-    : str;
-}
+const { endorsements, isLoading, reload } = useEndorsements(props.submissionId);
 
-const endorsements = ref([]);
-const isLoading = ref(true);
-
-const { apiUrl } = useUrl(`endorsements/${props.submissionId}`);
-const { data, fetch: fetchEndorsements } = useFetch(apiUrl);
-
-async function loadEndorsements() {
-  isLoading.value = true;
-  try {
-    await fetchEndorsements();
-    endorsements.value = data.value?.items || [];
-  } catch (e) {
-    // silent
-  } finally {
-    isLoading.value = false;
-  }
-}
-
-const instance = getCurrentInstance();
-function editStep() {
-  let parent = instance && instance.proxy ? instance.proxy.$parent : null;
-  while (parent) {
-    if (typeof parent.openStep === "function") {
-      parent.openStep(props.stepId);
-      return;
-    }
-    parent = parent.$parent;
-  }
+function onEdit() {
+  emit("edit-step", props.stepId);
 }
 
 onMounted(() => {
-  loadEndorsements();
+  reload();
 });
 </script>

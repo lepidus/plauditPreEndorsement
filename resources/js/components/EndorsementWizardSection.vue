@@ -43,8 +43,10 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { onMounted } from "vue";
 import EndorsementFormModal from "./EndorsementFormModal.vue";
+import { truncate } from "../utils/truncate.js";
+import { useEndorsements } from "../composables/useEndorsements.js";
 
 const { useLocalize } = pkp.modules.useLocalize;
 const { useUrl } = pkp.modules.useUrl;
@@ -61,37 +63,12 @@ const props = defineProps({
   },
 });
 
-const MAX_DISPLAY_LENGTH = 40;
-function truncate(value) {
-  if (!value) return "";
-  const str = String(value);
-  return str.length > MAX_DISPLAY_LENGTH
-    ? str.substring(0, MAX_DISPLAY_LENGTH) + "…"
-    : str;
-}
-
-const endorsements = ref([]);
-const isLoading = ref(true);
-
-const { apiUrl } = useUrl(`endorsements/${props.submissionId}`);
-const { data, fetch: fetchEndorsements } = useFetch(apiUrl);
-
-async function loadEndorsements() {
-  isLoading.value = true;
-  try {
-    await fetchEndorsements();
-    endorsements.value = data.value?.items || [];
-  } catch (e) {
-    // silent
-  } finally {
-    isLoading.value = false;
-  }
-}
+const { endorsements, isLoading, reload } = useEndorsements(props.submissionId);
 
 function openAddModal() {
   openSideModal(EndorsementFormModal, {
     submissionId: props.submissionId,
-    onSaved: () => loadEndorsements(),
+    onSaved: () => reload(),
   });
 }
 
@@ -101,7 +78,7 @@ function openEditModal(endorsement) {
     endorsementId: endorsement.id,
     initialName: endorsement.name,
     initialEmail: endorsement.email,
-    onSaved: () => loadEndorsements(),
+    onSaved: () => reload(),
   });
 }
 
@@ -119,7 +96,7 @@ function confirmDelete(endorsement) {
           );
           const { fetch: fetchDelete } = useFetch(deleteUrl, { method: "DELETE" });
           await fetchDelete();
-          loadEndorsements();
+          reload();
           close();
         },
       },
@@ -133,7 +110,7 @@ function confirmDelete(endorsement) {
 }
 
 onMounted(() => {
-  loadEndorsements();
+  reload();
 });
 </script>
 
@@ -161,7 +138,7 @@ onMounted(() => {
 .endorsementWizardTable td {
   text-align: left;
   padding: 0.5rem;
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid var(--pkpColor-border, #ddd);
 }
 
 .endorsementWizardTable td.endorsementWizardTruncate {
@@ -174,7 +151,7 @@ onMounted(() => {
 
 .endorsementWizardTable th {
   font-weight: 600;
-  background: #f9f9f9;
+  background: var(--pkpColor-tableHeader, #f9f9f9);
 }
 
 .endorsementWizardItemActions {
@@ -183,7 +160,7 @@ onMounted(() => {
 }
 
 .endorsementWizardEmpty {
-  color: #999;
+  color: var(--pkpColor-description, #999);
   font-style: italic;
 }
 </style>

@@ -9,8 +9,8 @@
       <PkpSpinner />
     </div>
 
-    <div v-else-if="error" class="endorsementTabError">
-      <p>{{ error }}</p>
+    <div v-else-if="errorMessage" class="endorsementTabError">
+      <p>{{ errorMessage }}</p>
     </div>
 
     <div v-else class="endorsementTabContent">
@@ -34,7 +34,7 @@
             <td>
               <span :title="endorsement.name">{{ truncate(endorsement.name) }}</span>
               <span v-if="endorsement.orcid" class="endorsementOrcid">
-                <a :href="endorsement.orcid" target="_blank">{{ endorsement.orcid }}</a>
+                <a :href="endorsement.orcid" target="_blank" rel="noopener">{{ endorsement.orcid }}</a>
               </span>
             </td>
             <td>
@@ -45,7 +45,7 @@
             </td>
             <td>
               <span :class="getStatusClass(endorsement.status)">
-                {{ getStatusLabel(endorsement.status) }}
+                {{ getStatusLabel(endorsement.status, t) }}
               </span>
             </td>
             <td class="endorsementActions">
@@ -74,8 +74,15 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from "vue";
+import { onMounted, watch } from "vue";
 import EndorsementFormModal from "./EndorsementFormModal.vue";
+import { truncate } from "../utils/truncate.js";
+import {
+  getStatusLabel,
+  getStatusClass,
+  canSendManually,
+} from "../constants/endorsementStatus.js";
+import { useEndorsements } from "../composables/useEndorsements.js";
 
 const { useLocalize } = pkp.modules.useLocalize;
 const { useUrl } = pkp.modules.useUrl;
@@ -85,21 +92,6 @@ const { useModal } = pkp.modules.useModal;
 const { t } = useLocalize();
 const { openDialog, openSideModal } = useModal();
 
-const MAX_DISPLAY_LENGTH = 40;
-function truncate(value) {
-  if (!value) return "";
-  const str = String(value);
-  return str.length > MAX_DISPLAY_LENGTH
-    ? str.substring(0, MAX_DISPLAY_LENGTH) + "…"
-    : str;
-}
-
-const STATUS_NOT_CONFIRMED = 0;
-const STATUS_CONFIRMED = 1;
-const STATUS_DENIED = 2;
-const STATUS_COMPLETED = 3;
-const STATUS_COULDNT_COMPLETE = 4;
-
 const props = defineProps({
   submission: {
     type: Object,
@@ -107,59 +99,14 @@ const props = defineProps({
   },
 });
 
-const endorsements = ref([]);
-const isLoading = ref(true);
-const error = ref(null);
-
-const { apiUrl } = useUrl(`endorsements/${props.submission.id}`);
-const { data, fetch: fetchEndorsements } = useFetch(apiUrl);
-
-async function loadEndorsements() {
-  isLoading.value = true;
-  error.value = null;
-  try {
-    await fetchEndorsements();
-    endorsements.value = data.value?.items || [];
-  } catch (e) {
-    error.value = "Failed to load endorsements";
-  } finally {
-    isLoading.value = false;
-  }
-}
-
-function getStatusLabel(status) {
-  const labels = {
-    [STATUS_NOT_CONFIRMED]: t("plugins.generic.plauditPreEndorsement.endorsementNotConfirmed"),
-    [STATUS_CONFIRMED]: t("plugins.generic.plauditPreEndorsement.endorsementConfirmed"),
-    [STATUS_DENIED]: t("plugins.generic.plauditPreEndorsement.endorsementDeclined"),
-    [STATUS_COMPLETED]: t("plugins.generic.plauditPreEndorsement.endorsementCompleted"),
-    [STATUS_COULDNT_COMPLETE]: t("plugins.generic.plauditPreEndorsement.endorsementCouldntComplete"),
-  };
-  return labels[status] || t("common.unknownError");
-}
-
-function getStatusClass(status) {
-  const classes = {
-    [STATUS_NOT_CONFIRMED]: "endorsementBadge endorsementBadgeNotConfirmed",
-    [STATUS_CONFIRMED]: "endorsementBadge endorsementBadgeConfirmed",
-    [STATUS_DENIED]: "endorsementBadge endorsementBadgeDenied",
-    [STATUS_COMPLETED]: "endorsementBadge endorsementBadgeCompleted",
-    [STATUS_COULDNT_COMPLETE]: "endorsementBadge endorsementBadgeCouldntComplete",
-  };
-  return classes[status] || "endorsementBadge";
-}
-
-function canSendManually(endorsement) {
-  return (
-    endorsement.status === STATUS_CONFIRMED ||
-    endorsement.status === STATUS_COULDNT_COMPLETE
-  );
-}
+const { endorsements, isLoading, errorMessage, reload } = useEndorsements(
+  props.submission.id
+);
 
 function openAddModal() {
   openSideModal(EndorsementFormModal, {
     submissionId: props.submission.id,
-    onSaved: () => loadEndorsements(),
+    onSaved: () => reload(),
   });
 }
 
@@ -169,7 +116,7 @@ function openEditModal(endorsement) {
     endorsementId: endorsement.id,
     initialName: endorsement.name,
     initialEmail: endorsement.email,
-    onSaved: () => loadEndorsements(),
+    onSaved: () => reload(),
   });
 }
 
@@ -201,7 +148,7 @@ async function deleteEndorsement(endorsement) {
   );
   const { fetch: fetchDelete } = useFetch(deleteUrl, { method: "DELETE" });
   await fetchDelete();
-  loadEndorsements();
+  reload();
 }
 
 async function sendManually(endorsement) {
@@ -210,16 +157,16 @@ async function sendManually(endorsement) {
   );
   const { fetch: fetchSend } = useFetch(sendUrl, { method: "POST" });
   await fetchSend();
-  loadEndorsements();
+  reload();
 }
 
 onMounted(() => {
-  loadEndorsements();
+  reload();
 });
 
 watch(
   () => props.submission.id,
-  () => loadEndorsements()
+  () => reload()
 );
 </script>
 
@@ -239,7 +186,7 @@ watch(
 
 .endorsementTabHeader p {
   margin: 0;
-  color: #666;
+  color: var(--pkpColor-description, #666);
 }
 
 .endorsementTabLoading {
@@ -249,9 +196,9 @@ watch(
 }
 
 .endorsementTabError {
-  color: #d00;
+  color: var(--pkpColor-error, #d00);
   padding: 1rem;
-  background: #fee;
+  background: var(--pkpColor-errorBackground, #fee);
   border-radius: 4px;
 }
 
@@ -268,23 +215,23 @@ watch(
 .endorsementTable td {
   text-align: left;
   padding: 0.75rem;
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid var(--pkpColor-border, #ddd);
 }
 
 .endorsementTable th {
   font-weight: 600;
-  background: #f9f9f9;
+  background: var(--pkpColor-tableHeader, #f9f9f9);
 }
 
 .endorsementOrcid {
   display: block;
   font-size: 0.85em;
-  color: #666;
+  color: var(--pkpColor-description, #666);
 }
 
 .endorsementEmailCount {
   font-size: 0.85em;
-  color: #999;
+  color: var(--pkpColor-description, #999);
 }
 
 .endorsementActions {
@@ -327,7 +274,7 @@ watch(
 }
 
 .endorsementTabEmpty {
-  color: #999;
+  color: var(--pkpColor-description, #999);
   font-style: italic;
 }
 </style>

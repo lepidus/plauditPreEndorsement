@@ -9,42 +9,52 @@
     </template>
     <PkpSideModalLayoutBasic>
       <div class="endorsementFormModal">
-        <div class="endorsementFormField">
-          <label for="endorserName">
-            {{ t("plugins.generic.plauditPreEndorsement.endorserName") }}
-            <span class="endorsementFormRequired">*</span>
-          </label>
-          <input
-            id="endorserName"
-            v-model="name"
-            type="text"
-            class="endorsementFormInput"
-            :class="{ 'endorsementFormInputError': errors.name }"
-          />
-          <span v-if="errors.name" class="endorsementFormError">
+        <div class="pkpFormField pkpFormField--text">
+          <div class="pkpFormField__heading">
+            <label class="pkpFormFieldLabel" for="endorserName">
+              {{ t("plugins.generic.plauditPreEndorsement.endorserName") }}
+              <span class="pkpFormFieldLabel__required">*</span>
+            </label>
+          </div>
+          <div class="pkpFormField__control">
+            <input
+              id="endorserName"
+              v-model="name"
+              type="text"
+              class="pkpFormField__input pkpFormField--text__input"
+              :aria-invalid="!!errors.name"
+              required
+            />
+          </div>
+          <div v-if="errors.name" class="pkpFormFieldError">
             {{ errors.name[0] }}
-          </span>
+          </div>
         </div>
 
-        <div class="endorsementFormField">
-          <label for="endorserEmail">
-            {{ t("plugins.generic.plauditPreEndorsement.emailColumnName") }}
-            <span class="endorsementFormRequired">*</span>
-          </label>
-          <input
-            id="endorserEmail"
-            v-model="email"
-            type="email"
-            class="endorsementFormInput"
-            :class="{ 'endorsementFormInputError': errors.email }"
-          />
-          <span v-if="errors.email" class="endorsementFormError">
+        <div class="pkpFormField pkpFormField--text">
+          <div class="pkpFormField__heading">
+            <label class="pkpFormFieldLabel" for="endorserEmail">
+              {{ t("plugins.generic.plauditPreEndorsement.emailColumnName") }}
+              <span class="pkpFormFieldLabel__required">*</span>
+            </label>
+          </div>
+          <div class="pkpFormField__control">
+            <input
+              id="endorserEmail"
+              v-model="email"
+              type="email"
+              class="pkpFormField__input pkpFormField--text__input"
+              :aria-invalid="!!errors.email"
+              required
+            />
+          </div>
+          <div v-if="errors.email" class="pkpFormFieldError">
             {{ errors.email[0] }}
-          </span>
+          </div>
         </div>
 
         <div class="endorsementFormActions">
-          <pkp-button :is-primary="true" @click="submitForm" :disabled="isSaving">
+          <pkp-button :is-primary="true" :disabled="isSaving" @click="submitForm">
             {{ t("common.save") }}
           </pkp-button>
           <pkp-button @click="closeModal">
@@ -104,7 +114,11 @@ async function submitForm() {
     : `endorsements/${props.submissionId}`;
 
   const { apiUrl } = useUrl(urlPath);
-  const { isSuccess, validationError, fetch: fetchSave } = useFetch(apiUrl, {
+  const {
+    isSuccess,
+    validationError,
+    fetch: fetchSave,
+  } = useFetch(apiUrl, {
     method: isEdit ? "PUT" : "POST",
     body: { name: name.value, email: email.value },
     expectValidationError: true,
@@ -124,8 +138,6 @@ async function submitForm() {
   }
   isSaving.value = false;
 }
-
-
 </script>
 
 <style scoped>
@@ -133,35 +145,12 @@ async function submitForm() {
   padding: 1rem;
 }
 
-.endorsementFormField {
+.endorsementFormModal .pkpFormField {
   margin-bottom: 1.5rem;
 }
 
-.endorsementFormField label {
-  display: block;
-  font-weight: 600;
-  margin-bottom: 0.5rem;
-}
-
-.endorsementFormRequired {
-  color: #d00;
-}
-
-.endorsementFormInput {
-  width: 100%;
-  padding: 0.5rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  font-size: 1rem;
-}
-
-.endorsementFormInputError {
-  border-color: #d00;
-}
-
-.endorsementFormError {
-  display: block;
-  color: #d00;
+.pkpFormFieldError {
+  color: var(--pkpColor-error, #d00);
   font-size: 0.85rem;
   margin-top: 0.25rem;
 }

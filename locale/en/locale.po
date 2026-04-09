@@ -247,3 +247,12 @@ msgstr "A submission endorsement has been added: {$endorserName} ({$endorserEmai
 
 msgid "plugins.generic.plauditPreEndorsement.log.invalidToken.decline"
 msgstr "The token used during the endorsement decline is not valid"
+
+msgid "plugins.generic.plauditPreEndorsement.api.submissionNotFound"
+msgstr "Submission not found."
+
+msgid "plugins.generic.plauditPreEndorsement.api.endorsementNotFound"
+msgstr "Endorsement not found."
+
+msgid "plugins.generic.plauditPreEndorsement.api.endorsementDeleted"
+msgstr "Endorsement deleted."

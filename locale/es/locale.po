@@ -247,3 +247,12 @@ msgstr "Se ha agregado un endoso de envío: {$endorserName} ({$endorserEmail})"
 
 msgid "plugins.generic.plauditPreEndorsement.log.invalidToken.decline"
 msgstr "El token utilizado durante el rechazo del endoso no es válido"
+
+msgid "plugins.generic.plauditPreEndorsement.api.submissionNotFound"
+msgstr "Envío no encontrado."
+
+msgid "plugins.generic.plauditPreEndorsement.api.endorsementNotFound"
+msgstr "Endoso no encontrado."
+
+msgid "plugins.generic.plauditPreEndorsement.api.endorsementDeleted"
+msgstr "Endoso eliminado."
