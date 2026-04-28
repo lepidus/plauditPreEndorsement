@@ -3,15 +3,15 @@
 namespace APP\plugins\generic\plauditPreEndorsement\classes\migration\upgrade;
 
 use Illuminate\Database\Migrations\Migration;
-use PKP\plugins\PluginRegistry;
+use APP\plugins\generic\plauditPreEndorsement\PlauditPreEndorsementPlugin;
 use APP\facades\Repo;
 
 class UpdateEmailTemplatesMigration extends Migration
 {
     public function up(): void
     {
-        PluginRegistry::loadCategory('generic');
-        $plugin = PluginRegistry::getPlugin('generic', 'plaudipreendorsementplugin');
+        $plugin = new PlauditPreEndorsementPlugin();
+        $plugin->pluginPath = 'plugins/generic/plauditPreEndorsement';
         $emailLocales = $this->getEmailLocales($plugin);
 
         $plugin->addLocaleData();

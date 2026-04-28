@@ -3,7 +3,6 @@
 namespace APP\plugins\generic\plauditPreEndorsement\classes\tasks;
 
 use PKP\scheduledTask\ScheduledTask;
-use PKP\plugins\PluginRegistry;
 use APP\core\Application;
 use APP\submission\Submission;
 use Illuminate\Support\Facades\DB;
@@ -12,6 +11,7 @@ use APP\plugins\generic\plauditPreEndorsement\classes\facades\Repo;
 use APP\plugins\generic\plauditPreEndorsement\classes\EndorsementService;
 use APP\plugins\generic\plauditPreEndorsement\classes\endorsement\Endorsement;
 use APP\plugins\generic\plauditPreEndorsement\classes\mail\builders\OrcidRequestEmailBuilder;
+use APP\plugins\generic\plauditPreEndorsement\PlauditPreEndorsementPlugin;
 
 class CheckEndorsements extends ScheduledTask
 {
@@ -19,8 +19,8 @@ class CheckEndorsements extends ScheduledTask
 
     public function executeActions()
     {
-        PluginRegistry::loadCategory('generic');
-        $plugin = PluginRegistry::getPlugin('generic', 'plauditpreendorsementplugin');
+        $plugin = new PlauditPreEndorsementPlugin();
+        $plugin->pluginPath = 'plugins/generic/plauditPreEndorsement';
         $contextDao = Application::getContextDAO();
         $contexts = $contextDao->getAll(true);
 
