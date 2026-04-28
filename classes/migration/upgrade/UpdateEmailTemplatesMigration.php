@@ -1,6 +1,6 @@
 <?php
 
-namespace APP\plugins\generic\plaudiPreEndorsement\classes\migrations;
+namespace APP\plugins\generic\plauditPreEndorsement\classes\migration\upgrade;
 
 use Illuminate\Database\Migrations\Migration;
 use PKP\plugins\PluginRegistry;
