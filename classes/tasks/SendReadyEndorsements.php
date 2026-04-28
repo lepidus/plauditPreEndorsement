@@ -17,24 +17,33 @@ class SendReadyEndorsements extends ScheduledTask
     {
         PluginRegistry::loadCategory('generic');
         $plugin = PluginRegistry::getPlugin('generic', 'plauditpreendorsementplugin');
-        $context = Application::get()->getRequest()->getContext();
+        $contextDao = Application::getContextDAO();
+        $contexts = $contextDao->getAll(true);
+
+        while ($context = $contexts->next()) {
+            $this->sendReadyEndorsementsFromContext($plugin, $context->getId());
+        }
+
+        return true;
+    }
+
+    private function sendReadyEndorsementsFromContext($plugin, $contextId)
+    {
         $readyEndorsements = Repo::endorsement()->getCollector()
-            ->filterByContextIds([$context->getId()])
+            ->filterByContextIds([$contextId])
             ->filterByStatus([Endorsement::STATUS_CONFIRMED])
             ->getMany()
             ->toArray();
 
+        $endorsementService = new EndorsementService($contextId, $plugin);
         foreach ($readyEndorsements as $endorsement) {
             $submissionStatus = $this->getEndorsementSubmissionStatus($endorsement);
             if (is_null($submissionStatus) || $submissionStatus != Submission::STATUS_PUBLISHED) {
                 continue;
             }
 
-            $endorsementService = new EndorsementService($context->getId(), $plugin);
             $endorsementService->sendEndorsement($endorsement, true);
         }
-
-        return true;
     }
 
     private function getEndorsementSubmissionStatus($endorsement)
