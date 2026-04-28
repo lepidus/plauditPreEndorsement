@@ -21,12 +21,22 @@ class CheckEndorsements extends ScheduledTask
     {
         PluginRegistry::loadCategory('generic');
         $plugin = PluginRegistry::getPlugin('generic', 'plauditpreendorsementplugin');
-        $context = Application::get()->getRequest()->getContext();
+        $contextDao = Application::getContextDAO();
+        $contexts = $contextDao->getAll(true);
+
+        while ($context = $contexts->next()) {
+            $this->checkEndorsementsFromContext($plugin, $context->getId());
+        }
+
+        return true;
+    }
+
+    private function checkEndorsementsFromContext($plugin, $contextId)
+    {
         $endorsements = Repo::endorsement()->getCollector()
-            ->filterByContextIds([$context->getId()])
+            ->filterByContextIds([$contextId])
             ->filterByStatus([Endorsement::STATUS_NOT_CONFIRMED, Endorsement::STATUS_CONFIRMED])
-            ->getMany()
-            ->toArray();
+            ->getMany();
 
         foreach ($endorsements as $endorsement) {
             $authorsEmails = $this->getPublicationAuthorsEmails($endorsement->getPublicationId());
@@ -42,7 +52,7 @@ class CheckEndorsements extends ScheduledTask
             }
 
             if ($endorsement->getStatus() == Endorsement::STATUS_CONFIRMED) {
-                $this->checkEndorsementOrcid($endorsement, $context, $plugin);
+                $this->checkEndorsementOrcid($endorsement, $contextId, $plugin);
             }
 
             if ($endorsement->getStatus() == Endorsement::STATUS_NOT_CONFIRMED) {
@@ -53,9 +63,9 @@ class CheckEndorsements extends ScheduledTask
         return true;
     }
 
-    private function checkEndorsementOrcid($endorsement, $context, $plugin)
+    private function checkEndorsementOrcid($endorsement, $contextId, $plugin)
     {
-        $endorsementService = new EndorsementService($context->getId(), $plugin);
+        $endorsementService = new EndorsementService($contextId, $plugin);
         $publication = Repo::publication()->get($endorsement->getPublicationId());
         $validationMessage = $endorsementService->validateEndorsementSending($endorsement, $publication);
 
