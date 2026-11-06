@@ -15,6 +15,7 @@ use PKP\security\Role;
 use APP\plugins\generic\plauditPreEndorsement\controllers\grid\form\EndorsementForm;
 use PKP\plugins\PluginRegistry;
 use APP\plugins\generic\plauditPreEndorsement\classes\facades\Repo;
+use APP\plugins\generic\plauditPreEndorsement\classes\endorsement\Endorsement;
 use APP\plugins\generic\plauditPreEndorsement\classes\EndorsementService;
 use APP\notification\NotificationManager;
 
@@ -27,7 +28,11 @@ class EndorsementGridHandler extends GridHandler
         parent::__construct();
         $this->addRoleAssignment(
             array(Role::ROLE_ID_MANAGER, Role::ROLE_ID_SUB_EDITOR, Role::ROLE_ID_ASSISTANT, Role::ROLE_ID_AUTHOR),
-            array('fetchGrid', 'fetchRow', 'addEndorsement', 'editEndorsement', 'updateEndorsement', 'deleteEndorsement', 'sendEndorsementManually')
+            array('fetchGrid', 'fetchRow', 'addEndorsement', 'editEndorsement', 'updateEndorsement', 'deleteEndorsement')
+        );
+        $this->addRoleAssignment(
+            array(Role::ROLE_ID_MANAGER, Role::ROLE_ID_SUB_EDITOR, Role::ROLE_ID_ASSISTANT),
+            array('sendEndorsementManually')
         );
         $this->plugin = PluginRegistry::getPlugin('generic', PLAUDIT_PRE_ENDORSEMENT_PLUGIN_NAME);
     }
@@ -40,6 +45,35 @@ class EndorsementGridHandler extends GridHandler
     public function getSubmission()
     {
         return $this->getAuthorizedContextObject(Application::ASSOC_TYPE_SUBMISSION);
+    }
+
+    public static function endorsementBelongsToSubmission(?Endorsement $endorsement, $submission): bool
+    {
+        if (is_null($endorsement) || is_null($submission)) {
+            return false;
+        }
+
+        foreach ($submission->getData('publications') ?? [] as $publication) {
+            if ((int) $publication->getId() === (int) $endorsement->getPublicationId()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function getSubmissionEndorsement($rowId, $contextId): ?Endorsement
+    {
+        if (!ctype_digit((string) $rowId)) {
+            return null;
+        }
+
+        $endorsement = Repo::endorsement()->get((int) $rowId, $contextId);
+        if (!self::endorsementBelongsToSubmission($endorsement, $this->getSubmission())) {
+            return null;
+        }
+
+        return $endorsement;
     }
 
     public function authorize($request, &$args, $roleAssignments)
@@ -133,8 +167,10 @@ class EndorsementGridHandler extends GridHandler
     public function sendEndorsementManually($args, $request)
     {
         $contextId = $request->getContext()->getId();
-        $rowId = $request->getUserVar('rowId');
-        $endorsement = Repo::endorsement()->get((int)$rowId, $contextId);
+        $endorsement = $this->getSubmissionEndorsement($request->getUserVar('rowId'), $contextId);
+        if (is_null($endorsement)) {
+            return new JSONMessage(false);
+        }
         $user = $request->getUser();
 
         $endorsementService = new EndorsementService($contextId, $this->plugin);
@@ -157,6 +193,9 @@ class EndorsementGridHandler extends GridHandler
         $submission = $this->getSubmission();
         $submissionId = $submission->getId();
         $rowId = $args['rowId'] ?? null;
+        if (!empty($rowId) && is_null($this->getSubmissionEndorsement($rowId, $context->getId()))) {
+            return new JSONMessage(false);
+        }
 
         $this->setupTemplate($request);
 
@@ -172,6 +211,9 @@ class EndorsementGridHandler extends GridHandler
         $submission = $this->getSubmission();
         $submissionId = $submission->getId();
         $rowId = $args['rowId'] ?? null;
+        if (!empty($rowId) && is_null($this->getSubmissionEndorsement($rowId, $context->getId()))) {
+            return new JSONMessage(false);
+        }
 
         $this->setupTemplate($request);
 
@@ -193,8 +235,10 @@ class EndorsementGridHandler extends GridHandler
         $context = $request->getContext();
         $submission = $this->getSubmission();
         $submissionId = $submission->getId();
-        $rowId = $request->getUserVar('rowId');
-        $endorsement = Repo::endorsement()->get((int)$rowId, $context->getId());
+        $endorsement = $this->getSubmissionEndorsement($request->getUserVar('rowId'), $context->getId());
+        if (is_null($endorsement)) {
+            return new JSONMessage(false);
+        }
         Repo::endorsement()->delete($endorsement);
         $this->plugin->writeOnActivityLog(
             $submission->getId(),
