@@ -22,6 +22,18 @@ class OrcidCredentialsValidator
         return $valid;
     }
 
+    public function validateApiPath($apiPath): bool
+    {
+        $allowedApiPaths = [
+            OrcidClient::ORCID_API_URL_PUBLIC,
+            OrcidClient::ORCID_API_URL_PUBLIC_SANDBOX,
+            OrcidClient::ORCID_API_URL_MEMBER,
+            OrcidClient::ORCID_API_URL_MEMBER_SANDBOX,
+        ];
+
+        return is_string($apiPath) && in_array($apiPath, $allowedApiPaths, true);
+    }
+
     public static function hasCredentials($plugin, $contextId): bool
     {
         $hasClientId = !empty($plugin->getSetting($contextId, 'orcidClientId'));

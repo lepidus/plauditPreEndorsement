@@ -18,7 +18,6 @@ use PKP\form\Form;
 use APP\template\TemplateManager;
 use APP\core\Application;
 use PKP\config\Config;
-use PKP\form\validation\FormValidator;
 use PKP\form\validation\FormValidatorPost;
 use PKP\form\validation\FormValidatorCSRF;
 use PKP\form\validation\FormValidatorCustom;
@@ -51,8 +50,12 @@ class SettingsForm extends Form
         $this->addCheck(new FormValidatorPost($this));
         $this->addCheck(new FormValidatorCSRF($this));
 
+        $orcidAPIPathCheckType = $this->orcidIsGloballyConfigured() ? 'optional' : 'required';
+        $this->addCheck(new FormValidatorCustom($this, 'orcidAPIPath', $orcidAPIPathCheckType, 'plugins.generic.plauditPreEndorsement.settings.orcidAPIPathRequired', function ($apiPath) {
+            return $this->validator->validateApiPath($apiPath);
+        }));
+
         if (!$this->orcidIsGloballyConfigured()) {
-            $this->addCheck(new FormValidator($this, 'orcidAPIPath', 'required', 'plugins.generic.plauditPreEndorsement.settings.orcidAPIPathRequired'));
             $this->addCheck(new FormValidatorCustom($this, 'orcidClientId', 'required', 'plugins.generic.plauditPreEndorsement.settings.orcidClientIdError', function ($clientId) {
                 return $this->validator->validateClientId($clientId);
             }));
