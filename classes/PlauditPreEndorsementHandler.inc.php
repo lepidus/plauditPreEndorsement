@@ -11,14 +11,45 @@ define('AUTH_ACCESS_DENIED', 'access_denied');
 
 class PlauditPreEndorsementHandler extends Handler
 {
+    public const EDITORIAL_ROLES = [ROLE_ID_MANAGER, ROLE_ID_SUB_EDITOR, ROLE_ID_ASSISTANT];
+    public const SUBMISSION_OPERATIONS = ['updateEndorser', 'removeEndorsement', 'sendEndorsementManually'];
+
+    public function authorize($request, &$args, $roleAssignments)
+    {
+        $operation = $request->getRouter()->getRequestedOp($request);
+
+        if (in_array($operation, self::SUBMISSION_OPERATIONS, true)) {
+            $this->addRoleAssignment(array_merge(self::EDITORIAL_ROLES, [ROLE_ID_AUTHOR]), ['updateEndorser']);
+            $this->addRoleAssignment(self::EDITORIAL_ROLES, ['removeEndorsement', 'sendEndorsementManually']);
+
+            import('lib.pkp.classes.security.authorization.SubmissionAccessPolicy');
+            $this->addPolicy(new SubmissionAccessPolicy($request, $args, $this->getRoleAssignments()));
+        }
+
+        return parent::authorize($request, $args, $roleAssignments);
+    }
+
+    private function isValidPostRequest($request): bool
+    {
+        return $request->isPost() && $request->checkCSRF();
+    }
+
+    private function getAuthorizedSubmission()
+    {
+        return $this->getAuthorizedContextObject(ASSOC_TYPE_SUBMISSION);
+    }
+
     public function updateEndorser($args, $request)
     {
+        if (!$this->isValidPostRequest($request)) {
+            return http_response_code(403);
+        }
+
         $plugin = new PlauditPreEndorsementPlugin();
-        $submissionId = $request->getUserVar('submissionId');
         $endorserName = $request->getUserVar('endorserName');
         $endorserEmail = $request->getUserVar('endorserEmail');
 
-        $submission = DAORegistry::getDAO('SubmissionDAO')->getById($submissionId);
+        $submission = $this->getAuthorizedSubmission();
         $publication = $submission->getCurrentPublication();
 
         $endorsementIsConfirmed = $publication->getData('endorsementStatus') == ENDORSEMENT_STATUS_CONFIRMED;
@@ -67,8 +98,11 @@ class PlauditPreEndorsementHandler extends Handler
 
     public function removeEndorsement($args, $request)
     {
-        $submissionId = $request->getUserVar('submissionId');
-        $submission = DAORegistry::getDAO('SubmissionDAO')->getById($submissionId);
+        if (!$this->isValidPostRequest($request)) {
+            return http_response_code(403);
+        }
+
+        $submission = $this->getAuthorizedSubmission();
         $publication = $submission->getCurrentPublication();
 
         $endorsementFields = [
@@ -95,8 +129,11 @@ class PlauditPreEndorsementHandler extends Handler
 
     public function sendEndorsementManually($args, $request)
     {
-        $submissionId = $request->getUserVar('submissionId');
-        $submission = DAORegistry::getDAO('SubmissionDAO')->getById($submissionId);
+        if (!$this->isValidPostRequest($request)) {
+            return http_response_code(403);
+        }
+
+        $submission = $this->getAuthorizedSubmission();
         $publication = $submission->getCurrentPublication();
         $plugin = PluginRegistry::getPlugin('generic', 'plauditpreendorsementplugin');
 

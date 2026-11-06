@@ -75,6 +75,7 @@
             "{$updateEndorserUrl}",
             {ldelim}
                 submissionId: {$submissionId},
+                csrfToken: {csrf type="json"},
                 endorserName: $('input[name=endorserNameWorkflow]').val(),
                 endorserEmail: $('input[name=endorserEmailWorkflow]').val()
             {rdelim}
@@ -101,7 +102,8 @@
         $.post(
             "{$sendEndorsementManuallyUrl}",
             {ldelim}
-                submissionId: {$submissionId}
+                submissionId: {$submissionId},
+                csrfToken: {csrf type="json"}
             {rdelim},
             sendEndorsementManuallySuccess()
         );
@@ -119,7 +121,8 @@
         $.post(
             "{$removeEndorsementUrl}",
             {ldelim}
-                submissionId: {$submissionId}
+                submissionId: {$submissionId},
+                csrfToken: {csrf type="json"}
             {rdelim}
         );
     {rdelim}
