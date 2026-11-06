@@ -1,6 +1,7 @@
 <?php
 
 use APP\publication\Publication;
+use APP\submission\Submission;
 use APP\core\Request;
 use APP\plugins\generic\plauditPreEndorsement\classes\endorsement\Endorsement;
 use APP\plugins\generic\plauditPreEndorsement\classes\PlauditPreEndorsementHandler;
@@ -119,5 +120,66 @@ final class PlauditPreEndorsementHandlerTest extends TestCase
     {
         $result = $this->verifyEndorsementAuth($this->endorsementEmailToken, $this->firstEndorsement, 'access_denied');
         $this->assertEquals(PlauditPreEndorsementHandler::AUTH_ACCESS_DENIED, $result);
+    }
+
+    private function createBindingFixture(): array
+    {
+        $submission = new Submission();
+        $submission->setId(10);
+        $submission->setData('contextId', 1);
+
+        $endorsementPublication = new Publication();
+        $endorsementPublication->setId(20);
+        $endorsementPublication->setData('submissionId', 10);
+
+        $newerPublication = new Publication();
+        $newerPublication->setId(21);
+        $newerPublication->setData('submissionId', 10);
+
+        $endorsement = Repo::endorsement()->newDataObject(['contextId' => 1, 'publicationId' => 20]);
+
+        return [$endorsement, $endorsementPublication, $newerPublication, $submission];
+    }
+
+    public function testEndorsementOfRequestedPublicationIsAccepted(): void
+    {
+        [$endorsement, $endorsementPublication, $newerPublication, $submission] = $this->createBindingFixture();
+
+        $this->assertTrue(PlauditPreEndorsementHandler::endorsementMatchesPublication($endorsement, $endorsementPublication, $endorsementPublication, $submission, 1));
+        $this->assertTrue(PlauditPreEndorsementHandler::endorsementMatchesPublication($endorsement, $newerPublication, $endorsementPublication, $submission, 1));
+    }
+
+    public function testPublicationOfAnotherSubmissionIsRejected(): void
+    {
+        [$endorsement, $endorsementPublication, , $submission] = $this->createBindingFixture();
+        $otherPublication = new Publication();
+        $otherPublication->setId(30);
+        $otherPublication->setData('submissionId', 11);
+        $otherSubmission = new Submission();
+        $otherSubmission->setId(11);
+        $otherSubmission->setData('contextId', 1);
+
+        $this->assertFalse(PlauditPreEndorsementHandler::endorsementMatchesPublication($endorsement, $otherPublication, $endorsementPublication, $otherSubmission, 1));
+        $this->assertFalse(PlauditPreEndorsementHandler::endorsementMatchesPublication($endorsement, $otherPublication, $endorsementPublication, $submission, 1));
+    }
+
+    public function testEndorsementOrSubmissionOfAnotherContextIsRejected(): void
+    {
+        [$endorsement, $endorsementPublication, , $submission] = $this->createBindingFixture();
+
+        $this->assertFalse(PlauditPreEndorsementHandler::endorsementMatchesPublication($endorsement, $endorsementPublication, $endorsementPublication, $submission, 2));
+
+        $submission->setData('contextId', 2);
+        $this->assertFalse(PlauditPreEndorsementHandler::endorsementMatchesPublication($endorsement, $endorsementPublication, $endorsementPublication, $submission, 1));
+    }
+
+    public function testMissingEndorsementDataIsRejected(): void
+    {
+        [$endorsement, $endorsementPublication, , $submission] = $this->createBindingFixture();
+
+        $this->assertFalse(PlauditPreEndorsementHandler::endorsementMatchesPublication(null, $endorsementPublication, $endorsementPublication, $submission, 1));
+        $this->assertFalse(PlauditPreEndorsementHandler::endorsementMatchesPublication($endorsement, null, $endorsementPublication, $submission, 1));
+        $this->assertFalse(PlauditPreEndorsementHandler::endorsementMatchesPublication($endorsement, $endorsementPublication, null, $submission, 1));
+        $this->assertFalse(PlauditPreEndorsementHandler::endorsementMatchesPublication($endorsement, $endorsementPublication, $endorsementPublication, null, 1));
     }
 }
