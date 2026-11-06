@@ -166,6 +166,10 @@ class EndorsementGridHandler extends GridHandler
 
     public function sendEndorsementManually($args, $request)
     {
+        if (!$request->isPost() || !$request->checkCSRF()) {
+            return new JSONMessage(false);
+        }
+
         $contextId = $request->getContext()->getId();
         $endorsement = $this->getSubmissionEndorsement($request->getUserVar('rowId'), $contextId);
         if (is_null($endorsement)) {
@@ -232,6 +236,10 @@ class EndorsementGridHandler extends GridHandler
 
     public function deleteEndorsement($args, $request)
     {
+        if (!$request->isPost() || !$request->checkCSRF()) {
+            return new JSONMessage(false);
+        }
+
         $context = $request->getContext();
         $submission = $this->getSubmission();
         $submissionId = $submission->getId();

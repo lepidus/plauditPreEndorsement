@@ -2,6 +2,7 @@
 
 namespace APP\plugins\generic\plauditPreEndorsement\tests;
 
+use APP\core\Request;
 use APP\publication\Publication;
 use APP\submission\Submission;
 use PHPUnit\Framework\TestCase;
@@ -72,6 +73,37 @@ class EndorsementGridHandlerTest extends TestCase
         $this->assertNotContains('sendEndorsementManually', $handler->getRoleAssignment(Role::ROLE_ID_AUTHOR));
         foreach ([Role::ROLE_ID_MANAGER, Role::ROLE_ID_SUB_EDITOR, Role::ROLE_ID_ASSISTANT] as $roleId) {
             $this->assertContains('sendEndorsementManually', $handler->getRoleAssignment($roleId));
+        }
+    }
+
+    private function createRequest(bool $isPost, bool $validCsrf)
+    {
+        $request = $this->getMockBuilder(Request::class)
+            ->onlyMethods(['isPost', 'checkCSRF', 'getUserVar', 'getContext'])
+            ->getMock();
+        $request->method('isPost')->willReturn($isPost);
+        $request->method('checkCSRF')->willReturn($validCsrf);
+        $request->method('getUserVar')->willReturn('100');
+        $request->expects($this->never())->method('getContext');
+
+        return $request;
+    }
+
+    public function testStateChangingRowActionsRequirePostWithCsrfToken(): void
+    {
+        $invalidRequests = [[false, false], [false, true], [true, false]];
+
+        foreach (['deleteEndorsement', 'sendEndorsementManually'] as $operation) {
+            foreach ($invalidRequests as [$isPost, $validCsrf]) {
+                $handler = $this->getMockBuilder(EndorsementGridHandler::class)
+                    ->onlyMethods(['getSubmission'])
+                    ->getMock();
+                $handler->expects($this->never())->method('getSubmission');
+
+                $response = $handler->$operation([], $this->createRequest($isPost, $validCsrf));
+
+                $this->assertFalse($response->getStatus(), $operation);
+            }
         }
     }
 }
