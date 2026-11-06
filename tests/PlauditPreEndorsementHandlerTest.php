@@ -77,6 +77,44 @@ final class PlauditPreEndorsementHandlerTest extends TestCase
         $this->assertEquals(PlauditPreEndorsementHandler::AUTH_INVALID_TOKEN, $result);
     }
 
+    public function testEndorsementWithoutTokenIsRejectedWhenStoredTokenIsNull(): void
+    {
+        $this->firstEndorsement->setEmailToken(null);
+
+        $this->assertEquals(PlauditPreEndorsementHandler::AUTH_INVALID_TOKEN, $this->verifyEndorsementAuth(null, $this->firstEndorsement));
+        $this->assertEquals(PlauditPreEndorsementHandler::AUTH_INVALID_TOKEN, $this->verifyEndorsementAuth('', $this->firstEndorsement));
+    }
+
+    public function testEndorsementWithEmptyTokenIsRejectedWhenStoredTokenIsEmpty(): void
+    {
+        $this->firstEndorsement->setEmailToken('');
+
+        $this->assertEquals(PlauditPreEndorsementHandler::AUTH_INVALID_TOKEN, $this->verifyEndorsementAuth('', $this->firstEndorsement));
+        $this->assertEquals(PlauditPreEndorsementHandler::AUTH_INVALID_TOKEN, $this->verifyEndorsementAuth(null, $this->firstEndorsement));
+    }
+
+    public function testEndorsementTokenMustBeAString(): void
+    {
+        $result = $this->verifyEndorsementAuth([$this->endorsementEmailToken], $this->firstEndorsement);
+        $this->assertEquals(PlauditPreEndorsementHandler::AUTH_INVALID_TOKEN, $result);
+    }
+
+    public function testEndorsementTokenIsComparedStrictly(): void
+    {
+        $this->firstEndorsement->setEmailToken('0e462097431906509019562988736854');
+
+        $result = $this->verifyEndorsementAuth('0e830400451993494058024219903391', $this->firstEndorsement);
+        $this->assertEquals(PlauditPreEndorsementHandler::AUTH_INVALID_TOKEN, $result);
+    }
+
+    public function testDeniedAccessWithoutValidTokenIsRejected(): void
+    {
+        $this->firstEndorsement->setEmailToken(null);
+
+        $result = $this->verifyEndorsementAuth(null, $this->firstEndorsement, 'access_denied');
+        $this->assertEquals(PlauditPreEndorsementHandler::AUTH_INVALID_TOKEN, $result);
+    }
+
     public function testEndorsementAutheticationHasAccessDenied(): void
     {
         $result = $this->verifyEndorsementAuth($this->endorsementEmailToken, $this->firstEndorsement, 'access_denied');
