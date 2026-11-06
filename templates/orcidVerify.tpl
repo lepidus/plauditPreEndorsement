@@ -24,7 +24,7 @@
         {else}
             <div class="orcid-failure">
                 {if isset($orcidAPIError)}
-                    {$orcidAPIError}
+                    {$orcidAPIError|escape}
                 {/if}    
                 
                 {translate key="plugins.generic.plauditPreEndorsement.verify.{$errorType}"}
