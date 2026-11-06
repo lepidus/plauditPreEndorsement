@@ -152,12 +152,21 @@ class PlauditPreEndorsementHandler extends Handler
 
     public function getStatusAuthentication($endorsement, $request)
     {
-        if ($request->getUserVar('token') != $endorsement->getEmailToken()) {
+        if (!$this->tokenIsValid($endorsement->getEmailToken(), $request->getUserVar('token'))) {
             return self::AUTH_INVALID_TOKEN;
         } elseif ($request->getUserVar('error') == 'access_denied') {
             return self::AUTH_ACCESS_DENIED;
         } else {
             return self::AUTH_SUCCESS;
         }
+    }
+
+    private function tokenIsValid($storedToken, $receivedToken): bool
+    {
+        if (!is_string($storedToken) || $storedToken === '' || !is_string($receivedToken)) {
+            return false;
+        }
+
+        return hash_equals($storedToken, $receivedToken);
     }
 }
