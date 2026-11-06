@@ -2,6 +2,7 @@
 
 import('classes.journal.Journal');
 import('classes.publication.Publication');
+import('classes.submission.Submission');
 import('classes.core.Request');
 import('plugins.generic.plauditPreEndorsement.PlauditPreEndorsementPlugin');
 import('plugins.generic.plauditPreEndorsement.classes.PlauditPreEndorsementHandler');
@@ -102,5 +103,37 @@ final class PlauditPreEndorsementHandlerTest extends TestCase
     {
         $result = $this->verifyEndorserAuth($this->endorserEmailToken, 'access_denied');
         $this->assertEquals(AUTH_ACCESS_DENIED, $result);
+    }
+
+    private function createSubmission(int $submissionId, int $contextId): Submission
+    {
+        $submission = new Submission();
+        $submission->setId($submissionId);
+        $submission->setData('contextId', $contextId);
+
+        return $submission;
+    }
+
+    public function testPublicationOfRequestContextIsAccepted(): void
+    {
+        $this->publication->setData('submissionId', 10);
+
+        $this->assertTrue(PlauditPreEndorsementHandler::publicationBelongsToContext($this->publication, $this->createSubmission(10, 1), 1));
+    }
+
+    public function testPublicationOfAnotherContextIsRejected(): void
+    {
+        $this->publication->setData('submissionId', 10);
+
+        $this->assertFalse(PlauditPreEndorsementHandler::publicationBelongsToContext($this->publication, $this->createSubmission(10, 2), 1));
+    }
+
+    public function testMissingPublicationOrSubmissionIsRejected(): void
+    {
+        $this->publication->setData('submissionId', 10);
+
+        $this->assertFalse(PlauditPreEndorsementHandler::publicationBelongsToContext(null, $this->createSubmission(10, 1), 1));
+        $this->assertFalse(PlauditPreEndorsementHandler::publicationBelongsToContext($this->publication, null, 1));
+        $this->assertFalse(PlauditPreEndorsementHandler::publicationBelongsToContext($this->publication, $this->createSubmission(11, 1), 1));
     }
 }

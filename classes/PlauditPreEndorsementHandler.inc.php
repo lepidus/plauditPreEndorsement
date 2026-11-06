@@ -153,12 +153,15 @@ class PlauditPreEndorsementHandler extends Handler
 
     public function orcidVerify($args, $request)
     {
-        $publicationDao = DAORegistry::getDAO('PublicationDAO');
-        $publication = $publicationDao->getById($request->getUserVar('state'));
-        $submission = DAORegistry::getDAO('SubmissionDAO')->getById($publication->getData('submissionId'));
-
         $plugin = PluginRegistry::getPlugin('generic', 'plauditpreendorsementplugin');
         $contextId = $request->getContext()->getId();
+
+        $publication = $this->getRequestedPublication($request->getUserVar('state'));
+        $submission = $publication ? DAORegistry::getDAO('SubmissionDAO')->getById($publication->getData('submissionId')) : null;
+        if (!self::publicationBelongsToContext($publication, $submission, $contextId)) {
+            $this->displayTemplate($request, ['errorType' => 'invalidToken']);
+            return;
+        }
 
         $statusAuth = $this->getStatusAuthentication($publication, $request);
         if ($statusAuth == AUTH_INVALID_TOKEN) {
@@ -176,6 +179,9 @@ class PlauditPreEndorsementHandler extends Handler
             $orcid = $orcidClient->requestOrcid($code);
         } catch (GuzzleHttp\Exception\RequestException  $exception) {
             $this->logMessageAndDisplayTemplate($submission, $request, 'plugins.generic.plauditPreEndorsement.log.orcidRequestError', ['errorType' => 'failure', 'orcidAPIError' => $exception->getMessage()]);
+            return;
+        } catch (InvalidArgumentException $exception) {
+            $this->logMessageAndDisplayTemplate($submission, $request, 'plugins.generic.plauditPreEndorsement.log.orcidRequestError', ['errorType' => 'failure']);
             return;
         }
 
@@ -208,12 +214,36 @@ class PlauditPreEndorsementHandler extends Handler
         }
     }
 
+    private function getRequestedPublication($publicationId)
+    {
+        if (!is_string($publicationId) || !ctype_digit($publicationId)) {
+            return null;
+        }
+
+        return DAORegistry::getDAO('PublicationDAO')->getById((int) $publicationId);
+    }
+
+    public static function publicationBelongsToContext($publication, $submission, $contextId): bool
+    {
+        if (!$publication || !$submission) {
+            return false;
+        }
+
+        return (int) $publication->getData('submissionId') === (int) $submission->getId()
+            && (int) $submission->getData('contextId') === (int) $contextId;
+    }
+
     private function logMessageAndDisplayTemplate($submission, $request, string $message, array $data)
     {
         $plugin = PluginRegistry::getPlugin('generic', 'plauditpreendorsementplugin');
-        $templatePath = $plugin->getTemplateResource('orcidVerify.tpl');
-
         $plugin->writeOnActivityLog($submission, $message, $data);
+        $this->displayTemplate($request, $data);
+    }
+
+    private function displayTemplate($request, array $data)
+    {
+        $plugin = PluginRegistry::getPlugin('generic', 'plauditpreendorsementplugin');
+        $templatePath = $plugin->getTemplateResource('orcidVerify.tpl');
 
         $context = $request->getContext();
         $data['contactEmail'] = $context->getData('contactEmail');
