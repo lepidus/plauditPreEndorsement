@@ -25,6 +25,16 @@ class EndorsementController extends PKPBaseController
         Role::ROLE_ID_ASSISTANT,
     ];
 
+    private const UNRESTRICTED_ROLES = [
+        Role::ROLE_ID_SITE_ADMIN,
+        Role::ROLE_ID_MANAGER,
+    ];
+
+    private const ASSIGNMENT_BASED_EDITORIAL_ROLES = [
+        Role::ROLE_ID_SUB_EDITOR,
+        Role::ROLE_ID_ASSISTANT,
+    ];
+
     public function getHandlerPath(): string
     {
         return 'endorsements';
@@ -207,9 +217,11 @@ class EndorsementController extends PKPBaseController
     }
 
     /**
-     * Loads the submission from the route and enforces access control:
+     * Loads the submission from the route and enforces access control
+     * (parity with the core SubmissionAccessPolicy):
      * - must exist and belong to the current context
-     * - editorial roles pass through
+     * - site admins and managers pass through
+     * - sub editors and assistants must be assigned to this submission
      * - authors must have a stage assignment on this submission
      * - if $editorialOnly is true, authors are rejected outright
      */
@@ -234,26 +246,11 @@ class EndorsementController extends PKPBaseController
         }
 
         $userRoles = (array) ($this->getAuthorizedContextObject(Application::ASSOC_TYPE_USER_ROLES) ?? []);
-        $hasEditorialRole = !empty(array_intersect($userRoles, self::EDITORIAL_ROLES));
+        $hasUnrestrictedRole = !empty(array_intersect($userRoles, self::UNRESTRICTED_ROLES));
+        $assignedWorkflowRoles = $hasUnrestrictedRole ? [] : $this->getAssignedWorkflowRoles($submission, $user->getId(), $userRoles);
+        $isAssignedAuthor = !$hasUnrestrictedRole && !$editorialOnly && $this->isAssignedAuthor($submission, $user->getId());
 
-        if ($hasEditorialRole) {
-            return $submission;
-        }
-
-        if ($editorialOnly) {
-            return response()->json(
-                ['error' => __('api.403.unauthorized')],
-                Response::HTTP_FORBIDDEN
-            );
-        }
-
-        $isAssignedAuthor = StageAssignment::withSubmissionIds([$submission->getId()])
-            ->withRoleIds([Role::ROLE_ID_AUTHOR])
-            ->withUserId($user->getId())
-            ->get()
-            ->isNotEmpty();
-
-        if (!$isAssignedAuthor) {
+        if (!self::canAccessSubmission($userRoles, $assignedWorkflowRoles, $isAssignedAuthor, $editorialOnly)) {
             return response()->json(
                 ['error' => __('api.403.unauthorized')],
                 Response::HTTP_FORBIDDEN
@@ -261,6 +258,60 @@ class EndorsementController extends PKPBaseController
         }
 
         return $submission;
+    }
+
+    /**
+     * Access decision for an existing submission of the current context.
+     *
+     * @param int[] $userRoles Roles of the user in the current context
+     * @param int[] $assignedWorkflowRoles Roles with which the user is assigned to the submission
+     */
+    public static function canAccessSubmission(array $userRoles, array $assignedWorkflowRoles, bool $isAssignedAuthor, bool $editorialOnly = false): bool
+    {
+        if (!empty(array_intersect($userRoles, self::UNRESTRICTED_ROLES))) {
+            return true;
+        }
+
+        $assignedEditorialRoles = array_intersect(
+            $userRoles,
+            $assignedWorkflowRoles,
+            self::ASSIGNMENT_BASED_EDITORIAL_ROLES
+        );
+        if (!empty($assignedEditorialRoles)) {
+            return true;
+        }
+
+        if ($editorialOnly) {
+            return false;
+        }
+
+        return in_array(Role::ROLE_ID_AUTHOR, $userRoles) && $isAssignedAuthor;
+    }
+
+    private function getAssignedWorkflowRoles(Submission $submission, int $userId, array $userRoles): array
+    {
+        $accessibleWorkflowStages = \APP\facades\Repo::user()->getAccessibleWorkflowStages(
+            $userId,
+            $this->getContextId(),
+            $submission,
+            $userRoles
+        );
+
+        $assignedRoles = [];
+        foreach ($accessibleWorkflowStages as $stageRoles) {
+            $assignedRoles = array_merge($assignedRoles, $stageRoles);
+        }
+
+        return array_values(array_unique($assignedRoles));
+    }
+
+    private function isAssignedAuthor(Submission $submission, int $userId): bool
+    {
+        return StageAssignment::withSubmissionIds([$submission->getId()])
+            ->withRoleIds([Role::ROLE_ID_AUTHOR])
+            ->withUserId($userId)
+            ->get()
+            ->isNotEmpty();
     }
 
     /**
