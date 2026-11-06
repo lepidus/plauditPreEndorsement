@@ -39,8 +39,12 @@ class PlauditPreEndorsementSettingsForm extends Form
         $this->addCheck(new FormValidatorPost($this));
         $this->addCheck(new FormValidatorCSRF($this));
 
+        $orcidAPIPathCheckType = $this->plugin->orcidIsGloballyConfigured() ? 'optional' : 'required';
+        $this->addCheck(new FormValidatorCustom($this, 'orcidAPIPath', $orcidAPIPathCheckType, 'plugins.generic.plauditPreEndorsement.settings.orcidAPIPathRequired', function ($apiPath) {
+            return $this->validator->validateApiPath($apiPath);
+        }));
+
         if (!$this->plugin->orcidIsGloballyConfigured()) {
-            $this->addCheck(new FormValidator($this, 'orcidAPIPath', 'required', 'plugins.generic.plauditPreEndorsement.settings.orcidAPIPathRequired'));
             $this->addCheck(new FormValidatorCustom($this, 'orcidClientId', 'required', 'plugins.generic.plauditPreEndorsement.settings.orcidClientIdError', function ($clientId) {
                 return $this->validator->validateClientId($clientId);
             }));

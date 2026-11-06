@@ -1,5 +1,7 @@
 <?php
 
+import('plugins.generic.plauditPreEndorsement.classes.OrcidCredentialsValidator');
+
 class OrcidClient
 {
     private $plugin;
@@ -11,11 +13,22 @@ class OrcidClient
         $this->contextId = $contextId;
     }
 
+    private function getApiPath(): string
+    {
+        $apiPath = $this->plugin->getSetting($this->contextId, 'orcidAPIPath');
+        $validator = new OrcidCredentialsValidator();
+        if (!$validator->validateApiPath($apiPath)) {
+            throw new InvalidArgumentException('The configured ORCID API path is not an official ORCID API URL');
+        }
+
+        return $apiPath;
+    }
+
     public function getReadPublicAccessToken(): string
     {
+        $tokenUrl = $this->getApiPath() . 'oauth/token';
         $httpClient = Application::get()->getHttpClient();
 
-        $tokenUrl = $this->plugin->getSetting($this->contextId, 'orcidAPIPath') . 'oauth/token';
         $requestHeaders = ['Accept' => 'application/json'];
         $requestData = [
             'client_id' => $this->plugin->getSetting($this->contextId, 'orcidClientId'),
@@ -39,9 +52,9 @@ class OrcidClient
 
     public function getOrcidRecord(string $orcid, string $accessToken): array
     {
+        $recordUrl = $this->getApiPath() . 'v3.0/' . urlencode($orcid) . '/record';
         $httpClient = Application::get()->getHttpClient();
 
-        $recordUrl = $this->plugin->getSetting($this->contextId, 'orcidAPIPath') . 'v3.0/' . urlencode($orcid) . '/record';
         $response = $httpClient->request(
             'GET',
             $recordUrl,
@@ -58,9 +71,9 @@ class OrcidClient
 
     public function getOrcidWorks(string $orcid, string $accessToken): array
     {
+        $worksUrl = $this->getApiPath() . 'v3.0/' . urlencode($orcid) . '/works';
         $httpClient = Application::get()->getHttpClient();
 
-        $worksUrl = $this->plugin->getSetting($this->contextId, 'orcidAPIPath') . 'v3.0/' . urlencode($orcid) . '/works';
         $response = $httpClient->request(
             'GET',
             $worksUrl,
@@ -77,9 +90,9 @@ class OrcidClient
 
     public function requestOrcid(string $code)
     {
+        $tokenUrl = $this->getApiPath() . 'oauth/token';
         $httpClient = Application::get()->getHttpClient();
 
-        $tokenUrl = $this->plugin->getSetting($this->contextId, 'orcidAPIPath') . 'oauth/token';
         $requestHeaders = ['Accept' => 'application/json'];
         $requestData = [
             'client_id' => $this->plugin->getSetting($this->contextId, 'orcidClientId'),
