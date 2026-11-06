@@ -63,6 +63,41 @@ final class PlauditPreEndorsementHandlerTest extends TestCase
         $this->assertEquals(AUTH_INVALID_TOKEN, $result);
     }
 
+    public function testEndorserWithoutTokenIsRejectedWhenStoredTokenIsNull(): void
+    {
+        $this->publication->setData('endorserEmailToken', null);
+
+        $this->assertEquals(AUTH_INVALID_TOKEN, $this->verifyEndorserAuth(null));
+        $this->assertEquals(AUTH_INVALID_TOKEN, $this->verifyEndorserAuth(''));
+    }
+
+    public function testEndorserWithEmptyTokenIsRejectedWhenStoredTokenIsEmpty(): void
+    {
+        $this->publication->setData('endorserEmailToken', '');
+
+        $this->assertEquals(AUTH_INVALID_TOKEN, $this->verifyEndorserAuth(''));
+        $this->assertEquals(AUTH_INVALID_TOKEN, $this->verifyEndorserAuth(null));
+    }
+
+    public function testEndorserTokenMustBeAString(): void
+    {
+        $this->assertEquals(AUTH_INVALID_TOKEN, $this->verifyEndorserAuth([$this->endorserEmailToken]));
+    }
+
+    public function testEndorserTokenIsComparedStrictly(): void
+    {
+        $this->publication->setData('endorserEmailToken', '0e462097431906509019562988736854');
+
+        $this->assertEquals(AUTH_INVALID_TOKEN, $this->verifyEndorserAuth('0e830400451993494058024219903391'));
+    }
+
+    public function testDeniedAccessWithoutValidTokenIsRejected(): void
+    {
+        $this->publication->setData('endorserEmailToken', null);
+
+        $this->assertEquals(AUTH_INVALID_TOKEN, $this->verifyEndorserAuth(null, 'access_denied'));
+    }
+
     public function testEndorserAutheticationHasAccessDenied(): void
     {
         $result = $this->verifyEndorserAuth($this->endorserEmailToken, 'access_denied');
