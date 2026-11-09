@@ -62,7 +62,7 @@ class EndorsementGridHandler extends GridHandler
         return false;
     }
 
-    private function getSubmissionEndorsement($rowId, $contextId): ?Endorsement
+    protected function getSubmissionEndorsement($rowId, $contextId): ?Endorsement
     {
         if (!ctype_digit((string) $rowId)) {
             return null;
@@ -174,6 +174,9 @@ class EndorsementGridHandler extends GridHandler
         $endorsement = $this->getSubmissionEndorsement($request->getUserVar('rowId'), $contextId);
         if (is_null($endorsement)) {
             return new JSONMessage(false);
+        }
+        if (!EndorsementService::canSendManually($endorsement, $this->getSubmission()->getCurrentPublication())) {
+            return new JSONMessage(false, __('plugins.generic.plauditPreEndorsement.endorsementNotReadyToSend'));
         }
         $user = $request->getUser();
 

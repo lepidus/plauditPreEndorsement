@@ -89,6 +89,54 @@ class EndorsementGridHandlerTest extends TestCase
         return $request;
     }
 
+    private function createSendingRequest()
+    {
+        $context = $this->getMockBuilder(\APP\server\Server::class)
+            ->onlyMethods(['getId'])
+            ->getMock();
+        $context->method('getId')->willReturn(1);
+
+        $request = $this->getMockBuilder(Request::class)
+            ->onlyMethods(['isPost', 'checkCSRF', 'getUserVar', 'getContext', 'getUser'])
+            ->getMock();
+        $request->method('isPost')->willReturn(true);
+        $request->method('checkCSRF')->willReturn(true);
+        $request->method('getUserVar')->willReturn('100');
+        $request->method('getContext')->willReturn($context);
+        $request->expects($this->never())->method('getUser');
+
+        return $request;
+    }
+
+    public function testSendingRefusesEndorsementNotReadyToSend(): void
+    {
+        $notReadyCases = [
+            [Submission::STATUS_PUBLISHED, Endorsement::STATUS_NOT_CONFIRMED],
+            [Submission::STATUS_PUBLISHED, Endorsement::STATUS_DENIED],
+            [Submission::STATUS_PUBLISHED, Endorsement::STATUS_COMPLETED],
+            [Submission::STATUS_QUEUED, Endorsement::STATUS_CONFIRMED],
+        ];
+
+        foreach ($notReadyCases as [$publicationStatus, $endorsementStatus]) {
+            $submission = $this->createSubmissionWithPublications([1]);
+            $submission->getData('publications')[0]->setData('status', $publicationStatus);
+            $submission->setData('currentPublicationId', 1);
+            $endorsement = $this->createEndorsement(1);
+            $endorsement->setStatus($endorsementStatus);
+
+            $handler = $this->getMockBuilder(EndorsementGridHandler::class)
+                ->onlyMethods(['getSubmission', 'getSubmissionEndorsement'])
+                ->getMock();
+            $handler->method('getSubmission')->willReturn($submission);
+            $handler->method('getSubmissionEndorsement')->willReturn($endorsement);
+
+            $response = $handler->sendEndorsementManually([], $this->createSendingRequest());
+
+            $this->assertFalse($response->getStatus(), "$publicationStatus/$endorsementStatus");
+            $this->assertSame(__('plugins.generic.plauditPreEndorsement.endorsementNotReadyToSend'), $response->getContent());
+        }
+    }
+
     public function testStateChangingRowActionsRequirePostWithCsrfToken(): void
     {
         $invalidRequests = [[false, false], [false, true], [true, false]];

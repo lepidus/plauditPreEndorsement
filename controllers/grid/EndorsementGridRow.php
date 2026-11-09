@@ -7,9 +7,9 @@ use PKP\linkAction\LinkAction;
 use PKP\linkAction\request\AjaxModal;
 use PKP\linkAction\request\RemoteActionConfirmationModal;
 use APP\plugins\generic\plauditPreEndorsement\classes\endorsement\Endorsement;
+use APP\plugins\generic\plauditPreEndorsement\classes\EndorsementService;
 use PKP\plugins\PluginRegistry;
 use APP\facades\Repo;
-use APP\submission\Submission;
 
 class EndorsementGridRow extends GridRow
 {
@@ -34,12 +34,8 @@ class EndorsementGridRow extends GridRow
 
         $rowId = $this->getId();
 
-        $canSendEndorsementManually = $publication->getData('status') == Submission::STATUS_PUBLISHED
-            && !$this->plugin->userAccessingIsAuthor($submission)
-            && (
-                $element->getStatus() == Endorsement::STATUS_CONFIRMED ||
-                $element->getStatus() == Endorsement::STATUS_COULDNT_COMPLETE
-            );
+        $canSendEndorsementManually = EndorsementService::canSendManually($element, $publication)
+            && !$this->plugin->userAccessingIsAuthor($submission);
 
         if ($canSendEndorsementManually) {
             $this->addAction(

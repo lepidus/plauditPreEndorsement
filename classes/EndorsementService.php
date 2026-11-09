@@ -16,6 +16,11 @@ use APP\plugins\generic\plauditPreEndorsement\classes\api\APIKeyEncryption;
 
 class EndorsementService
 {
+    public const MANUAL_SENDING_STATUSES = [
+        Endorsement::STATUS_CONFIRMED,
+        Endorsement::STATUS_COULDNT_COMPLETE,
+    ];
+
     private $plugin;
     private $contextId;
     private $orcidClient;
@@ -37,6 +42,18 @@ class EndorsementService
     public function setOrcidClient($orcidClient)
     {
         $this->orcidClient = $orcidClient;
+    }
+
+    /**
+     * Conditions under which the workflow offers the manual sending of an
+     * endorsement to Plaudit: the current publication of the submission is
+     * published and the endorsement was confirmed by the endorser (or a
+     * previous sending could not be completed).
+     */
+    public static function canSendManually(Endorsement $endorsement, Publication $currentPublication): bool
+    {
+        return $currentPublication->getData('status') == Submission::STATUS_PUBLISHED
+            && in_array((int) $endorsement->getStatus(), self::MANUAL_SENDING_STATUSES, true);
     }
 
     /**
