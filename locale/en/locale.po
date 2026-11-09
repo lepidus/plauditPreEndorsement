@@ -229,3 +229,6 @@ msgstr "The endorsement has been removed, as the ORCID provided ({$orcid}) is fr
 
 msgid "plugins.generic.plauditPreEndorsement.log.endorsementRemoved.emailFromAuthor"
 msgstr "The endorsement has been removed, as the email provided ({$email}) is from one of the authors of the submission."
+
+msgid "plugins.generic.plauditPreEndorsement.endorsementNotReadyToSend"
+msgstr "The endorsement can only be sent to Plaudit after the preprint is published and the endorser has confirmed the endorsement."

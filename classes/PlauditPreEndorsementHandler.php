@@ -3,6 +3,7 @@
 namespace APP\plugins\generic\plauditPreEndorsement\classes;
 
 use APP\handler\Handler;
+use APP\publication\Publication;
 use APP\submission\Submission;
 use PKP\plugins\PluginRegistry;
 use APP\template\TemplateManager;
@@ -25,9 +26,12 @@ class PlauditPreEndorsementHandler extends Handler
 
     public function orcidVerify($args, $request)
     {
-        $publication = Repo::publication()->get($request->getUserVar('state'));
-        $submission = Repo::submission()->get($publication->getData('submissionId'));
-        $endorsement = Repo::endorsement()->get($request->getUserVar('endorsementId'));
+        $requestedEndorsement = $this->getRequestedEndorsement($request);
+        if (is_null($requestedEndorsement)) {
+            $this->displayTemplate($request, 'orcidVerify', ['errorType' => 'invalidToken']);
+            return;
+        }
+        [$publication, $submission, $endorsement] = $requestedEndorsement;
 
         $plugin = PluginRegistry::getPlugin('generic', 'plauditpreendorsementplugin');
         $contextId = $request->getContext()->getId();
@@ -48,6 +52,9 @@ class PlauditPreEndorsementHandler extends Handler
             $orcid = $orcidClient->requestOrcid($code);
         } catch (\GuzzleHttp\Exception\RequestException  $exception) {
             $this->logMessageAndDisplayTemplate($submission, $request, 'orcidVerify', 'plugins.generic.plauditPreEndorsement.log.orcidRequestError', ['errorType' => 'failure', 'orcidAPIError' => $exception->getMessage()]);
+            return;
+        } catch (\InvalidArgumentException $exception) {
+            $this->logMessageAndDisplayTemplate($submission, $request, 'orcidVerify', 'plugins.generic.plauditPreEndorsement.log.orcidRequestError', ['errorType' => 'failure']);
             return;
         }
 
@@ -75,17 +82,18 @@ class PlauditPreEndorsementHandler extends Handler
             $this->sendEmail(new EndorsementConfirmedEmailBuilder(), $submission, $publication, $endorsement);
             $this->logMessageAndDisplayTemplate($submission, $request, 'orcidVerify', 'plugins.generic.plauditPreEndorsement.log.endorsementConfirmed', ['orcid' => $orcidUri]);
 
-            if ($publication->getData('status') == Submission::STATUS_PUBLISHED) {
-                $endorsementService->sendEndorsement($publication);
-            }
+            $endorsementService->sendConfirmedEndorsementIfPublished($endorsement, $publication);
         }
     }
 
     public function declineEndorsement($args, $request)
     {
-        $publication = Repo::publication()->get($request->getUserVar('state'));
-        $submission = Repo::submission()->get($publication->getData('submissionId'));
-        $endorsement = Repo::endorsement()->get($request->getUserVar('endorsementId'));
+        $requestedEndorsement = $this->getRequestedEndorsement($request);
+        if (is_null($requestedEndorsement)) {
+            $this->displayTemplate($request, 'endorsementDeclined', ['errorType' => 'invalidToken']);
+            return;
+        }
+        [$publication, $submission, $endorsement] = $requestedEndorsement;
 
         if ($this->getStatusAuthentication($endorsement, $request) == self::AUTH_INVALID_TOKEN) {
             $this->logMessageAndDisplayTemplate($submission, $request, 'endorsementDeclined', 'plugins.generic.plauditPreEndorsement.log.invalidToken.decline', ['errorType' => 'invalidToken']);
@@ -97,14 +105,77 @@ class PlauditPreEndorsementHandler extends Handler
         $this->logMessageAndDisplayTemplate($submission, $request, 'endorsementDeclined', 'plugins.generic.plauditPreEndorsement.log.endorsementDeclined');
     }
 
+    /**
+     * Loads the publication ("state") and the endorsement ("endorsementId")
+     * of an endorser link, returning null unless both exist and are bound
+     * to the same submission in the request context.
+     */
+    private function getRequestedEndorsement($request): ?array
+    {
+        $publicationId = $request->getUserVar('state');
+        $endorsementId = $request->getUserVar('endorsementId');
+        if (!self::isNumericId($publicationId) || !self::isNumericId($endorsementId)) {
+            return null;
+        }
+
+        $contextId = (int) $request->getContext()->getId();
+        $publication = Repo::publication()->get((int) $publicationId);
+        $endorsement = Repo::endorsement()->get((int) $endorsementId, $contextId);
+        if (is_null($publication) || is_null($endorsement)) {
+            return null;
+        }
+
+        $endorsementPublication = Repo::publication()->get($endorsement->getPublicationId());
+        $submission = Repo::submission()->get((int) $publication->getData('submissionId'));
+
+        if (!self::endorsementMatchesPublication($endorsement, $publication, $endorsementPublication, $submission, $contextId)) {
+            return null;
+        }
+
+        return [$publication, $submission, $endorsement];
+    }
+
+    private static function isNumericId($value): bool
+    {
+        return is_string($value) && ctype_digit($value);
+    }
+
+    /**
+     * The endorser link may point to a newer version of the publication the
+     * endorsement was created for, so both publications must belong to the
+     * same submission, which must belong to the request context.
+     */
+    public static function endorsementMatchesPublication(
+        ?Endorsement $endorsement,
+        ?Publication $publication,
+        ?Publication $endorsementPublication,
+        ?Submission $submission,
+        int $contextId
+    ): bool {
+        if (is_null($endorsement) || is_null($publication) || is_null($endorsementPublication) || is_null($submission)) {
+            return false;
+        }
+
+        return (int) $endorsement->getContextId() === $contextId
+            && (int) $endorsementPublication->getId() === (int) $endorsement->getPublicationId()
+            && (int) $publication->getData('submissionId') === (int) $submission->getId()
+            && (int) $endorsementPublication->getData('submissionId') === (int) $submission->getId()
+            && (int) $submission->getData('contextId') === $contextId;
+    }
+
     private function logMessageAndDisplayTemplate($submission, $request, $template, $message, $data = [])
+    {
+        $plugin = PluginRegistry::getPlugin('generic', 'plauditpreendorsementplugin');
+        $plugin->writeOnActivityLog($submission->getId(), $message, $data);
+        $this->displayTemplate($request, $template, $data);
+    }
+
+    private function displayTemplate($request, $template, $data = [])
     {
         $context = $request->getContext();
         $data['contactEmail'] = $context->getData('contactEmail');
         $plugin = PluginRegistry::getPlugin('generic', 'plauditpreendorsementplugin');
         $templatePath = $plugin->getTemplateResource("handler/$template.tpl");
-
-        $plugin->writeOnActivityLog($submission->getId(), $message, $data);
 
         $templateMgr = TemplateManager::getManager($request);
         $templateMgr->assign($data);
@@ -152,12 +223,21 @@ class PlauditPreEndorsementHandler extends Handler
 
     public function getStatusAuthentication($endorsement, $request)
     {
-        if ($request->getUserVar('token') != $endorsement->getEmailToken()) {
+        if (!$this->tokenIsValid($endorsement->getEmailToken(), $request->getUserVar('token'))) {
             return self::AUTH_INVALID_TOKEN;
         } elseif ($request->getUserVar('error') == 'access_denied') {
             return self::AUTH_ACCESS_DENIED;
         } else {
             return self::AUTH_SUCCESS;
         }
+    }
+
+    private function tokenIsValid($storedToken, $receivedToken): bool
+    {
+        if (!is_string($storedToken) || $storedToken === '' || !is_string($receivedToken)) {
+            return false;
+        }
+
+        return hash_equals($storedToken, $receivedToken);
     }
 }

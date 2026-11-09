@@ -229,3 +229,6 @@ msgstr "El endoso ha sido eliminado, ya que el ORCID proporcionado ({$orcid}) es
 
 msgid "plugins.generic.plauditPreEndorsement.log.endorsementRemoved.emailFromAuthor"
 msgstr "El endoso ha sido eliminado, ya que el correo electrónico proporcionado ({$email}) es de uno de los autores del envío."
+
+msgid "plugins.generic.plauditPreEndorsement.endorsementNotReadyToSend"
+msgstr "El endoso solo puede enviarse a Plaudit después de que el preprint se publique y el endosante confirme el endoso."
