@@ -4,6 +4,8 @@ namespace APP\plugins\generic\plauditPreEndorsement\classes;
 
 use GuzzleHttp\Exception\ClientException;
 use APP\core\Application;
+use APP\publication\Publication;
+use APP\submission\Submission;
 use APP\plugins\generic\plauditPreEndorsement\classes\facades\Repo;
 use PKP\core\Core;
 use APP\plugins\generic\plauditPreEndorsement\classes\endorsement\Endorsement;
@@ -35,6 +37,17 @@ class EndorsementService
     public function setOrcidClient($orcidClient)
     {
         $this->orcidClient = $orcidClient;
+    }
+
+    /**
+     * Sends an endorsement just confirmed by the endorser when the publication
+     * of the endorser link is already published.
+     */
+    public function sendConfirmedEndorsementIfPublished(Endorsement $endorsement, Publication $publication): void
+    {
+        if ($publication->getData('status') == Submission::STATUS_PUBLISHED) {
+            $this->sendEndorsement($endorsement);
+        }
     }
 
     public function sendEndorsement($endorsement, $needCheckMessageWasLoggedToday = false)
