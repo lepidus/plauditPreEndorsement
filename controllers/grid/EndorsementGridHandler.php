@@ -10,6 +10,7 @@ use PKP\core\JSONMessage;
 use PKP\db\DAO;
 use PKP\linkAction\LinkAction;
 use PKP\linkAction\request\AjaxModal;
+use PKP\security\authorization\StageRolePolicy;
 use PKP\security\authorization\SubmissionAccessPolicy;
 use PKP\security\Role;
 use APP\plugins\generic\plauditPreEndorsement\controllers\grid\form\EndorsementForm;
@@ -21,6 +22,13 @@ use APP\notification\NotificationManager;
 
 class EndorsementGridHandler extends GridHandler
 {
+    /**
+     * Roles that must be assigned to the submission stage to send an
+     * endorsement to Plaudit; managers and site admins are also accepted
+     * by the core StageRolePolicy through their context role.
+     */
+    public const SENDING_STAGE_ROLES = [Role::ROLE_ID_MANAGER, Role::ROLE_ID_SUB_EDITOR, Role::ROLE_ID_ASSISTANT];
+
     public $plugin;
 
     public function __construct()
@@ -79,6 +87,14 @@ class EndorsementGridHandler extends GridHandler
     public function authorize($request, &$args, $roleAssignments)
     {
         $this->addPolicy(new SubmissionAccessPolicy($request, $args, $roleAssignments));
+
+        // SubmissionAccessPolicy accepts a sub editor or assistant with any
+        // assignment in the submission, including an author assignment; sending
+        // to Plaudit also requires an editorial role in the submission stage.
+        if ($request->getRouter()->getRequestedOp($request) === 'sendEndorsementManually') {
+            $this->addPolicy(new StageRolePolicy(self::SENDING_STAGE_ROLES));
+        }
+
         return parent::authorize($request, $args, $roleAssignments);
     }
 
