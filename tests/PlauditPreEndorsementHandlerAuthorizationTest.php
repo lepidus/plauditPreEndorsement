@@ -50,6 +50,7 @@ final class PlauditPreEndorsementHandlerAuthorizationTest extends TestCase
         $submission = new Submission();
         $submission->setId(self::SUBMISSION_ID);
         $submission->setData('contextId', $contextId);
+        $submission->setData('stageId', WORKFLOW_STAGE_ID_PRODUCTION);
 
         $submissionDao = $this->getMockBuilder(SubmissionDAO::class)
             ->disableOriginalConstructor()
@@ -213,6 +214,38 @@ final class PlauditPreEndorsementHandlerAuthorizationTest extends TestCase
         $this->registerStageAssignments([ROLE_ID_SUB_EDITOR]);
 
         $this->assertTrue($this->authorize('updateEndorser', [ROLE_ID_SUB_EDITOR]));
+    }
+
+    public function testSubEditorOrAssistantAssignedOnlyAsAuthorCannotRemoveOrSendEndorsement(): void
+    {
+        $this->registerSubmissionFromContext(self::CONTEXT_ID);
+        $this->registerStageAssignments([ROLE_ID_AUTHOR]);
+
+        foreach ([ROLE_ID_SUB_EDITOR, ROLE_ID_ASSISTANT] as $editorialRole) {
+            $this->assertTrue($this->authorize('updateEndorser', [$editorialRole, ROLE_ID_AUTHOR]), (string) $editorialRole);
+            $this->assertFalse($this->authorize('removeEndorsement', [$editorialRole, ROLE_ID_AUTHOR]), (string) $editorialRole);
+            $this->assertFalse($this->authorize('sendEndorsementManually', [$editorialRole, ROLE_ID_AUTHOR]), (string) $editorialRole);
+        }
+    }
+
+    public function testEditoriallyAssignedSubEditorOrAssistantCanRemoveOrSendEndorsement(): void
+    {
+        $this->registerSubmissionFromContext(self::CONTEXT_ID);
+
+        foreach ([ROLE_ID_SUB_EDITOR, ROLE_ID_ASSISTANT] as $editorialRole) {
+            $this->registerStageAssignments([$editorialRole]);
+            $this->assertTrue($this->authorize('removeEndorsement', [$editorialRole]), (string) $editorialRole);
+            $this->assertTrue($this->authorize('sendEndorsementManually', [$editorialRole]), (string) $editorialRole);
+        }
+    }
+
+    public function testManagerAssignedAsAuthorIsAuthorizedToRemoveOrSendEndorsement(): void
+    {
+        $this->registerSubmissionFromContext(self::CONTEXT_ID);
+        $this->registerStageAssignments([ROLE_ID_AUTHOR]);
+
+        $this->assertTrue($this->authorize('removeEndorsement', [ROLE_ID_MANAGER, ROLE_ID_AUTHOR]));
+        $this->assertTrue($this->authorize('sendEndorsementManually', [ROLE_ID_MANAGER, ROLE_ID_AUTHOR]));
     }
 
     public function testOrcidVerifyRemainsPublic(): void

@@ -13,6 +13,7 @@ class PlauditPreEndorsementHandler extends Handler
 {
     public const EDITORIAL_ROLES = [ROLE_ID_MANAGER, ROLE_ID_SUB_EDITOR, ROLE_ID_ASSISTANT];
     public const SUBMISSION_OPERATIONS = ['updateEndorser', 'removeEndorsement', 'sendEndorsementManually'];
+    public const EDITORIAL_OPERATIONS = ['removeEndorsement', 'sendEndorsementManually'];
 
     public function authorize($request, &$args, $roleAssignments)
     {
@@ -20,10 +21,19 @@ class PlauditPreEndorsementHandler extends Handler
 
         if (in_array($operation, self::SUBMISSION_OPERATIONS, true)) {
             $this->addRoleAssignment(array_merge(self::EDITORIAL_ROLES, [ROLE_ID_AUTHOR]), ['updateEndorser']);
-            $this->addRoleAssignment(self::EDITORIAL_ROLES, ['removeEndorsement', 'sendEndorsementManually']);
+            $this->addRoleAssignment(self::EDITORIAL_ROLES, self::EDITORIAL_OPERATIONS);
 
             import('lib.pkp.classes.security.authorization.SubmissionAccessPolicy');
             $this->addPolicy(new SubmissionAccessPolicy($request, $args, $this->getRoleAssignments()));
+
+            // SubmissionAccessPolicy accepts a sub editor or assistant with any
+            // assignment in the submission, including an author assignment; the
+            // editorial operations also require an editorial role in the stage
+            // (managers are accepted by StageRolePolicy through their context role).
+            if (in_array($operation, self::EDITORIAL_OPERATIONS, true)) {
+                import('lib.pkp.classes.security.authorization.StageRolePolicy');
+                $this->addPolicy(new StageRolePolicy(self::EDITORIAL_ROLES));
+            }
         }
 
         return parent::authorize($request, $args, $roleAssignments);
