@@ -12,6 +12,7 @@ use PKP\core\PKPBaseController;
 use PKP\core\PKPRequest;
 use PKP\plugins\PluginRegistry;
 use PKP\security\authorization\ContextAccessPolicy;
+use PKP\security\authorization\StageRolePolicy;
 use PKP\security\authorization\SubmissionAccessPolicy;
 use PKP\security\authorization\UserRolesRequiredPolicy;
 use PKP\security\Role;
@@ -23,6 +24,17 @@ class EndorsementController extends PKPBaseController
 {
     private const EDITORIAL_ROLES = [
         Role::ROLE_ID_SITE_ADMIN,
+        Role::ROLE_ID_MANAGER,
+        Role::ROLE_ID_SUB_EDITOR,
+        Role::ROLE_ID_ASSISTANT,
+    ];
+
+    /**
+     * Roles that must be assigned to the submission stage to send an
+     * endorsement to Plaudit; managers and site admins are also accepted
+     * by the core StageRolePolicy through their context role.
+     */
+    private const SENDING_STAGE_ROLES = [
         Role::ROLE_ID_MANAGER,
         Role::ROLE_ID_SUB_EDITOR,
         Role::ROLE_ID_ASSISTANT,
@@ -83,6 +95,15 @@ class EndorsementController extends PKPBaseController
         $this->addPolicy(new UserRolesRequiredPolicy($request), true);
         $this->addPolicy(new ContextAccessPolicy($request, $roleAssignments));
         $this->addPolicy(new SubmissionAccessPolicy($request, $args, $roleAssignments));
+
+        // SubmissionAccessPolicy accepts a sub editor or assistant with any
+        // assignment in the submission, including an author assignment; sending
+        // to Plaudit also requires an editorial role in the submission stage.
+        $illuminateRequest = $args[0] ?? null;
+        $actionName = static::getRouteActionName($illuminateRequest instanceof IlluminateRequest ? $illuminateRequest : null);
+        if ($actionName === 'sendEndorsement') {
+            $this->addPolicy(new StageRolePolicy(self::SENDING_STAGE_ROLES));
+        }
 
         return parent::authorize($request, $args, $roleAssignments);
     }
