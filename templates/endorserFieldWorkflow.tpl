@@ -7,7 +7,7 @@
 
 <link rel="stylesheet" type="text/css" href="/plugins/generic/plauditPreEndorsement/styles/endorserWorkflowStyleSheet.css">
 
-<div class="pkp_form" id="updateEndorserForm">
+<div class="pkp_form" id="updateEndorserForm" v-pre>
     <div class="endorserFieldDiv">
         <label class="label">{translate key="plugins.generic.plauditPreEndorsement.endorserName"}</label>
         {if $canEditEndorsement}
