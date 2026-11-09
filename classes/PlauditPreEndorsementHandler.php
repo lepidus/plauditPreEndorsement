@@ -82,9 +82,7 @@ class PlauditPreEndorsementHandler extends Handler
             $this->sendEmail(new EndorsementConfirmedEmailBuilder(), $submission, $publication, $endorsement);
             $this->logMessageAndDisplayTemplate($submission, $request, 'orcidVerify', 'plugins.generic.plauditPreEndorsement.log.endorsementConfirmed', ['orcid' => $orcidUri]);
 
-            if ($publication->getData('status') == Submission::STATUS_PUBLISHED) {
-                $endorsementService->sendEndorsement($publication);
-            }
+            $endorsementService->sendConfirmedEndorsementIfPublished($endorsement, $publication);
         }
     }
 
