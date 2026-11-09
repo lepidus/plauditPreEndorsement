@@ -213,6 +213,13 @@ class EndorsementController extends PKPBaseController
             return $endorsement;
         }
 
+        if (!EndorsementService::canSendManually($endorsement, $submission->getCurrentPublication())) {
+            return response()->json(
+                ['error' => __('plugins.generic.plauditPreEndorsement.api.endorsementNotReadyToSend')],
+                Response::HTTP_CONFLICT
+            );
+        }
+
         $plugin = $this->getPlugin();
         (new EndorsementService($this->getContextId(), $plugin))->sendEndorsement($endorsement);
 

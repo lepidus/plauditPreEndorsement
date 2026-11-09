@@ -56,6 +56,30 @@ describe("Plaudit Pre-Endorsement Plugin - Authorization of the endorsements API
         });
     });
 
+    it("Rejects sending an endorsement not confirmed by the endorser", function() {
+        loadSubmissionAndEndorsementIds();
+
+        cy.login('dbarnes', null, 'publicknowledge');
+        cy.getCsrfToken();
+        cy.get('@submissionId').then((submissionId) => {
+            getEndorsements(submissionId).then((response) => {
+                const endorsement = response.body.items.find((item) => item.status === 0);
+                expect(endorsement, 'endorsement awaiting confirmation').to.exist;
+
+                cy.get('@csrfToken').then((csrfToken) => {
+                    sendEndorsement(submissionId, endorsement.id, csrfToken).then((sendResponse) => {
+                        expect(sendResponse.status).to.eq(409);
+                        expect(sendResponse.body.error).to.contain('Plaudit');
+                    });
+                });
+                getEndorsements(submissionId).then((afterResponse) => {
+                    const unchanged = afterResponse.body.items.find((item) => item.id === endorsement.id);
+                    expect(unchanged.status).to.eq(0);
+                });
+            });
+        });
+    });
+
     it("Denies an author of other submissions", function() {
         loadSubmissionAndEndorsementIds();
 

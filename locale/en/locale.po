@@ -256,3 +256,6 @@ msgstr "Endorsement not found."
 
 msgid "plugins.generic.plauditPreEndorsement.api.endorsementDeleted"
 msgstr "Endorsement deleted."
+
+msgid "plugins.generic.plauditPreEndorsement.api.endorsementNotReadyToSend"
+msgstr "The endorsement can only be sent to Plaudit after the preprint is published and the endorser has confirmed the endorsement."

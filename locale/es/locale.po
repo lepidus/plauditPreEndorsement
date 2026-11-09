@@ -256,3 +256,6 @@ msgstr "Endoso no encontrado."
 
 msgid "plugins.generic.plauditPreEndorsement.api.endorsementDeleted"
 msgstr "Endoso eliminado."
+
+msgid "plugins.generic.plauditPreEndorsement.api.endorsementNotReadyToSend"
+msgstr "El endoso solo puede enviarse a Plaudit después de que el preprint se publique y el endosante confirme el endoso."
