@@ -9,9 +9,13 @@ use Illuminate\Http\Request as IlluminateRequest;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Route;
 use PKP\core\PKPBaseController;
+use PKP\core\PKPRequest;
 use PKP\plugins\PluginRegistry;
+use PKP\security\authorization\ContextAccessPolicy;
+use PKP\security\authorization\StageRolePolicy;
+use PKP\security\authorization\SubmissionAccessPolicy;
+use PKP\security\authorization\UserRolesRequiredPolicy;
 use PKP\security\Role;
-use PKP\stageAssignment\StageAssignment;
 use APP\plugins\generic\plauditPreEndorsement\classes\facades\Repo;
 use APP\plugins\generic\plauditPreEndorsement\classes\endorsement\Endorsement;
 use APP\plugins\generic\plauditPreEndorsement\classes\EndorsementService;
@@ -20,6 +24,17 @@ class EndorsementController extends PKPBaseController
 {
     private const EDITORIAL_ROLES = [
         Role::ROLE_ID_SITE_ADMIN,
+        Role::ROLE_ID_MANAGER,
+        Role::ROLE_ID_SUB_EDITOR,
+        Role::ROLE_ID_ASSISTANT,
+    ];
+
+    /**
+     * Roles that must be assigned to the submission stage to send an
+     * endorsement to Plaudit; managers and site admins are also accepted
+     * by the core StageRolePolicy through their context role.
+     */
+    private const SENDING_STAGE_ROLES = [
         Role::ROLE_ID_MANAGER,
         Role::ROLE_ID_SUB_EDITOR,
         Role::ROLE_ID_ASSISTANT,
@@ -35,34 +50,67 @@ class EndorsementController extends PKPBaseController
         return [
             'has.user',
             'has.context',
-            self::roleAuthorizer(array_merge(self::EDITORIAL_ROLES, [Role::ROLE_ID_AUTHOR])),
         ];
     }
 
+    /**
+     * The role authorizer of each route also defines the operations granted
+     * to each role in the core SubmissionAccessPolicy: authors may manage
+     * the endorsements of their submissions, but only editorial roles may
+     * send an endorsement to Plaudit.
+     */
     public function getGroupRoutes(): void
     {
-        Route::get('{submissionId}', $this->getEndorsements(...))
-            ->name('endorsements.getMany');
+        Route::middleware([
+            self::roleAuthorizer(array_merge(self::EDITORIAL_ROLES, [Role::ROLE_ID_AUTHOR])),
+        ])->group(function () {
+            Route::get('{submissionId}', $this->getEndorsements(...))
+                ->name('endorsements.getMany')
+                ->whereNumber('submissionId');
 
-        Route::post('{submissionId}', $this->addEndorsement(...))
-            ->name('endorsements.add');
+            Route::post('{submissionId}', $this->addEndorsement(...))
+                ->name('endorsements.add')
+                ->whereNumber('submissionId');
 
-        Route::put('{submissionId}/{endorsementId}', $this->editEndorsement(...))
-            ->name('endorsements.edit');
+            Route::put('{submissionId}/{endorsementId}', $this->editEndorsement(...))
+                ->name('endorsements.edit')
+                ->whereNumber(['submissionId', 'endorsementId']);
 
-        Route::delete('{submissionId}/{endorsementId}', $this->deleteEndorsement(...))
-            ->name('endorsements.delete');
+            Route::delete('{submissionId}/{endorsementId}', $this->deleteEndorsement(...))
+                ->name('endorsements.delete')
+                ->whereNumber(['submissionId', 'endorsementId']);
+        });
 
-        Route::post('{submissionId}/{endorsementId}/send', $this->sendEndorsement(...))
-            ->name('endorsements.send');
+        Route::middleware([
+            self::roleAuthorizer(self::EDITORIAL_ROLES),
+        ])->group(function () {
+            Route::post('{submissionId}/{endorsementId}/send', $this->sendEndorsement(...))
+                ->name('endorsements.send')
+                ->whereNumber(['submissionId', 'endorsementId']);
+        });
+    }
+
+    public function authorize(PKPRequest $request, array &$args, array $roleAssignments): bool
+    {
+        $this->addPolicy(new UserRolesRequiredPolicy($request), true);
+        $this->addPolicy(new ContextAccessPolicy($request, $roleAssignments));
+        $this->addPolicy(new SubmissionAccessPolicy($request, $args, $roleAssignments));
+
+        // SubmissionAccessPolicy accepts a sub editor or assistant with any
+        // assignment in the submission, including an author assignment; sending
+        // to Plaudit also requires an editorial role in the submission stage.
+        $illuminateRequest = $args[0] ?? null;
+        $actionName = static::getRouteActionName($illuminateRequest instanceof IlluminateRequest ? $illuminateRequest : null);
+        if ($actionName === 'sendEndorsement') {
+            $this->addPolicy(new StageRolePolicy(self::SENDING_STAGE_ROLES));
+        }
+
+        return parent::authorize($request, $args, $roleAssignments);
     }
 
     public function getEndorsements(IlluminateRequest $request): JsonResponse
     {
-        $submission = $this->getAuthorizedSubmission($request);
-        if ($submission instanceof JsonResponse) {
-            return $submission;
-        }
+        $submission = $this->getAuthorizedSubmission();
 
         $publicationIds = $this->collectPublicationIds($submission);
 
@@ -85,10 +133,7 @@ class EndorsementController extends PKPBaseController
 
     public function addEndorsement(IlluminateRequest $request): JsonResponse
     {
-        $submission = $this->getAuthorizedSubmission($request);
-        if ($submission instanceof JsonResponse) {
-            return $submission;
-        }
+        $submission = $this->getAuthorizedSubmission();
 
         $publication = $submission->getCurrentPublication();
 
@@ -124,10 +169,7 @@ class EndorsementController extends PKPBaseController
 
     public function editEndorsement(IlluminateRequest $request): JsonResponse
     {
-        $submission = $this->getAuthorizedSubmission($request);
-        if ($submission instanceof JsonResponse) {
-            return $submission;
-        }
+        $submission = $this->getAuthorizedSubmission();
 
         $endorsement = $this->getEndorsementForSubmission($request, $submission);
         if ($endorsement instanceof JsonResponse) {
@@ -163,10 +205,7 @@ class EndorsementController extends PKPBaseController
 
     public function deleteEndorsement(IlluminateRequest $request): JsonResponse
     {
-        $submission = $this->getAuthorizedSubmission($request);
-        if ($submission instanceof JsonResponse) {
-            return $submission;
-        }
+        $submission = $this->getAuthorizedSubmission();
 
         $endorsement = $this->getEndorsementForSubmission($request, $submission);
         if ($endorsement instanceof JsonResponse) {
@@ -188,14 +227,18 @@ class EndorsementController extends PKPBaseController
 
     public function sendEndorsement(IlluminateRequest $request): JsonResponse
     {
-        $submission = $this->getAuthorizedSubmission($request, editorialOnly: true);
-        if ($submission instanceof JsonResponse) {
-            return $submission;
-        }
+        $submission = $this->getAuthorizedSubmission();
 
         $endorsement = $this->getEndorsementForSubmission($request, $submission);
         if ($endorsement instanceof JsonResponse) {
             return $endorsement;
+        }
+
+        if (!EndorsementService::canSendManually($endorsement, $submission->getCurrentPublication())) {
+            return response()->json(
+                ['error' => __('plugins.generic.plauditPreEndorsement.api.endorsementNotReadyToSend')],
+                Response::HTTP_CONFLICT
+            );
         }
 
         $plugin = $this->getPlugin();
@@ -206,61 +249,9 @@ class EndorsementController extends PKPBaseController
         ], Response::HTTP_OK);
     }
 
-    /**
-     * Loads the submission from the route and enforces access control:
-     * - must exist and belong to the current context
-     * - editorial roles pass through
-     * - authors must have a stage assignment on this submission
-     * - if $editorialOnly is true, authors are rejected outright
-     */
-    private function getAuthorizedSubmission(IlluminateRequest $request, bool $editorialOnly = false): Submission|JsonResponse
+    private function getAuthorizedSubmission(): Submission
     {
-        $submissionId = (int) $request->route('submissionId');
-        $submission = \APP\facades\Repo::submission()->get($submissionId);
-
-        if (!$submission || (int) $submission->getData('contextId') !== $this->getContextId()) {
-            return response()->json(
-                ['error' => __('plugins.generic.plauditPreEndorsement.api.submissionNotFound')],
-                Response::HTTP_NOT_FOUND
-            );
-        }
-
-        $user = Application::get()->getRequest()->getUser();
-        if (!$user) {
-            return response()->json(
-                ['error' => __('api.403.unauthorized')],
-                Response::HTTP_FORBIDDEN
-            );
-        }
-
-        $userRoles = (array) ($this->getAuthorizedContextObject(Application::ASSOC_TYPE_USER_ROLES) ?? []);
-        $hasEditorialRole = !empty(array_intersect($userRoles, self::EDITORIAL_ROLES));
-
-        if ($hasEditorialRole) {
-            return $submission;
-        }
-
-        if ($editorialOnly) {
-            return response()->json(
-                ['error' => __('api.403.unauthorized')],
-                Response::HTTP_FORBIDDEN
-            );
-        }
-
-        $isAssignedAuthor = StageAssignment::withSubmissionIds([$submission->getId()])
-            ->withRoleIds([Role::ROLE_ID_AUTHOR])
-            ->withUserId($user->getId())
-            ->get()
-            ->isNotEmpty();
-
-        if (!$isAssignedAuthor) {
-            return response()->json(
-                ['error' => __('api.403.unauthorized')],
-                Response::HTTP_FORBIDDEN
-            );
-        }
-
-        return $submission;
+        return $this->getAuthorizedContextObject(Application::ASSOC_TYPE_SUBMISSION);
     }
 
     /**
