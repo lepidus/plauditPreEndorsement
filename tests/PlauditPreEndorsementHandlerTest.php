@@ -2,6 +2,7 @@
 
 import('classes.journal.Journal');
 import('classes.publication.Publication');
+import('classes.submission.Submission');
 import('classes.core.Request');
 import('plugins.generic.plauditPreEndorsement.PlauditPreEndorsementPlugin');
 import('plugins.generic.plauditPreEndorsement.classes.PlauditPreEndorsementHandler');
@@ -63,9 +64,76 @@ final class PlauditPreEndorsementHandlerTest extends TestCase
         $this->assertEquals(AUTH_INVALID_TOKEN, $result);
     }
 
+    public function testEndorserWithoutTokenIsRejectedWhenStoredTokenIsNull(): void
+    {
+        $this->publication->setData('endorserEmailToken', null);
+
+        $this->assertEquals(AUTH_INVALID_TOKEN, $this->verifyEndorserAuth(null));
+        $this->assertEquals(AUTH_INVALID_TOKEN, $this->verifyEndorserAuth(''));
+    }
+
+    public function testEndorserWithEmptyTokenIsRejectedWhenStoredTokenIsEmpty(): void
+    {
+        $this->publication->setData('endorserEmailToken', '');
+
+        $this->assertEquals(AUTH_INVALID_TOKEN, $this->verifyEndorserAuth(''));
+        $this->assertEquals(AUTH_INVALID_TOKEN, $this->verifyEndorserAuth(null));
+    }
+
+    public function testEndorserTokenMustBeAString(): void
+    {
+        $this->assertEquals(AUTH_INVALID_TOKEN, $this->verifyEndorserAuth([$this->endorserEmailToken]));
+    }
+
+    public function testEndorserTokenIsComparedStrictly(): void
+    {
+        $this->publication->setData('endorserEmailToken', '0e462097431906509019562988736854');
+
+        $this->assertEquals(AUTH_INVALID_TOKEN, $this->verifyEndorserAuth('0e830400451993494058024219903391'));
+    }
+
+    public function testDeniedAccessWithoutValidTokenIsRejected(): void
+    {
+        $this->publication->setData('endorserEmailToken', null);
+
+        $this->assertEquals(AUTH_INVALID_TOKEN, $this->verifyEndorserAuth(null, 'access_denied'));
+    }
+
     public function testEndorserAutheticationHasAccessDenied(): void
     {
         $result = $this->verifyEndorserAuth($this->endorserEmailToken, 'access_denied');
         $this->assertEquals(AUTH_ACCESS_DENIED, $result);
+    }
+
+    private function createSubmission(int $submissionId, int $contextId): Submission
+    {
+        $submission = new Submission();
+        $submission->setId($submissionId);
+        $submission->setData('contextId', $contextId);
+
+        return $submission;
+    }
+
+    public function testPublicationOfRequestContextIsAccepted(): void
+    {
+        $this->publication->setData('submissionId', 10);
+
+        $this->assertTrue(PlauditPreEndorsementHandler::publicationBelongsToContext($this->publication, $this->createSubmission(10, 1), 1));
+    }
+
+    public function testPublicationOfAnotherContextIsRejected(): void
+    {
+        $this->publication->setData('submissionId', 10);
+
+        $this->assertFalse(PlauditPreEndorsementHandler::publicationBelongsToContext($this->publication, $this->createSubmission(10, 2), 1));
+    }
+
+    public function testMissingPublicationOrSubmissionIsRejected(): void
+    {
+        $this->publication->setData('submissionId', 10);
+
+        $this->assertFalse(PlauditPreEndorsementHandler::publicationBelongsToContext(null, $this->createSubmission(10, 1), 1));
+        $this->assertFalse(PlauditPreEndorsementHandler::publicationBelongsToContext($this->publication, null, 1));
+        $this->assertFalse(PlauditPreEndorsementHandler::publicationBelongsToContext($this->publication, $this->createSubmission(11, 1), 1));
     }
 }

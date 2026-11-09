@@ -19,4 +19,16 @@ class OrcidCredentialsValidator
         }
         return $valid;
     }
+
+    public function validateApiPath($apiPath): bool
+    {
+        $allowedApiPaths = [
+            ENDORSEMENT_ORCID_API_URL_PUBLIC,
+            ENDORSEMENT_ORCID_API_URL_PUBLIC_SANDBOX,
+            ENDORSEMENT_ORCID_API_URL_MEMBER,
+            ENDORSEMENT_ORCID_API_URL_MEMBER_SANDBOX,
+        ];
+
+        return is_string($apiPath) && in_array($apiPath, $allowedApiPaths, true);
+    }
 }

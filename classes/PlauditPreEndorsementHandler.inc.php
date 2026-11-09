@@ -11,14 +11,55 @@ define('AUTH_ACCESS_DENIED', 'access_denied');
 
 class PlauditPreEndorsementHandler extends Handler
 {
+    public const EDITORIAL_ROLES = [ROLE_ID_MANAGER, ROLE_ID_SUB_EDITOR, ROLE_ID_ASSISTANT];
+    public const SUBMISSION_OPERATIONS = ['updateEndorser', 'removeEndorsement', 'sendEndorsementManually'];
+    public const EDITORIAL_OPERATIONS = ['removeEndorsement', 'sendEndorsementManually'];
+
+    public function authorize($request, &$args, $roleAssignments)
+    {
+        $operation = $request->getRouter()->getRequestedOp($request);
+
+        if (in_array($operation, self::SUBMISSION_OPERATIONS, true)) {
+            $this->addRoleAssignment(array_merge(self::EDITORIAL_ROLES, [ROLE_ID_AUTHOR]), ['updateEndorser']);
+            $this->addRoleAssignment(self::EDITORIAL_ROLES, self::EDITORIAL_OPERATIONS);
+
+            import('lib.pkp.classes.security.authorization.SubmissionAccessPolicy');
+            $this->addPolicy(new SubmissionAccessPolicy($request, $args, $this->getRoleAssignments()));
+
+            // SubmissionAccessPolicy accepts a sub editor or assistant with any
+            // assignment in the submission, including an author assignment; the
+            // editorial operations also require an editorial role in the stage
+            // (managers are accepted by StageRolePolicy through their context role).
+            if (in_array($operation, self::EDITORIAL_OPERATIONS, true)) {
+                import('lib.pkp.classes.security.authorization.StageRolePolicy');
+                $this->addPolicy(new StageRolePolicy(self::EDITORIAL_ROLES));
+            }
+        }
+
+        return parent::authorize($request, $args, $roleAssignments);
+    }
+
+    private function isValidPostRequest($request): bool
+    {
+        return $request->isPost() && $request->checkCSRF();
+    }
+
+    private function getAuthorizedSubmission()
+    {
+        return $this->getAuthorizedContextObject(ASSOC_TYPE_SUBMISSION);
+    }
+
     public function updateEndorser($args, $request)
     {
+        if (!$this->isValidPostRequest($request)) {
+            return http_response_code(403);
+        }
+
         $plugin = new PlauditPreEndorsementPlugin();
-        $submissionId = $request->getUserVar('submissionId');
         $endorserName = $request->getUserVar('endorserName');
         $endorserEmail = $request->getUserVar('endorserEmail');
 
-        $submission = DAORegistry::getDAO('SubmissionDAO')->getById($submissionId);
+        $submission = $this->getAuthorizedSubmission();
         $publication = $submission->getCurrentPublication();
 
         $endorsementIsConfirmed = $publication->getData('endorsementStatus') == ENDORSEMENT_STATUS_CONFIRMED;
@@ -67,8 +108,11 @@ class PlauditPreEndorsementHandler extends Handler
 
     public function removeEndorsement($args, $request)
     {
-        $submissionId = $request->getUserVar('submissionId');
-        $submission = DAORegistry::getDAO('SubmissionDAO')->getById($submissionId);
+        if (!$this->isValidPostRequest($request)) {
+            return http_response_code(403);
+        }
+
+        $submission = $this->getAuthorizedSubmission();
         $publication = $submission->getCurrentPublication();
 
         $endorsementFields = [
@@ -95,8 +139,11 @@ class PlauditPreEndorsementHandler extends Handler
 
     public function sendEndorsementManually($args, $request)
     {
-        $submissionId = $request->getUserVar('submissionId');
-        $submission = DAORegistry::getDAO('SubmissionDAO')->getById($submissionId);
+        if (!$this->isValidPostRequest($request)) {
+            return http_response_code(403);
+        }
+
+        $submission = $this->getAuthorizedSubmission();
         $publication = $submission->getCurrentPublication();
         $plugin = PluginRegistry::getPlugin('generic', 'plauditpreendorsementplugin');
 
@@ -116,12 +163,15 @@ class PlauditPreEndorsementHandler extends Handler
 
     public function orcidVerify($args, $request)
     {
-        $publicationDao = DAORegistry::getDAO('PublicationDAO');
-        $publication = $publicationDao->getById($request->getUserVar('state'));
-        $submission = DAORegistry::getDAO('SubmissionDAO')->getById($publication->getData('submissionId'));
-
         $plugin = PluginRegistry::getPlugin('generic', 'plauditpreendorsementplugin');
         $contextId = $request->getContext()->getId();
+
+        $publication = $this->getRequestedPublication($request->getUserVar('state'));
+        $submission = $publication ? DAORegistry::getDAO('SubmissionDAO')->getById($publication->getData('submissionId')) : null;
+        if (!self::publicationBelongsToContext($publication, $submission, $contextId)) {
+            $this->displayTemplate($request, ['errorType' => 'invalidToken']);
+            return;
+        }
 
         $statusAuth = $this->getStatusAuthentication($publication, $request);
         if ($statusAuth == AUTH_INVALID_TOKEN) {
@@ -139,6 +189,9 @@ class PlauditPreEndorsementHandler extends Handler
             $orcid = $orcidClient->requestOrcid($code);
         } catch (GuzzleHttp\Exception\RequestException  $exception) {
             $this->logMessageAndDisplayTemplate($submission, $request, 'plugins.generic.plauditPreEndorsement.log.orcidRequestError', ['errorType' => 'failure', 'orcidAPIError' => $exception->getMessage()]);
+            return;
+        } catch (InvalidArgumentException $exception) {
+            $this->logMessageAndDisplayTemplate($submission, $request, 'plugins.generic.plauditPreEndorsement.log.orcidRequestError', ['errorType' => 'failure']);
             return;
         }
 
@@ -171,12 +224,36 @@ class PlauditPreEndorsementHandler extends Handler
         }
     }
 
+    private function getRequestedPublication($publicationId)
+    {
+        if (!is_string($publicationId) || !ctype_digit($publicationId)) {
+            return null;
+        }
+
+        return DAORegistry::getDAO('PublicationDAO')->getById((int) $publicationId);
+    }
+
+    public static function publicationBelongsToContext($publication, $submission, $contextId): bool
+    {
+        if (!$publication || !$submission) {
+            return false;
+        }
+
+        return (int) $publication->getData('submissionId') === (int) $submission->getId()
+            && (int) $submission->getData('contextId') === (int) $contextId;
+    }
+
     private function logMessageAndDisplayTemplate($submission, $request, string $message, array $data)
     {
         $plugin = PluginRegistry::getPlugin('generic', 'plauditpreendorsementplugin');
-        $templatePath = $plugin->getTemplateResource('orcidVerify.tpl');
-
         $plugin->writeOnActivityLog($submission, $message, $data);
+        $this->displayTemplate($request, $data);
+    }
+
+    private function displayTemplate($request, array $data)
+    {
+        $plugin = PluginRegistry::getPlugin('generic', 'plauditpreendorsementplugin');
+        $templatePath = $plugin->getTemplateResource('orcidVerify.tpl');
 
         $context = $request->getContext();
         $data['contactEmail'] = $context->getData('contactEmail');
@@ -227,12 +304,21 @@ class PlauditPreEndorsementHandler extends Handler
 
     public function getStatusAuthentication($publication, $request)
     {
-        if ($request->getUserVar('token') != $publication->getData('endorserEmailToken')) {
+        if (!$this->tokenIsValid($publication->getData('endorserEmailToken'), $request->getUserVar('token'))) {
             return AUTH_INVALID_TOKEN;
         } elseif ($request->getUserVar('error') == 'access_denied') {
             return AUTH_ACCESS_DENIED;
         } else {
             return AUTH_SUCCESS;
         }
+    }
+
+    private function tokenIsValid($storedToken, $receivedToken): bool
+    {
+        if (!is_string($storedToken) || $storedToken === '' || !is_string($receivedToken)) {
+            return false;
+        }
+
+        return hash_equals($storedToken, $receivedToken);
     }
 }
